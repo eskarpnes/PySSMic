@@ -10,15 +10,15 @@ class Manager:
     def register_consumer(self, consumer):
         pass
 
-    # Register a new producer. Every consumer should be notified about this producer.
-    def register_producer(self, producer):
-        pass
-
     # Send out a new weather prediction
     def broadcast_new_prediction(self):
         pass
 
-    def fetch_producers(self):
+    def broadcast_new_producer(self, producer):
+        pass
+
+    # Register a new producer. Every consumer should be notified about this producer.
+    def register_producer(self, producer):
         pass
 
     def new_job(self, load_profile, est, lst):
