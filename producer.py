@@ -21,6 +21,7 @@ class Producer(ThreadingActor):
         pass
 
     # FRAMEWORK SPECIFIC CODE
+    # Every message should have a sender field with the reference to the sender
     def on_receive(self, message):
         sender = message['sender']
         self.receive(message, sender)

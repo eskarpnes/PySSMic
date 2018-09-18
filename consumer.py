@@ -1,7 +1,7 @@
 from pykka import ThreadingActor
 
-class Consumer(ThreadingActor):
 
+class Consumer(ThreadingActor):
     def __init__(self, producers):
         super(Consumer, self).__init__()
         self.producers = producers
@@ -11,7 +11,7 @@ class Consumer(ThreadingActor):
         pass
 
     # Receive a message in a framework agnostic way
-    def receive(self, message):
+    def receive(self, message, sender):
         pass
 
     # Function for selecting a producer for a job
@@ -19,5 +19,7 @@ class Consumer(ThreadingActor):
         pass
 
     # FRAMEWORK SPECIFIC CODE
+    # Every message should have a sender field with the reference to the sender
     def on_receive(self, message):
-        self.receive(message)
+        sender = message['sender']
+        self.receive(message, sender)
