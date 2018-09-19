@@ -34,6 +34,7 @@ class Manager:
     def register_consumer(self, consumer):
         self.consumers.append(consumer)
 
+    # Input API    
     # A job contains an earliest start time, latest start time and load profile
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
@@ -46,6 +47,7 @@ class Manager:
         consumer_ref = Consumer.start(self.producers, job)
         self.register_consumer(consumer_ref)
 
+    # Input API
     # Power rating is the maximum power the PV panels can output given perfect conditions
     # Given in watts
     # Weather predictions will give a float that says how many percent of the maximum the
@@ -53,3 +55,7 @@ class Manager:
     def new_producer(self, power_rating):
         producer_ref = Producer.start(power_rating)
         self.broadcast_new_producer(producer_ref)
+
+    # Input API
+    def new_prediction(self, prediction):
+        self.broadcast_new_prediction(prediction)
