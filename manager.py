@@ -1,4 +1,5 @@
-import pykka
+from consumer import Consumer
+from producer import Producer
 
 
 class Manager:
@@ -6,20 +7,49 @@ class Manager:
         self.consumers = []
         self.producers = []
 
-    # Register a new consumer.
-    def register_consumer(self, consumer):
-        pass
-
     # Send out a new weather prediction
-    def broadcast_new_prediction(self):
-        pass
+    def broadcast_new_prediction(self, prediction):
+        for producer in self.producers:
+            producer.tell({
+                'sender': '',
+                'action': 'broadcast',
+                'prediction': prediction
+            })
 
+    # Broadcasts new producers so existing consumers can use them
     def broadcast_new_producer(self, producer):
-        pass
+        for consumer in self.consumers:
+            consumer.tell({
+                'sender': '',
+                'action': 'broadcast',
+                'producer': producer
+            })
 
-    # Register a new producer. Every consumer should be notified about this producer.
+    # Register a new producer. Every consumer should be notified about this producer
     def register_producer(self, producer):
-        pass
+        self.producers.append(producer)
+        self.broadcast_new_producer(producer)
 
+    # Register a new consumer
+    def register_consumer(self, consumer):
+        self.consumers.append(consumer)
+
+    # A job contains an earliest start time, latest start time and load profile
+    # (seconds elapsed and power used)
+    # TODO: Load profile should be a data set designed for the optimizer algorithm
     def new_job(self, load_profile, est, lst):
-        pass
+        job = {
+            'est': est,
+            'lst': lst,
+            'load': load_profile
+        }
+        consumer_ref = Consumer.start(self.producers, job)
+        self.register_consumer(consumer_ref)
+
+    # Power rating is the maximum power the PV panels can output given perfect conditions
+    # Given in watts
+    # Weather predictions will give a float that says how many percent of the maximum the
+    # PV panels will produce
+    def new_producer(self, power_rating):
+        producer_ref = Producer.start(power_rating)
+        self.broadcast_new_producer(producer_ref)
