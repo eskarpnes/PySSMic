@@ -12,7 +12,7 @@ class Manager:
         for producer in self.producers:
             producer.tell({
                 'sender': '',
-                'action': 'broadcast',
+                'action': 'BROADCAST',
                 'prediction': prediction
             })
 
@@ -21,7 +21,7 @@ class Manager:
         for consumer in self.consumers:
             consumer.tell({
                 'sender': '',
-                'action': 'broadcast',
+                'action': 'BROADCAST',
                 'producer': producer
             })
 
