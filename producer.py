@@ -3,8 +3,9 @@ import optimizer
 
 
 class Producer(ThreadingActor):
-    def __init__(self, producers):
+    def __init__(self, power_rating):
         super(Producer, self).__init__()
+        self.power_rating = power_rating
         self.optimizer = optimizer.Optimizer()
         self.consumers = []
 
