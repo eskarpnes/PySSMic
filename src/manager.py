@@ -1,5 +1,4 @@
-from consumer import Consumer
-
+from src.consumer import Consumer
 from src.producer import Producer
 
 
