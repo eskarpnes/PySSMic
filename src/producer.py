@@ -12,6 +12,7 @@ class Producer(ThreadingActor):
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
+        pass
         #1: ACCEPT contract
         #2: CANCEL contract
         #2: DECLINE contract
