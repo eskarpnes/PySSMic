@@ -1,5 +1,6 @@
 from pykka import ThreadingActor
-import optimizer
+
+from src import optimizer
 
 
 class Producer(ThreadingActor):

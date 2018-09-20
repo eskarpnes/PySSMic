@@ -1,6 +1,3 @@
-import manager
-
-
 class Simulator:
     def __init__(self):
         # should be initiated based on some sort of configuration scheme
