@@ -1,0 +1,4 @@
+pykka
+numpy
+scipy
+pytest
