@@ -1,11 +1,14 @@
 from src.consumer import Consumer
 from src.producer import Producer
+import logging
+import src.conf_logger
 
 
 class Manager:
     def __init__(self):
         self.consumers = []
         self.producers = []
+        self.logger = logging.getLogger("src.Manager")
 
     # Send out a new weather prediction
     def broadcast_new_prediction(self, prediction):
@@ -27,6 +30,7 @@ class Manager:
 
     # Register a new producer. Every consumer should be notified about this producer
     def register_producer(self, producer):
+        self.logger.debug("Registering new producer %s", producer)
         self.producers.append(producer)
         self.broadcast_new_producer(producer)
 

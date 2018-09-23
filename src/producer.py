@@ -1,4 +1,6 @@
 from pykka import ThreadingActor
+import logging
+import src.conf_logger
 
 from src import optimizer
 
@@ -9,13 +11,14 @@ class Producer(ThreadingActor):
         self.power_rating = power_rating
         self.optimizer = optimizer.Optimizer()
         self.consumers = []
+        self.logger = logging.getLogger("src.Producer")
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
         pass
-        #1: ACCEPT contract
-        #2: CANCEL contract
-        #2: DECLINE contract
+        # 1: ACCEPT contract
+        # 2: CANCEL contract
+        # 2: DECLINE contract
 
     # Receive a message in a framework agnostic way
     def receive(self, message, sender):

@@ -1,4 +1,6 @@
 from pykka import ThreadingActor, Timeout
+import src.conf_logger
+import logging
 
 
 class Consumer(ThreadingActor):
@@ -6,6 +8,7 @@ class Consumer(ThreadingActor):
         super(Consumer, self).__init__()
         self.producers = producers
         self.job = job
+        self.logger = logging.getLogger("src.Consumer")
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
