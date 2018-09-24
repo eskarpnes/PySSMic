@@ -1,5 +1,9 @@
+import logging
+import src.conf_logger
+
 class Simulator:
     def __init__(self):
+        self.logger = logging.getLogger("src.Simulator")
         # should be initiated based on some sort of configuration scheme
         pass
 

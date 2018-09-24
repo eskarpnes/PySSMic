@@ -7,4 +7,3 @@ def test_register_producer():
     producer = Producer(1000)
     manager.register_producer(producer)
     assert producer in manager.producers
-
