@@ -167,3 +167,10 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+# VS Code specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
