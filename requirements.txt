@@ -2,3 +2,4 @@ pykka
 numpy
 scipy
 pytest
+simpy
