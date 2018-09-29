@@ -1,7 +1,5 @@
 import os
 
-import pandas as pd
-
 from src.job import Job
 from src.load_profile import LoadProfile
 
@@ -17,12 +15,9 @@ def job_from_consumer_event(csv_line):
     return Job(est, lst, load_profile)
 
 
-
 def load_profile_from_csv(csv):
     split_by_new_line = filter(lambda x: len(x) > 2, csv.split("\n"))
     parsed = [[float(cell) for cell in line.split(" ")] for line in split_by_new_line]
     timestamps = map(lambda x: x[0], parsed)
     values = map(lambda x: x[1], parsed)
     return LoadProfile(list(timestamps), list(values))
-
-

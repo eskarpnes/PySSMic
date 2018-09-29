@@ -9,3 +9,10 @@ class Job:
         return self.est == other.est and \
                self.lst == other.lst and \
                self.load_profile == other.load_profile
+
+    def to_message(self):
+        return {
+            'est': self.est,
+            'lst': self.lst,
+            'load_profile': self.load_profile.to_message()
+        }
