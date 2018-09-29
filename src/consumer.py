@@ -36,11 +36,10 @@ class Consumer(ThreadingActor):
     def request_producer(self):
         # TODO Implement priority queue
         producer = self.producers.pop()
-        # TODO Check if pykka can send own actor reference as 'sender' field
         message = {
-            'sender': '',
+            'sender': self.actor_ref,
             'action': 'REQUEST',
-            'job': self.job
+            'job': self.job.to_message()
         }
         self.send(message, producer)
 

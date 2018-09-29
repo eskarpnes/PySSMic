@@ -1,8 +1,10 @@
 from pykka import ThreadingActor
 import logging
+import src.message_utils as message_utils
 import src.conf_logger
 
 from src import optimizer
+from src.job import Job
 
 
 class Producer(ThreadingActor):
@@ -28,6 +30,8 @@ class Producer(ThreadingActor):
             self.update_power_profile()
             self.optimize()
         elif action == 'REQUEST':
+            job = message_utils.job_from_message(message['job'])
+            self.consumers.append((sender, job))
             self.optimize()
         elif action == 'CANCEL':
             pass
