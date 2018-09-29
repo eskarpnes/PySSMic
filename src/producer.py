@@ -2,12 +2,12 @@ import sys
 
 from pykka import ThreadingActor
 import logging
-import src.message_utils as message_utils
+from src.message_utils import Action
 import pykka
 import src.conf_logger
 import random
 
-from src import optimizer
+from src import optimizer, message_utils
 from src.job import Job
 
 
@@ -30,21 +30,20 @@ class Producer(ThreadingActor):
     def receive(self, message, sender):
         action = message['action']
 
-        if action == 'PREDICTION':
+        if action == Action.prediction:
             self.update_power_profile()
             self.optimize()
-        elif action == 'REQUEST':
+        elif action == Action.request:
             job = message_utils.job_from_message(message['job'])
             # always accept in test
             if random.random() > 0.5 or 'pytest' in sys.modules:
                 self.consumers.append((sender, job))
                 self.optimize()
-                return dict(action='ACCEPT')
+                return dict(action=Action.accept)
             else:
-                return dict(action='DECLINE')
+                return dict(action=Action.decline)
 
-
-        elif action == 'CANCEL':
+        elif action == Action.cancel:
             pass
 
     # Function for choosing the best schedule given old jobs and the newly received one

@@ -1,5 +1,16 @@
+from enum import Enum
+
 from src.job import Job
 from src.load_profile import LoadProfile
+
+
+class Action(Enum):
+    request = 'REQUEST'
+    broadcast = 'BROADCAST'
+    cancel = 'CANCEL'
+    accept = 'ACCEPT'
+    decline = 'DECLINE'
+    prediction = 'PREDICTION'
 
 
 def load_profile_from_message(message):
