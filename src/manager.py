@@ -1,6 +1,7 @@
 from src.consumer import Consumer
 from src.producer import Producer
 import logging
+from src.message_utils import Action
 import src.conf_logger
 
 
@@ -15,7 +16,7 @@ class Manager:
         for producer in self.producers:
             producer.tell({
                 'sender': '',
-                'action': 'BROADCAST',
+                'action': Action.broadcast,
                 'prediction': prediction
             })
 
@@ -24,7 +25,7 @@ class Manager:
         for consumer in self.consumers:
             consumer.tell({
                 'sender': '',
-                'action': 'BROADCAST',
+                'action': Action.broadcast,
                 'producer': producer
             })
 
