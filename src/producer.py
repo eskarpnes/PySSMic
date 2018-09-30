@@ -2,21 +2,21 @@ import sys
 
 from pykka import ThreadingActor
 import logging
-from src.message_utils import Action
-import pykka
 import src.conf_logger
+from src.job import JobStatus
+from src.message_utils import Action
 import random
 
-from src import optimizer, message_utils
-from src.job import Job
+from src import message_utils
+from src.optimizer import Optimizer
 
 
 class Producer(ThreadingActor):
     def __init__(self, power_rating):
         super(Producer, self).__init__()
         self.power_rating = power_rating
-        self.optimizer = optimizer.Optimizer()
-        self.consumers = []
+        self.optimizer = Optimizer(self)
+        self.schedule = []
         self.logger = logging.getLogger("src.Producer")
 
     # Send a message to another actor in a framework agnostic way
@@ -33,11 +33,12 @@ class Producer(ThreadingActor):
         if action == Action.prediction:
             self.update_power_profile()
             self.optimize()
+
         elif action == Action.request:
             job = message_utils.job_from_message(message['job'])
             # always accept in test
             if random.random() > 0.5 or 'pytest' in sys.modules:
-                self.consumers.append((sender, job))
+                self.schedule.append((sender, job, JobStatus.created))
                 self.optimize()
                 return dict(action=Action.accept)
             else:
@@ -48,7 +49,18 @@ class Producer(ThreadingActor):
 
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
-        self.optimizer.optimize(self.consumers)
+        self.logger.info("Running optimizer ...")
+        self.optimizer.optimize(self.schedule)
+
+        # Notify cancelled consumers
+        [self.cancel(s[0]) for s in self.filter_schedule(JobStatus.cancelled)]
+
+    def cancel(self, consumer):
+        message = dict(action=Action.cancel)
+        self.send(message, consumer)
+
+    def filter_schedule(self, status):
+        return filter(lambda x: x[2] == status, self.schedule)
 
     # Function for updating the power profile of a producer when it has received
     # a PREDICTION and been optimized based on this

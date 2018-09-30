@@ -1,5 +1,5 @@
 from src.consumer import Consumer
-from src.job import Job
+from src.job import Job, JobStatus
 from src.load_profile import LoadProfile
 from src.producer import Producer
 
@@ -11,4 +11,4 @@ def test_request_producer():
 
     consumer._actor.request_producer()
 
-    assert (consumer, job) in producer._actor.consumers
+    assert (consumer, job, JobStatus.created) in producer._actor.schedule
