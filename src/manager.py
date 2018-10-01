@@ -5,10 +5,14 @@ import src.conf_logger
 
 
 class Manager:
-    def __init__(self):
+    def __init__(self, neighbourhood):
         self.consumers = []
         self.producers = []
         self.logger = logging.getLogger("src.Manager")
+
+        # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
+        # simulator start
+        self.neighbourhood = neighbourhood
 
     # Send out a new weather prediction
     def broadcast_new_prediction(self, prediction):
