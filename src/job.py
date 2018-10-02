@@ -19,7 +19,7 @@ class Job:
     def __eq__(self, other):
         return self.est == other.est and \
                self.lst == other.lst and \
-               self.load_profile == other.load_profile
+               self.load_profile.equals(other.load_profile)
 
     def to_message(self):
         return {
