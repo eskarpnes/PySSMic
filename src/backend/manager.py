@@ -46,12 +46,7 @@ class Manager:
     # A job contains an earliest start time, latest start time and load profile
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
-    def new_job(self, load_profile, est, lst):
-        job = {
-            'est': est,
-            'lst': lst,
-            'load': load_profile
-        }
+    def new_job(self, job):
         consumer_ref = Consumer.start(self.producers, job)
         self.register_consumer(consumer_ref)
 
