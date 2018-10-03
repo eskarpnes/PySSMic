@@ -2,4 +2,5 @@ pykka
 numpy
 scipy
 pytest
+simpy
 pandas
