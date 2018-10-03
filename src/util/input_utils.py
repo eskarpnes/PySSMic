@@ -9,7 +9,7 @@ def job_from_consumer_event(csv_line):
     est = int(split[1])
     lst = int(split[2])
     load_profile_name = split[4]
-    load_profile_path = os.path.join(os.path.relpath(".."), "input/loads/" + load_profile_name)
+    load_profile_path = os.path.join(os.path.relpath("../.."), "input/loads/" + load_profile_name)
     load_profile_csv = open(load_profile_path, "r").read()
     load_profile = load_profile_from_csv(load_profile_csv)
     return Job(est, lst, load_profile)
@@ -21,3 +21,22 @@ def load_profile_from_csv(csv):
     timestamps = map(lambda x: x[0], parsed)
     values = map(lambda x: x[1], parsed)
     return pd.Series(data=values, index=timestamps)
+
+
+def get_events_from_csv(filename):
+    events = []
+    events_csv_filepath = os.path.relpath("../..") + "/input/" + filename
+    events_csv = open(events_csv_filepath, "r").read()
+    event_lines = events_csv.split("\n")
+    for line in event_lines:
+        if line is not "":
+            timestamp = line.split(";")[0]
+            events.append({
+                "timestamp": timestamp,
+                "job": job_from_consumer_event(line)
+            })
+    return events
+
+
+if __name__ == "__main__":
+    get_events_from_csv("consumer_event.csv")

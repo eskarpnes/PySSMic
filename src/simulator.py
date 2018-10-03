@@ -2,6 +2,7 @@ import logging
 from src.backend.manager import Manager
 import simpy.rt
 import simpy
+from util.input_utils import *
 
 
 class Simulator:
@@ -23,9 +24,11 @@ class Simulator:
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}
 
+
+
         # Schedule everything
         for load in loads:
-            schedule = self.schedule_load(load["timestamp"], load["load"])
+            schedule = self.schedule_load(load["timestamp"], load["job"])
             simpy.events.Process(self.neighbourhood, schedule)
 
         for prediction in predictions:
@@ -33,11 +36,10 @@ class Simulator:
             simpy.events.Process(self.neighbourhood, schedule)
 
     # Functions that schedule the events. Simpy-specific
-    def schedule_load(self, delay, load):
-        event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=load)
+    def schedule_load(self, delay, job):
+        event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=job)
         yield event
-        # self.register_contract({"id": self.counter, "timestamp": load["lst"]})
-        self.new_load(load)
+        self.new_load(job)
 
     def schedule_prediction(self, delay, prediction):
         event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=prediction)
@@ -46,9 +48,10 @@ class Simulator:
 
     # Starts a new consumer event
     # Will call corresponding function in manager
-    def new_load(self, load):
+    def new_load(self, job):
         print("A new load happened! Time=" + str(self.neighbourhood.now))
-        print("Load: " + str(load) + "\n")
+        print("Load: " + str(job) + "\n")
+        self.manager.new_job(job)
 
     # Sends out a new weather prediction (every 6 hours)
     # Will call corresponding function in manager
@@ -84,13 +87,18 @@ class Simulator:
         # TODO Implement fulfillment logic
 
     # Loading functions
-    # TODO Implement csv loading
-    def load_loads_from_csv(self):
-        pass
+    def load_jobs_from_csv(self, filename):
+        loads = get_events_from_csv(filename)
+        # Schedule everything
+        for load in loads:
+            schedule = self.schedule_load(load["timestamp"], load["job"])
+            simpy.events.Process(self.neighbourhood, schedule)
 
     # TODO Implement csv loading
     def load_predictions_from_csv(self):
         pass
+
+
 
     # Starts the simulation
     def start(self):
@@ -102,32 +110,7 @@ class Simulator:
 
 if __name__ == "__main__":
     # Hardcoded examples
-    loads = [
-        {
-            "timestamp": 1000,
-            "load": {
-                "est": 2000,
-                "lst": 4000,
-                "profile": None
-            }
-        },
-        {
-            "timestamp": 4000,
-            "load": {
-                "est": 6000,
-                "lst": 10000,
-                "profile": None
-            }
-        },
-        {
-            "timestamp": 40000,
-            "load": {
-                "est": 46000,
-                "lst": 50000,
-                "profile": None
-            }
-        }
-    ]
+    loads = []
 
     predictions = [
         {
@@ -150,4 +133,4 @@ if __name__ == "__main__":
     ]
 
     sim = Simulator(loads, predictions)
-    sim.start()
+    # sim.start()
