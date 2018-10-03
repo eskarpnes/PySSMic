@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -55,7 +54,7 @@ app.layout = html.Div(children=[
                 dcc.Dropdown(
                     options=[
                         {'label': 'Sunny', 'value': 'SUN'},
-                        {'label': 'Clody', 'value': 'CLOUD'}
+                        {'label': 'Cloudy', 'value': 'CLOUD'}
                     ],
                     value='SUN'
                 )
@@ -67,6 +66,15 @@ app.layout = html.Div(children=[
     ])
 
 ])
+
+
+@app.callback(
+    Output(component_id="numDays", component_property="children"),
+    [Input(component_id="inputDays", component_property="value")],
+)
+def update_weather(input_weather):
+    return input_weather
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
