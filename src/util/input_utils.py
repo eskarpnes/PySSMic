@@ -1,6 +1,6 @@
 import os
 
-from src.job import Job
+from src.backend.job import Job
 import pandas as pd
 
 

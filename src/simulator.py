@@ -1,6 +1,5 @@
 import logging
-import src.conf_logger
-from src.manager import Manager
+from src.backend.manager import Manager
 import simpy.rt
 import simpy
 
