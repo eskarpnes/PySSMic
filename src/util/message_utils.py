@@ -1,7 +1,6 @@
 from enum import Enum
 
-from src.job import Job
-from src.load_profile import LoadProfile
+from src.backend.job import Job
 
 
 class Action(Enum):

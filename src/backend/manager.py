@@ -1,15 +1,18 @@
-from src.consumer import Consumer
-from src.producer import Producer
+from src.backend.consumer import Consumer
+from src.backend.producer import Producer
 import logging
-from src.message_utils import Action
-import src.conf_logger
+from src.util.message_utils import Action
 
 
 class Manager:
-    def __init__(self):
+    def __init__(self, clock=None):
         self.consumers = []
         self.producers = []
         self.logger = logging.getLogger("src.Manager")
+
+        # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
+        # simulator start
+        self.clock = clock
 
     # Send out a new weather prediction
     def broadcast_new_prediction(self, prediction):
