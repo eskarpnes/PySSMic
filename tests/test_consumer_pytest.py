@@ -1,6 +1,6 @@
-from src.consumer import Consumer
-from src.job import Job, JobStatus
-from src.producer import Producer
+from src.backend.consumer import Consumer
+from src.backend.job import Job, JobStatus
+from src.backend.producer import Producer
 import pandas as pd
 
 
