@@ -3,8 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import create_sim
-from apps import main
+from apps import create_sim, create_esn, main
 
 
 app.layout = html.Div([
@@ -20,6 +19,8 @@ def display_page(pathname):
         return main.layout
     elif pathname == '/apps/create_sim':
         return create_sim.layout
+    elif pathname == '/apps/create_esn':
+        return create_esn.layout
     else:
         return '404'
 

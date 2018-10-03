@@ -1,20 +1,18 @@
 import base64
 import datetime
 import io
-
+import json
 import xml.etree.ElementTree as ET
 
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table_experiments as dt
 
-import pandas as pd
 
-add_esn = dash.Dash(__name__)
+from app import app
 
-add_esn.layout = html.Div([
+layout = html.Div([
     html.H2("Create a new neighbourhood"),
 
     dcc.Upload(
@@ -36,42 +34,48 @@ add_esn.layout = html.Div([
         multiple=True
     ),
     html.Div(id='output-data-upload'),
-    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
+
 ])
 
 
 def parse_contents(contents, filename, date):
-
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
     countries = []
-    tree = ET.parse(filename)
-    root = tree.getroot()
-    for country in root.findall('country'):
-        name = country.get('name')
-        rank = country.find('rank').text
-        year = country.find('year').text
-        neighbors = []
-        for neighbor in country.iter('neighbor'):
-            neighbors.append(neighbor.attrib)
+    tree = ET.fromstring(decoded)
+    nei = create_neighborhood_list(tree)
+    return nei
 
-        countries.append([name, rank, year, neighbors])
-
-    return html.Div([
-        html.H5(filename),
-
-    ])
+# Takes in a xml.Elementree.Element and produces a neighborhood
+# TODO: change the print statements with what you decide to do
 
 
-@add_esn.callback(Output('output-data-upload', 'children'),
-                  [Input('upload-data', 'contents')],
-                  [State('upload-data', 'filename'),
-                   State('upload-data', 'last_modified')])
+def create_neighborhood_list(neighborhood):
+    nh = []
+    print("---House---")
+    for house in neighborhood:
+        h = [house.get("id")]
+        print(house.get("id"))
+        for user in house:
+            print(user.get("id"))
+            u = [user.get("id")]
+            for device in user:
+                print(device.find("id").text)
+                u.append(device.find("id").text)
+            h.append(u)
+        nh.append(h)
+    print("---new house ---")
+
+    return nh
+
+
+@app.callback(Output('output-data-upload', 'children'),
+              [Input('upload-data', 'contents')],
+              [State('upload-data', 'filename'),
+               State('upload-data', 'last_modified')])
 def update_output(list_of_contents, list_of_names, list_of_dates):
     if list_of_contents is not None:
         children = [
             parse_contents(c, n, d) for c, n, d in
             zip(list_of_contents, list_of_names, list_of_dates)]
         return children
-
-
-if __name__ == '__main__':
-    add_esn.run_server(debug=True)
