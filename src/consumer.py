@@ -1,6 +1,7 @@
 from pykka import ThreadingActor, Timeout
 import src.conf_logger
 import logging
+from src.message_utils import Action
 
 
 class Consumer(ThreadingActor):
@@ -16,7 +17,7 @@ class Consumer(ThreadingActor):
         try:
             answer = receiver.ask(message, timeout=60)
             action = answer['action']
-            if action == 'DECLINE':
+            if action == Action.decline:
                 self.request_producer()
             else:
                 self.register_contract()
@@ -26,9 +27,9 @@ class Consumer(ThreadingActor):
     # Receive a message in a framework agnostic way
     def receive(self, message, sender):
         action = message['action']
-        if action == 'BROADCAST':
+        if action == Action.broadcast:
             self.producers.append(message['producer'])
-        elif action == 'CANCEL':
+        elif action == Action.cancel:
             # TODO Implement renegotiation when a contract is cancelled
             pass
 
@@ -36,11 +37,10 @@ class Consumer(ThreadingActor):
     def request_producer(self):
         # TODO Implement priority queue
         producer = self.producers.pop()
-        # TODO Check if pykka can send own actor reference as 'sender' field
         message = {
-            'sender': '',
-            'action': 'REQUEST',
-            'job': self.job
+            'sender': self.actor_ref,
+            'action': Action.request,
+            'job': self.job.to_message()
         }
         self.send(message, producer)
 
