@@ -1,4 +1,5 @@
 from enum import Enum
+import pandas as pd
 
 
 class JobStatus(Enum):
@@ -19,7 +20,7 @@ class Job:
     def __eq__(self, other):
         return self.est == other.est and \
                self.lst == other.lst and \
-               self.load_profile == other.load_profile
+               self.load_profile.equals(other.load_profile)
 
     def to_message(self):
         return {
@@ -27,3 +28,15 @@ class Job:
             'lst': self.lst,
             'load_profile': self.load_profile
         }
+
+    def power(self, t):
+        if t in self.load_profile.index.values:
+            return self.load_profile[t]
+        elif t < 0:
+            return 0
+        elif t > max(self.load_profile.index.values):
+            return self.load_profile[self.load_profile.index[-1]]
+        else:
+            appended = self.load_profile.append(pd.Series(data=[float('nan')], index=[t])).sort_index()
+            interpolated = appended.interpolate(method='barycentric')
+            return interpolated[t]
