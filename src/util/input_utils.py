@@ -74,6 +74,7 @@ def get_predictions_from_csv(config_name):
             })
     return predictions
 
+
 def normalize_times(events, predictions):
     # Finding the time of the first event
     min_time = math.inf
@@ -93,7 +94,3 @@ def normalize_times(events, predictions):
         predictions[i]["prediction"].normalize_time(min_time)
 
     return events, predictions
-
-
-if __name__ == "__main__":
-    get_predictions_from_csv("test")
