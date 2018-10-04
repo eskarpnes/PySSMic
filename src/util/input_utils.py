@@ -1,7 +1,7 @@
 import os
-
 from src.backend.job import Job
 import pandas as pd
+from definitions import ROOT_DIR
 
 
 def job_from_consumer_event(csv_line):
@@ -9,7 +9,7 @@ def job_from_consumer_event(csv_line):
     est = int(split[1])
     lst = int(split[2])
     load_profile_name = split[4]
-    load_profile_path = os.path.join(os.path.relpath("../.."), "input/loads/" + load_profile_name)
+    load_profile_path = os.path.join(ROOT_DIR, "input/loads/" + load_profile_name)
     load_profile_csv = open(load_profile_path, "r").read()
     load_profile = load_profile_from_csv(load_profile_csv)
     return Job(est, lst, load_profile)
@@ -25,7 +25,7 @@ def load_profile_from_csv(csv):
 
 def get_events_from_csv(filename):
     events = []
-    events_csv_filepath = os.path.relpath("../..") + "/input/" + filename
+    events_csv_filepath = os.path.join(ROOT_DIR, "input", filename)
     events_csv = open(events_csv_filepath, "r").read()
     event_lines = events_csv.split("\n")
     for line in event_lines:
@@ -35,6 +35,7 @@ def get_events_from_csv(filename):
                 "timestamp": timestamp,
                 "job": job_from_consumer_event(line)
             })
+    print(events)
     return events
 
 
