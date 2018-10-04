@@ -9,7 +9,7 @@ def job_from_consumer_event(csv_line):
     est = int(split[1])
     lst = int(split[2])
     load_profile_name = split[4]
-    load_profile_path = os.path.join(ROOT_DIR, "input/loads/" + load_profile_name)
+    load_profile_path = os.path.join(ROOT_DIR, "input/loads/", load_profile_name)
     load_profile_csv = open(load_profile_path, "r").read()
     load_profile = load_profile_from_csv(load_profile_csv)
     return Job(est, lst, load_profile)
