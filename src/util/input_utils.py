@@ -91,6 +91,13 @@ def normalize_times(events, predictions):
         events[i]["job"].normalize_time(min_time)
     for i in range(len(predictions)):
         predictions[i]["timestamp"] = int(predictions[i]["timestamp"]) - min_time
-        predictions[i]["prediction"].normalize_time(min_time)
-
+        predictions[i]["prediction"] = predictions[i]["prediction"].rename(lambda x: int(x)-min_time)
     return events, predictions
+
+
+if __name__ == "__main__":
+    events = get_events_from_csv("test")
+    predictions = get_predictions_from_csv("test")
+    events, predictions = normalize_times(events, predictions)
+    print(events)
+    print(predictions)
