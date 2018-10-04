@@ -34,7 +34,7 @@ class Job:
 
     def normalize_time(self, offset):
         self.est = self.est-offset
-        self.lst = self.est-offset
+        self.lst = self.lst-offset
 
     def power(self, t):
         if t in self.load_profile.index.values:
