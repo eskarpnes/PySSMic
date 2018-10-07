@@ -2,7 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from app import app
+from src.frontend.app import app
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
@@ -12,7 +12,6 @@ from app import app
 
 layout = html.Div(children=[
     html.H1(children="CoSSMic Simulator"),
+
+    dcc.Link('Go to Create Simulation', href='/apps/create_sim')
 ])
-
-
-# @app.callback()
