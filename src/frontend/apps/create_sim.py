@@ -2,7 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from src.frontend.app import app
+from app import app
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
@@ -12,9 +12,6 @@ from src.frontend.app import app
 
 layout = html.Div(children=[
     html.H1(children="CoSSMic Simulator"),
-
-    dcc.Link('Go to Create ESN', href='/apps/create_esn'),
-    html.Br(),
     dcc.Link('Go back to home home', href='/'),
 
     html.Div(className="content", children=[
@@ -22,7 +19,8 @@ layout = html.Div(children=[
 
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
-            html.Button("Add ESN", className="btnAddEsn"),
+            html.A(html.Button("Create ESN", className="btnAddEsn"),
+                   href='/apps/create_esn'),
             dcc.Dropdown(
                 options=[
                     {'label': "Flatåsen", "value": "1"},

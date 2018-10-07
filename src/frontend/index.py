@@ -2,8 +2,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from src.frontend.app import app
-from src.frontend.apps import create_sim, create_esn, main
+from app import app
+from apps import create_sim, create_esn, main
 
 
 app.layout = html.Div([
