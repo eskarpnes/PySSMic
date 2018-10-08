@@ -15,6 +15,9 @@ from app import app
 layout = html.Div([
     html.H2("Create a new neighbourhood"),
     dcc.Link('Go back to Create Simulation', href='/apps/create_sim'),
+    html.Button("Add house"),
+    html.Button("Add user in house"),
+    html.Button("Add a userdevice"),
 
     dcc.Upload(
         id="upload-data",
@@ -33,7 +36,7 @@ layout = html.Div([
             'margin': '10px'
         }
     ),
-    html.Div(id='output'),
+    html.Div(id='output')
 ])
 
 
@@ -47,14 +50,17 @@ def create_neighborhood(num_of_houses):
 def create_div(num):
     return html.Div("Hus" + str(num))
 
+# returns a XML Elementree of the neighborhood.
 
-def parse_contents(contents, filename, date):
-    content_type, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-    countries = []
-    tree = ET.fromstring(decoded)
-    nei = create_neighborhood_list(tree)
-    return nei
+
+def parse_contents(contents):
+    if contents is not None:
+        content_type, content_string = contents.split(',')
+
+        if 'xml' in content_type:
+            decoded = base64.b64decode(content_string)
+            root = ET.fromstring(decoded)
+            return root
 
 # Takes in a xml.Elementree.Element and produces a neighborhood
 # TODO: change the print statements with what you decide to do
@@ -78,6 +84,8 @@ def create_neighborhood_list(neighborhood):
 
     return nh
 
+# Creates a simple html output for the neighborhood input (XML file)
+
 
 def create_neighborhood_html(neighborhood):
     htmlString = "<div>"
@@ -91,6 +99,9 @@ def create_neighborhood_html(neighborhood):
             for device in user:
                 htmlString += "<li> device id: " + \
                     str(device.find("id").text) + \
+                    " Name: " + str(device.find("name").text) + \
+                    " Template: " + str(device.find("template").text) + \
+                    " Type: " + str(device.find("type").text) + \
                     "</li>"  # closes device listelement
             htmlString += "</ul> </div> <br />"  # closes list and user element
         htmlString += "</div>  <br />"  # closes house div
@@ -101,17 +112,13 @@ def create_neighborhood_html(neighborhood):
 @app.callback(Output('output', 'children'),
               [Input('upload-data', 'contents')])
 def update_output(contents):
-    if contents is not None:
-        content_type, content_string = contents.split(',')
-
-        if 'xml' in content_type:
-            decoded = base64.b64decode(content_string)
-            root = ET.fromstring(decoded)
-            htmlstr = create_neighborhood_html(root)
-            return html.Div([
-                html.Iframe(
-                    sandbox='',
-                    height=500,
-                    srcDoc=htmlstr
-                )
-            ])
+    root = parse_contents(contents)
+    htmlstr = create_neighborhood_html(root)
+    return html.Div([
+        html.Iframe(
+            sandbox='',
+            height=500,
+            width=600,
+            srcDoc=htmlstr
+        )
+    ])
