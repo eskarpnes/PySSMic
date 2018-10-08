@@ -41,6 +41,7 @@ class Manager:
     # Register a new consumer
     def register_consumer(self, consumer):
         self.consumers.append(consumer)
+        consumer._actor.request_producer()
 
     # Input API    
     # A job contains an earliest start time, latest start time and load profile
@@ -57,6 +58,7 @@ class Manager:
     # PV panels will produce
     def new_producer(self, power_rating):
         producer_ref = Producer.start(power_rating)
+        self.register_producer(producer_ref)
         self.broadcast_new_producer(producer_ref)
 
     # Input API

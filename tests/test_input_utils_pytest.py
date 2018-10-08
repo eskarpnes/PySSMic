@@ -20,6 +20,6 @@ def test_load_profile_from_csv():
 def test_job_from_consumer_event():
     csv1 = "1460246602;1460246602;1460246622;[57]:[222]:[3];57_back_3.csv"
     expected1 = Job(1460246602, 1460246622, pd.Series(index=[0.0, 3600.0], data=[0.0, 0.286903377284]))
-    actual1 = utils.job_from_consumer_event(csv1)
+    actual1 = utils.job_from_consumer_event(csv1, "test")
 
     assert expected1 == actual1

@@ -2,6 +2,8 @@ import logging
 from src.backend.manager import Manager
 import simpy.rt
 import simpy
+
+from src.backend.producer import Producer
 from src.util.input_utils import *
 
 
@@ -19,6 +21,8 @@ class Simulator:
 
         # The manager that is simulated. Every new load and prediction should be sent to it.
         self.manager = Manager(self.neighbourhood)
+
+        self.manager.new_producer(1.0)
 
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}
@@ -39,6 +43,10 @@ class Simulator:
             schedule = self.schedule_prediction(prediction["timestamp"], prediction["prediction"])
             simpy.events.Process(self.neighbourhood, schedule)
 
+        for p in self.manager.producers:
+            simpy.events.Process(self.neighbourhood, self.kill_producers(p))
+
+
     # Functions that schedule the events. Simpy-specific
     def schedule_load(self, delay, job):
         event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=job)
@@ -49,6 +57,12 @@ class Simulator:
         event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=prediction)
         yield event
         self.new_prediction(prediction)
+
+    def kill_producers(self, producer):
+        event = simpy.events.Timeout(self.neighbourhood, delay=self.end_time-1, value=producer)
+        yield event
+        self.logger.info("Killing producers ...")
+        producer.stop()
 
     # Starts a new consumer event
     # Will call corresponding function in manager
