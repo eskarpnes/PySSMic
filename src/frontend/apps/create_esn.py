@@ -31,12 +31,21 @@ layout = html.Div([
             'borderRadius': '5px',
             'textAlign': 'center',
             'margin': '10px'
-        },
-        multiple=True
+        }
     ),
-    html.Div(id='output-data-upload'),
-
+    html.Div(id='output'),
 ])
+
+
+def create_neighborhood(num_of_houses):
+    nabolag = html.Div("Nabolag")
+    for x in range(num_of_houses):
+        nabolag.children = nabolag.children, create_div(x)
+    return nabolag
+
+
+def create_div(num):
+    return html.Div("Hus" + str(num))
 
 
 def parse_contents(contents, filename, date):
@@ -70,13 +79,39 @@ def create_neighborhood_list(neighborhood):
     return nh
 
 
-@app.callback(Output('output-data-upload', 'children'),
-              [Input('upload-data', 'contents')],
-              [State('upload-data', 'filename'),
-               State('upload-data', 'last_modified')])
-def update_output(list_of_contents, list_of_names, list_of_dates):
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
-        return children
+def create_neighborhood_html(neighborhood):
+    htmlString = "<div>"
+    htmlString += "Nabolag:"
+    for house in neighborhood:
+        htmlString += "<div>"
+        htmlString += "Hus id: " + str(house.get("id"))
+        for user in house:
+            htmlString += "<div>"
+            htmlString += "user id: " + str(user.get("id")) + "<ul>"
+            for device in user:
+                htmlString += "<li> device id: " + \
+                    str(device.find("id").text) + \
+                    "</li>"  # closes device listelement
+            htmlString += "</ul> </div> <br />"  # closes list and user element
+        htmlString += "</div>  <br />"  # closes house div
+    htmlString += "</div>"  # closes neighborhood
+    return htmlString
+
+
+@app.callback(Output('output', 'children'),
+              [Input('upload-data', 'contents')])
+def update_output(contents):
+    if contents is not None:
+        content_type, content_string = contents.split(',')
+
+        if 'xml' in content_type:
+            decoded = base64.b64decode(content_string)
+            root = ET.fromstring(decoded)
+            htmlstr = create_neighborhood_html(root)
+            return html.Div([
+                html.Iframe(
+                    sandbox='',
+                    height=500,
+                    srcDoc=htmlstr
+                )
+            ])
