@@ -12,10 +12,15 @@ import dash_html_components as html
 
 from app import app
 
+
 layout = html.Div([
+    # hidden div to save data in
+    html.Div(id="hidden-div", style={'display': 'none'}),
     html.H2("Create a new neighbourhood"),
     dcc.Link('Go back to Create Simulation', href='/apps/create_sim'),
-    html.Button("Add house"),
+    html.Div([dcc.Input(id="house_id", value='House ID', type='text'),
+              html.Button("Add house", id='btnAddHouse')]),
+
     html.Button("Add user in house"),
     html.Button("Add a userdevice"),
 
@@ -40,30 +45,34 @@ layout = html.Div([
 ])
 
 
-def create_neighborhood(num_of_houses):
-    nabolag = html.Div("Nabolag")
-    for x in range(num_of_houses):
-        nabolag.children = nabolag.children, create_div(x)
-    return nabolag
+# Creates a new house as a xml element.
+def add_house(houseid):
+    house = xml.Element("house")
+    house.set('id', str(houseid))
+    return house
+
+# Delete a house from the neighborhood and return the new neighborhood
 
 
-def create_div(num):
-    return html.Div("Hus" + str(num))
+def delete_house(neighborhood, houseid):
+    for house in neighborhood.findall(house):
+        h = house.get("id")
+        if h == houseid:
+            neighborhood.remove(h)
+    return neighborhood
 
-# returns a XML Elementree of the neighborhood.
+# takes in a xmlfile and returns a XML Elementree of the neighborhood.
 
 
 def parse_contents(contents):
     if contents is not None:
         content_type, content_string = contents.split(',')
-
         if 'xml' in content_type:
             decoded = base64.b64decode(content_string)
             root = ET.fromstring(decoded)
             return root
 
 # Takes in a xml.Elementree.Element and produces a neighborhood
-# TODO: change the print statements with what you decide to do
 
 
 def create_neighborhood_list(neighborhood):
@@ -81,7 +90,6 @@ def create_neighborhood_list(neighborhood):
             h.append(u)
         nh.append(h)
     print("---new house ---")
-
     return nh
 
 # Creates a simple html output for the neighborhood input (XML file)
@@ -109,11 +117,22 @@ def create_neighborhood_html(neighborhood):
     return htmlString
 
 
-@app.callback(Output('output', 'children'),
+@app.callback(Output('hidden-div', 'children'),
               [Input('upload-data', 'contents')])
 def update_output(contents):
     root = parse_contents(contents)
     htmlstr = create_neighborhood_html(root)
+    root_string = ET.tostring(root, 'utf-8', method="xml")
+    return html.Div([
+        type(root_string)
+    ])
+
+
+"""
+@app.callback(Output('output', 'children'),
+              [Input('btnAddHouse', 'contents')])
+def update_neigborhood(neighborhood):
+    htmlstr = create_neighborhood_html(neighborhood)
     return html.Div([
         html.Iframe(
             sandbox='',
@@ -122,3 +141,4 @@ def update_output(contents):
             srcDoc=htmlstr
         )
     ])
+"""
