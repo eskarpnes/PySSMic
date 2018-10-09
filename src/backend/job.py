@@ -47,3 +47,4 @@ class Job:
             appended = self.load_profile.append(pd.Series(data=[float('nan')], index=[t])).sort_index()
             interpolated = appended.interpolate(method='barycentric')
             return interpolated[t]
+
