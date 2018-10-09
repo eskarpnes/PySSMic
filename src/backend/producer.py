@@ -38,7 +38,7 @@ class Producer(ThreadingActor):
             self.optimize()
 
         elif action == Action.request:
-            job = message_utils.job_from_message(message['job'])
+            job = message['job']
             # always accept in test
             if 'pytest' in sys.modules:
                 self.schedule.append((sender, job, JobStatus.created))
@@ -46,6 +46,7 @@ class Producer(ThreadingActor):
             elif random.random() > 0.5:
                 self.schedule.append((sender, job, JobStatus.created))
                 self.optimize()
+                self.schedule.pop()
                 return dict(action=Action.accept)
             else:
                 return dict(action=Action.decline)

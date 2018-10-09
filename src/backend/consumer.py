@@ -43,7 +43,7 @@ class Consumer(ThreadingActor):
         message = {
             'sender': self.actor_ref,
             'action': Action.request,
-            'job': self.job.to_message()
+            'job': self.job
         }
         self.send(message, producer)
 
