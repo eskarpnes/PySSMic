@@ -55,6 +55,33 @@ def parse_contents(contents):
             root = ET.fromstring(decoded)
             return root
 
+# Creates a dataFrame of the root
+
+
+def eltreeToDataframe(treeRoot):
+    df = pd.DataFrame(columns=[
+        "houseId", "deviceId", "UserId", "DeviceName", "DevTemp", "DevType"])
+    for house in treeRoot:
+        for user in house:
+            for device in user:
+                df = df.append({"houseId": (house.get("id")), "deviceId": (device.find("id").text), "UserId": (user.get("id")), "DeviceName": (device.find("name").text), "DevTemp": (device.find("template").text), "DevType": (device.find("type").text)},
+                               ignore_index=True)
+    df.set_index("deviceId", inplace=True)
+    return df
+
+
+def addDevice(data, houseId, deviceId, userId, deviceName, devTemp, devType):
+    df = data
+    df2 = pd.DataFrame([[houseId, userId, deviceName, devTemp, devType]], index=[
+        deviceId], columns=["houseId", "UserId", "DeviceName", "DevTemp", "DevType"])
+    return pd.concat([df, df2])
+
+
+def removeDevice(data, deviceId):
+    df = data
+    df = df.drop(index=deviceId)
+    return df
+
 
 # Creates a simple html output for the neighborhood input (XML file)
 
