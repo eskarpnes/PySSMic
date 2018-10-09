@@ -3,11 +3,13 @@ import datetime
 import io
 import json
 import xml.etree.ElementTree as ET
+import pandas as pd
 
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table_experiments as dt
 
 
 from app import app
@@ -41,6 +43,14 @@ layout = html.Div([
             'margin': '10px'
         }
     ),
+    dt.DataTable(
+        rows=[{}],
+        row_selectable=True,
+        filterable=True,
+        sortable=True,
+        selected_row_indices=[],
+        id="datatable"
+    ),
     html.Div(id='output')
 ])
 
@@ -66,7 +76,7 @@ def eltreeToDataframe(treeRoot):
             for device in user:
                 df = df.append({"houseId": (house.get("id")), "deviceId": (device.find("id").text), "UserId": (user.get("id")), "DeviceName": (device.find("name").text), "DevTemp": (device.find("template").text), "DevType": (device.find("type").text)},
                                ignore_index=True)
-    df.set_index("deviceId", inplace=True)
+    #df.set_index("deviceId", inplace=True)
     return df
 
 
@@ -112,6 +122,14 @@ def create_neighborhood_html(neighborhood):
     return htmlString
 
 
+@app.callback(Output('datatable', 'rows'), [Input('upload-data', 'contents')])
+def update_table(contents):
+    root = parse_contents(contents)
+    df = eltreeToDataframe(root)
+    return df.to_dict('records')
+
+
+"""
 @app.callback(Output('output', 'children'),
               [Input('upload-data', 'contents')])
 def update_output(contents):
@@ -124,18 +142,6 @@ def update_output(contents):
             width=600,
             srcDoc=htmlstr
         )
-    ])
-
-
-"""
-@app.callback(Output('hidden-div', 'children'),
-              [Input('upload-data', 'contents')])
-def update_output(contents):
-    root = parse_contents(contents)
-    htmlstr = create_neighborhood_html(root)
-    root_string = ET.tostring(root, 'utf-8', method="xml")
-    return html.Div([
-        type(root_string)
     ])
 
 
