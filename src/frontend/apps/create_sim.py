@@ -12,13 +12,15 @@ from src.frontend.app import app
 
 layout = html.Div(children=[
     html.H1(children="CoSSMic Simulator"),
+    dcc.Link('Go back to home home', href='/'),
 
     html.Div(className="content", children=[
 
 
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
-            html.Button("Add ESN", className="btnAddEsn"),
+            html.A(html.Button("Create ESN", className="btnAddEsn"),
+                   href='/apps/create_esn'),
             dcc.Dropdown(
                 options=[
                     {'label': "Flatåsen", "value": "1"},

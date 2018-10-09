@@ -1,21 +1,23 @@
 import base64
 import datetime
 import io
-
+import json
 import xml.etree.ElementTree as ET
 
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table_experiments as dt
 
-import pandas as pd
 
-add_esn = dash.Dash(__name__)
+from src.frontend.app import app
 
-add_esn.layout = html.Div([
+layout = html.Div([
     html.H2("Create a new neighbourhood"),
+    dcc.Link('Go back to Create Simulation', href='/apps/create_sim'),
+    html.Button("Add house"),
+    html.Button("Add user in house"),
+    html.Button("Add a userdevice"),
 
     dcc.Upload(
         id="upload-data",
@@ -32,46 +34,91 @@ add_esn.layout = html.Div([
             'borderRadius': '5px',
             'textAlign': 'center',
             'margin': '10px'
-        },
-        multiple=True
+        }
     ),
-    html.Div(id='output-data-upload'),
-    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
+    html.Div(id='output')
 ])
 
 
-def parse_contents(contents, filename, date):
+def create_neighborhood(num_of_houses):
+    nabolag = html.Div("Nabolag")
+    for x in range(num_of_houses):
+        nabolag.children = nabolag.children, create_div(x)
+    return nabolag
 
-    countries = []
-    tree = ET.parse(filename)
-    root = tree.getroot()
-    for country in root.findall('country'):
-        name = country.get('name')
-        rank = country.find('rank').text
-        year = country.find('year').text
-        neighbors = []
-        for neighbor in country.iter('neighbor'):
-            neighbors.append(neighbor.attrib)
 
-        countries.append([name, rank, year, neighbors])
+def create_div(num):
+    return html.Div("Hus" + str(num))
 
+# returns a XML Elementree of the neighborhood.
+
+
+def parse_contents(contents):
+    if contents is not None:
+        content_type, content_string = contents.split(',')
+
+        if 'xml' in content_type:
+            decoded = base64.b64decode(content_string)
+            root = ET.fromstring(decoded)
+            return root
+
+# Takes in a xml.Elementree.Element and produces a neighborhood
+# TODO: change the print statements with what you decide to do
+
+
+def create_neighborhood_list(neighborhood):
+    nh = []
+    print("---House---")
+    for house in neighborhood:
+        h = [house.get("id")]
+        print(house.get("id"))
+        for user in house:
+            print(user.get("id"))
+            u = [user.get("id")]
+            for device in user:
+                print(device.find("id").text)
+                u.append(device.find("id").text)
+            h.append(u)
+        nh.append(h)
+    print("---new house ---")
+
+    return nh
+
+# Creates a simple html output for the neighborhood input (XML file)
+
+
+def create_neighborhood_html(neighborhood):
+    htmlString = "<div>"
+    htmlString += "Nabolag:"
+    for house in neighborhood:
+        htmlString += "<div>"
+        htmlString += "Hus id: " + str(house.get("id"))
+        for user in house:
+            htmlString += "<div>"
+            htmlString += "user id: " + str(user.get("id")) + "<ul>"
+            for device in user:
+                htmlString += "<li> device id: " + \
+                    str(device.find("id").text) + \
+                    " Name: " + str(device.find("name").text) + \
+                    " Template: " + str(device.find("template").text) + \
+                    " Type: " + str(device.find("type").text) + \
+                    "</li>"  # closes device listelement
+            htmlString += "</ul> </div> <br />"  # closes list and user element
+        htmlString += "</div>  <br />"  # closes house div
+    htmlString += "</div>"  # closes neighborhood
+    return htmlString
+
+
+@app.callback(Output('output', 'children'),
+              [Input('upload-data', 'contents')])
+def update_output(contents):
+    root = parse_contents(contents)
+    htmlstr = create_neighborhood_html(root)
     return html.Div([
-        html.H5(filename),
-
+        html.Iframe(
+            sandbox='',
+            height=500,
+            width=600,
+            srcDoc=htmlstr
+        )
     ])
-
-
-@add_esn.callback(Output('output-data-upload', 'children'),
-                  [Input('upload-data', 'contents')],
-                  [State('upload-data', 'filename'),
-                   State('upload-data', 'last_modified')])
-def update_output(list_of_contents, list_of_names, list_of_dates):
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
-        return children
-
-
-if __name__ == '__main__':
-    add_esn.run_server(debug=True)
