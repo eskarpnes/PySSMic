@@ -1,8 +1,5 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
-
-from app import app
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
