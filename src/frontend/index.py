@@ -18,9 +18,9 @@ def display_page(pathname):
     if pathname == '/':
         return base.header, main.layout, base.footer
     elif pathname == '/apps/create_sim':
-        return create_sim.layout
+        return base.header, create_sim.layout, base.footer
     elif pathname == '/apps/create_esn':
-        return create_esn.layout
+        return base.header, create_esn.layout, base.footer
     else:
         return '404'
 
