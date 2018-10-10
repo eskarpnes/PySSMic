@@ -3,11 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-<<<<<<< HEAD:src/frontend/index.py
 from apps import create_sim, create_esn, main, base
-=======
-from apps import create_sim, create_esn, main
->>>>>>> develop:index.py
 
 
 app.layout = html.Div([
