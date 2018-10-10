@@ -3,57 +3,79 @@ from src.backend.manager import Manager
 import simpy.rt
 import simpy
 
+from src.backend.producer import Producer
+from src.util.input_utils import *
+
 
 class Simulator:
-    def __init__(self, loads, predictions):
+    def __init__(self, config={}):
         self.logger = logging.getLogger("src.Simulator")
 
-        # should be initiated based on some sort of configuration scheme
-        self.neighbourhood = simpy.rt.RealtimeEnvironment(factor=0.0001, strict=False)
+        # Default 1000 simulated seconds per second. 1 day = 86 seconds to run.
+        factor = config["timefactor"] if "timefactor" in config else 0.001
 
-        # Start time for the simulation. A new day starts at 0, and it counts from there in (simulated) seconds.
-        self.start_time = 0
+        self.neighbourhood = simpy.rt.RealtimeEnvironment(factor=factor, strict=False)
 
-        # One day (24*60*60)
-        self.end_time = 86400
+        # Default to one day
+        self.end_time = config["length"] if "length" in config else 86400
 
         # The manager that is simulated. Every new load and prediction should be sent to it.
         self.manager = Manager(self.neighbourhood)
 
+        self.manager.new_producer(1.0)
+
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}
 
+        # Name of the configuration to be ran. Defaults to "test"
+        config_name = config["neighbourhood"] if "neighbourhood" in config else "test"
+
+        # Loads in events and normalizes them
+        events, predictions = self.load_files_from_csv(config_name)
+        events, predictions = normalize_times(events, predictions)
+
         # Schedule everything
-        for load in loads:
-            schedule = self.schedule_load(load["timestamp"], load["load"])
+        for event in events:
+            schedule = self.schedule_load(event["timestamp"], event["job"])
             simpy.events.Process(self.neighbourhood, schedule)
 
         for prediction in predictions:
             schedule = self.schedule_prediction(prediction["timestamp"], prediction["prediction"])
             simpy.events.Process(self.neighbourhood, schedule)
 
+        for p in self.manager.producers:
+            simpy.events.Process(self.neighbourhood, self.kill_producers(p))
+
+
     # Functions that schedule the events. Simpy-specific
-    def schedule_load(self, delay, load):
-        event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=load)
+    def schedule_load(self, delay, job):
+        event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=job)
         yield event
-        # self.register_contract({"id": self.counter, "timestamp": load["lst"]})
-        self.new_load(load)
+        self.new_load(job)
 
     def schedule_prediction(self, delay, prediction):
         event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=prediction)
         yield event
         self.new_prediction(prediction)
 
+    def kill_producers(self, producer):
+        event = simpy.events.Timeout(self.neighbourhood, delay=self.end_time-1, value=producer)
+        yield event
+        self.logger.info("Killing producers ...")
+        producer.stop()
+
     # Starts a new consumer event
     # Will call corresponding function in manager
-    def new_load(self, load):
+    def new_load(self, job):
         print("A new load happened! Time=" + str(self.neighbourhood.now))
-        print("Load: " + str(load) + "\n")
+        print("Load: " + str(job) + "\n")
+        self.manager.new_job(job)
 
     # Sends out a new weather prediction (every 6 hours)
     # Will call corresponding function in manager
-    def new_prediction(self, predictiton):
+    def new_prediction(self, prediction):
         print("A new prediction happened! Time=" + str(self.neighbourhood.now))
+        self.manager.new_prediction(prediction)
 
     # Register a contract between a consumer and producer
     # It is added as a Simpy event with a timeout until it should start
@@ -84,13 +106,10 @@ class Simulator:
         # TODO Implement fulfillment logic
 
     # Loading functions
-    # TODO Implement csv loading
-    def load_loads_from_csv(self):
-        pass
-
-    # TODO Implement csv loading
-    def load_predictions_from_csv(self):
-        pass
+    def load_files_from_csv(self, name):
+        events = get_events_from_csv(name)
+        predictions = get_predictions_from_csv(name)
+        return events, predictions
 
     # Starts the simulation
     def start(self):
@@ -101,53 +120,11 @@ class Simulator:
 
 
 if __name__ == "__main__":
-    # Hardcoded examples
-    loads = [
-        {
-            "timestamp": 1000,
-            "load": {
-                "est": 2000,
-                "lst": 4000,
-                "profile": None
-            }
-        },
-        {
-            "timestamp": 4000,
-            "load": {
-                "est": 6000,
-                "lst": 10000,
-                "profile": None
-            }
-        },
-        {
-            "timestamp": 40000,
-            "load": {
-                "est": 46000,
-                "lst": 50000,
-                "profile": None
-            }
-        }
-    ]
-
-    predictions = [
-        {
-            "timestamp": 0,
-            "prediction": None
-        },
-        {
-            "timestamp": 21600,
-            "prediction": None
-        },
-        {
-            "timestamp": 43600,
-            "prediction": None
-        },
-        {
-            "timestamp": 64800,
-            "prediction": None
-        }
-
-    ]
-
-    sim = Simulator(loads, predictions)
+    # Hardcoded example
+    config = {
+        "neighbourhood": "test",
+        "timefactor": 0.0001,
+        "length": 86400
+    }
+    sim = Simulator(config)
     sim.start()
