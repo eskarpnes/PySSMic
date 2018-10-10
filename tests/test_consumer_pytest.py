@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.consumer import Consumer
 from backend.job import Job, JobStatus
 from backend.producer import Producer
@@ -12,3 +15,6 @@ def test_request_producer():
     consumer._actor.request_producer()
 
     assert (consumer, job, JobStatus.created) in producer._actor.schedule
+
+    producer.stop()
+    consumer.stop()
