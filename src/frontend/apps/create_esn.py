@@ -10,7 +10,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 
-from src.frontend.app import app
+from app import app
 
 layout = html.Div([
     html.H2("Create a new neighbourhood"),

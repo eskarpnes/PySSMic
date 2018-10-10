@@ -2,8 +2,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from src.frontend.app import app
-from src.frontend.apps import create_sim, create_esn, main
+from app import app
+from apps import create_sim, create_esn, main, base
 
 
 app.layout = html.Div([
@@ -16,7 +16,7 @@ app.layout = html.Div([
               [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/':
-        return base.layout, main.layout
+        return base.header, main.layout, base.footer
     elif pathname == '/apps/create_sim':
         return create_sim.layout
     elif pathname == '/apps/create_esn':
