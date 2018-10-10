@@ -1,5 +1,5 @@
-from src.backend.manager import Manager
-from src.backend.producer import Producer
+from backend.manager import Manager
+from backend.producer import Producer
 
 
 def test_register_producer():

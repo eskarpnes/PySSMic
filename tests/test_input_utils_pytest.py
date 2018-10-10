@@ -1,5 +1,5 @@
-from src.backend.job import Job
-import src.util.input_utils as utils
+from backend.job import Job
+import util.input_utils as utils
 import pandas as pd
 
 

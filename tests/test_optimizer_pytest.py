@@ -1,7 +1,7 @@
 import pandas as pd
 
-from src.backend.job import Job, JobStatus
-from src.backend.producer import Producer
+from backend.job import Job, JobStatus
+from backend.producer import Producer
 
 
 def test_optimize():

@@ -2,15 +2,13 @@ import sys
 
 from pykka import ThreadingActor
 import logging
-from src.backend.job import JobStatus
-from src.util.message_utils import Action
-import src.util.conf_logger
-
+from backend.job import JobStatus
+from util.message_utils import Action
+import util.conf_logger
 import random
 import pandas as pd
-
-from src.util import message_utils
-from src.backend.optimizer import Optimizer
+from util import message_utils
+from backend.optimizer import Optimizer
 
 
 class Producer(ThreadingActor):

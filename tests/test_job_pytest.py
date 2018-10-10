@@ -1,5 +1,5 @@
-from src.backend.job import Job
-from src import load_profile_utils
+from backend.job import Job
+from util import load_profile_utils
 import pandas as pd
 import pytest
 
