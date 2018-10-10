@@ -1,10 +1,9 @@
 import logging
-from src.backend.manager import Manager
+from backend.manager import Manager
 import simpy.rt
 import simpy
-
-from src.backend.producer import Producer
-from src.util.input_utils import *
+from backend.producer import Producer
+from util.input_utils import *
 
 
 class Simulator:

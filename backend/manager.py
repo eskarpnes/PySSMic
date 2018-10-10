@@ -1,7 +1,7 @@
-from src.backend.consumer import Consumer
-from src.backend.producer import Producer
+from .consumer import Consumer
+from .producer import Producer
 import logging
-from src.util.message_utils import Action
+from util.message_utils import Action
 
 
 class Manager:

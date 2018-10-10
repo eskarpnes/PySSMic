@@ -1,5 +1,8 @@
-from src.backend.job import Job
-from src import load_profile_utils
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+from backend.job import Job
+from util import load_profile_utils
 import pandas as pd
 import pytest
 
