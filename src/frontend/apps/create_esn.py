@@ -15,15 +15,87 @@ import dash_table_experiments as dt
 from app import app
 
 
+def newHousePopup():
+    return html.Div(
+        html.Div(
+            [
+                html.Div(
+                    [
+                        # header
+                        html.Div(
+                            [
+                                html.Span(
+                                    "New House - ID X",
+                                    style={
+                                        "color": "#506784",
+                                        "fontWeight": "bold",
+                                        "fontSize": "20",
+                                    },
+                                ),
+                                html.Span(
+                                    "×",
+                                    id="leads_modal_close",
+                                    n_clicks=0,
+                                    style={
+                                        "float": "right",
+                                        "cursor": "pointer",
+                                        "marginTop": "0",
+                                        "marginBottom": "17",
+                                    },
+                                ),
+                            ],
+                            className="row",
+                            style={"borderBottom": "1px solid #C8D4E3"},
+                        ),
+                        # form
+                        html.Div(
+                            [
+                                html.P(
+                                    [
+                                        "Here you can add settins for the popup. See link commented in code",
+                                        #Ex: https://github.com/plotly/dash-salesforce-crm/blob/master/apps/leads.py
+
+                                    ],
+                                    style={
+                                        "float": "left",
+                                        "marginTop": "4",
+                                        "marginBottom": "2",
+                                    },
+                                    className="row",
+                                ),
+                            ],
+                            className="row",
+                            style={"padding": "2% 8%"},
+                        ),
+                        #create house button
+                        html.Span(
+                            "Submit",
+                            id="submit_new_lead",
+                            n_clicks=0,
+                            className="button button--primary add"
+                        ),
+                    ],
+                    className="popup-content",
+                    style={"textAlign": "center"},
+                )
+            ],
+            className="popup",
+        ),
+        id="leads_popup",
+        style={"display": "none"},
+    )
+
+
 layout = html.Div([
     # hidden div to save data in
     html.Div(id="hidden-div", style={'display': 'none'}),
     html.H2("Create a new neighbourhood"),
     dcc.Link('Go back to Create Simulation', href='/apps/create_sim'),
-    html.Div([dcc.Input(id="house_id", value='House ID', type='text'),
-              html.Button("Add house", id='btnAddHouse')]),
-
+    html.Br(),
+    html.Button("Add house", id='btnAddHouse'),
+    html.Br(),
     html.Button("Add user in house"),
+    html.Br(),
     html.Button("Add a userdevice"),
 
     dcc.Upload(
@@ -51,7 +123,9 @@ layout = html.Div([
         selected_row_indices=[],
         id="datatable"
     ),
-    html.Div(id='output')
+    html.Div(id='output'),
+
+    newHousePopup()
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -143,7 +217,7 @@ def update_output(contents):
             srcDoc=htmlstr
         )
     ])
-
+"""
 
 
 @app.callback(Output('output', 'children'),
@@ -158,4 +232,18 @@ def update_neigborhood(neighborhood):
             srcDoc=htmlstr
         )
     ])
-"""
+
+# hide/show popup
+@app.callback(Output("leads_popup", "style"), [Input("btnAddHouse", "n_clicks")])
+def display_leads_modal_callback(n):
+    if n > 0:
+        return {"display": "block"}
+    return {"display": "none"}
+
+# reset to 0 add button n_clicks property
+@app.callback(
+    Output("btnAddHouse", "n_clicks"),
+    [Input("leads_modal_close", "n_clicks"), Input("submit_new_lead", "n_clicks")],
+)
+def close_modal_callback(n, n2):
+    return 0
