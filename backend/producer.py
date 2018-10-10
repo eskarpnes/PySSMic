@@ -2,12 +2,13 @@ import sys
 
 from pykka import ThreadingActor
 import logging
-from src.backend.job import JobStatus
-from src.util.message_utils import Action
+from backend.job import JobStatus
+from util.message_utils import Action
+import util.conf_logger
 import random
-
-from src.util import message_utils
-from src.backend.optimizer import Optimizer
+import pandas as pd
+from util import message_utils
+from backend.optimizer import Optimizer
 
 
 class Producer(ThreadingActor):
@@ -16,6 +17,7 @@ class Producer(ThreadingActor):
         self.power_rating = power_rating
         self.optimizer = Optimizer(self)
         self.schedule = []
+        self.prediction = pd.Series(data=[0.0, 10.0], index=[0.0, 7200.0])
         self.logger = logging.getLogger("src.Producer")
 
     # Send a message to another actor in a framework agnostic way
@@ -34,11 +36,15 @@ class Producer(ThreadingActor):
             self.optimize()
 
         elif action == Action.request:
-            job = message_utils.job_from_message(message['job'])
+            job = message['job']
             # always accept in test
-            if random.random() > 0.5 or 'pytest' in sys.modules:
+            if 'pytest' in sys.modules:
+                self.schedule.append((sender, job, JobStatus.created))
+                return dict(action=Action.accept)
+            elif random.random() > 0.5:
                 self.schedule.append((sender, job, JobStatus.created))
                 self.optimize()
+                self.schedule.pop()
                 return dict(action=Action.accept)
             else:
                 return dict(action=Action.decline)

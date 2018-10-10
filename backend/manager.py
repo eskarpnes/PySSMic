@@ -1,7 +1,7 @@
-from src.backend.consumer import Consumer
-from src.backend.producer import Producer
+from .consumer import Consumer
+from .producer import Producer
 import logging
-from src.util.message_utils import Action
+from util.message_utils import Action
 
 
 class Manager:
@@ -41,17 +41,13 @@ class Manager:
     # Register a new consumer
     def register_consumer(self, consumer):
         self.consumers.append(consumer)
+        consumer._actor.request_producer()
 
     # Input API    
     # A job contains an earliest start time, latest start time and load profile
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
-    def new_job(self, load_profile, est, lst):
-        job = {
-            'est': est,
-            'lst': lst,
-            'load': load_profile
-        }
+    def new_job(self, job):
         consumer_ref = Consumer.start(self.producers, job)
         self.register_consumer(consumer_ref)
 
@@ -62,6 +58,7 @@ class Manager:
     # PV panels will produce
     def new_producer(self, power_rating):
         producer_ref = Producer.start(power_rating)
+        self.register_producer(producer_ref)
         self.broadcast_new_producer(producer_ref)
 
     # Input API

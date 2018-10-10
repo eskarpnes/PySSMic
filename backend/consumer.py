@@ -1,9 +1,11 @@
 from pykka import ThreadingActor, Timeout
 import logging
-from src.util.message_utils import Action
+from util.message_utils import Action
+import util.conf_logger
 
 
 class Consumer(ThreadingActor):
+
     def __init__(self, producers, job):
         super(Consumer, self).__init__()
         self.producers = producers
@@ -17,8 +19,10 @@ class Consumer(ThreadingActor):
             answer = receiver.ask(message, timeout=60)
             action = answer['action']
             if action == Action.decline:
+                self.logger.info('Job declined %s', self.job)
                 self.request_producer()
             else:
+                self.logger.info('Job accepted %s', self.job)
                 self.register_contract()
         except Timeout:
             self.request_producer()
@@ -35,17 +39,17 @@ class Consumer(ThreadingActor):
     # Function for selecting a producer for a job
     def request_producer(self):
         # TODO Implement priority queue
-        producer = self.producers.pop()
+        producer = self.producers[0]
         message = {
             'sender': self.actor_ref,
             'action': Action.request,
-            'job': self.job.to_message()
+            'job': self.job
         }
         self.send(message, producer)
 
     def register_contract(self):
         # TODO Design contract
-        pass
+        self.stop()
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender
