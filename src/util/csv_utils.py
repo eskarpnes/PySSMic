@@ -1,5 +1,6 @@
 import csv
 import os
+from definitions import ROOT_DIR
 
 from src.backend.consumerEvent import ConsumerEvent
 from src.backend.producerEvent import ProducerEvent
@@ -55,10 +56,9 @@ def test_list(csv_list):
 
 # NOTE: - Load and Prediction objects currently derive csvName (And thereby Ids) from the FILE PATH parameter.
 #       - ProducerEvent Ids can be derived from csvName. Is id parameter redundant? / csvName always same format?
-#       - Proper relative file path has yet to be implemented. Haven't figured out a way.
 
 # Testing:
-# test_list(list_consumer_event_objects("D:\\Users\\Nikolai\\Documents\\GitHub\\PySSMic\\input\\consumer_event.csv"))
-# test_list(list_producer_event_objects("D:\\Users\\Nikolai\\Documents\\GitHub\\PySSMic\\input\\producer_event.csv"))
-# test_list(list_load_objects("D:\\Users\\Nikolai\\Documents\\GitHub\\PySSMic\\input\\loads\\96.csv"))
-# test_list(list_prediction_objects("D:\\Users\\Nikolai\\Documents\\GitHub\\PySSMic\\input\\predictions\\57_220_1.csv"))
+# test_list(list_consumer_event_objects(os.path.join(ROOT_DIR, "input", "test", "consumer_event.csv")))
+# test_list(list_producer_event_objects(os.path.join(ROOT_DIR, "input", "test", "producer_event.csv")))
+# test_list(list_load_objects(os.path.join(ROOT_DIR, "input", "test", "loads", "96.csv")))
+# test_list(list_prediction_objects(os.path.join(ROOT_DIR, "input", "test", "predictions", "57_220_1.csv")))
