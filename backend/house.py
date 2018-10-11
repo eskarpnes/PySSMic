@@ -1,5 +1,7 @@
-from .user import User
-from .device import Device
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+from backend.user import User
 
 
 class House():
@@ -13,10 +15,8 @@ class House():
     def add_user(self, user):
         self.users.append(user)
 
-    def remove_user(self, user_id):
-        for user in self.users:
-            if (user.get_id() == user_id):
-                self.users.remove(user)
+    def remove_user(self, user):
+        self.users.remove(user)
 
     def get_user(self, user_id):
         for user in self.users:

@@ -1,4 +1,8 @@
-from .device import Device
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+
+from backend.device import Device
 
 
 class User():
@@ -12,7 +16,5 @@ class User():
     def add_device(self, device):
         self.devices.append(device)
 
-    def remove_device(self, deviceId):
-        for device in self.devices:
-            if(device.id == deviceId):
-                self.devices.remove(device)
+    def remove_device(self, device):
+        self.devices.remove(device)
