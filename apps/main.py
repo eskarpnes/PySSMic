@@ -10,7 +10,5 @@ from dash.dependencies import Input, Output
 # TODO: Specify which optimization algorithm to be used in simulation
 
 layout = html.Div(children=[
-    html.H1(children="CoSSMic Simulator"),
 
-    dcc.Link('Go to Create Simulation', href='/apps/create_sim')
 ])

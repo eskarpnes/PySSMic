@@ -1,0 +1,11 @@
+.header > h1 {
+  text-align: center;
+}
+
+.footer {
+  background-color: lightblue;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
