@@ -18,7 +18,7 @@ class Neighbourhood():
     def get_houses(self):
         return self.houses
 
-    def get_house(house_id):
+    def get_house(self, house_id):
         for house in self.houses:
             if(house.get_id() == house_id):
                 return house
