@@ -6,6 +6,9 @@ class User():
         self.userId = userId
         self.devices = []
 
+    def get_id(self):
+        return self.userId
+
     def add_device(self, device):
         self.devices.append(device)
 
