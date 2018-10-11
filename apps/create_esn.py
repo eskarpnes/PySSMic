@@ -44,7 +44,7 @@ def newHousePopup():
                                     },
                                 ),
                             ],
-                            className="row",
+                            className="popup",
                             style={"borderBottom": "1px solid #C8D4E3"},
                         ),
                         # form
@@ -75,11 +75,11 @@ def newHousePopup():
                             className="button button--primary add"
                         ),
                     ],
-                    className="popup-content",
+                    className="modal-content",
                     style={"textAlign": "center"},
                 )
             ],
-            className="popup",
+            className="modal",
         ),
         id="leads_popup",
         style={"display": "none"},
