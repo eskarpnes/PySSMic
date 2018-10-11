@@ -11,9 +11,6 @@ from app import app
 # TODO: Specify which optimization algorithm to be used in simulation
 
 layout = html.Div(children=[
-    html.H1(children="CoSSMic Simulator"),
-    dcc.Link('Go back to home home', href='/'),
-
     html.Div(className="content", children=[
 
 

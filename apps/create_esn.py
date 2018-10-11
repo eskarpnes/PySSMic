@@ -14,7 +14,6 @@ from app import app
 
 layout = html.Div([
     html.H2("Create a new neighbourhood"),
-    dcc.Link('Go back to Create Simulation', href='/apps/create_sim'),
     html.Button("Add house"),
     html.Button("Add user in house"),
     html.Button("Add a userdevice"),
