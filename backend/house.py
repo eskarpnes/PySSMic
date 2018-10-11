@@ -7,6 +7,9 @@ class House():
         self.id = house_id
         self.users = []
 
+    def get_id(self):
+        return self.id
+
     def add_user(self, user):
         self.users.append(user)
 
