@@ -1,7 +1,9 @@
 import logging
+from collections import defaultdict
 from itertools import chain
 import numpy as np
 import pandas as pd
+from random import randint
 
 from scipy import optimize, math
 
@@ -15,28 +17,33 @@ class Optimizer:
 
     # The main function that optimizes the schedule. How the schedule and job should be implemented is up for discussion
     def optimize(self, schedule):
-        objective = np.zeros(len(schedule))
-        return optimize.minimize(self.to_minimize, objective, tol=2500.0, method="powell")
+        objective = [randint(x[1].est, x[1].lst) for x in self.producer.schedule]
+        bounds = list(map(lambda x: (x[1].est, x[1].lst), schedule))
+        return optimize.minimize(self.to_minimize, objective, bounds=bounds, tol=1.0, method="L-BFGS-B")
 
     def to_minimize(self, schedule):
-        indices = list(set(chain.from_iterable(
-            map(lambda x: self.producer.schedule[x][1].load_profile.index.values.tolist(), range(0, len(schedule))))))
+        indices = list(map(lambda x: int(max(self.producer.schedule[x][1].load_profile.index.values.tolist()) + schedule[x]), range(0, len(schedule))))
         indices.sort()
 
+        consumed_t = defaultdict(float)
+        produced_t = defaultdict(float)
         consumed = 0
         produced = 0
         penalty = 0
-        for t in indices:
-            consumed_t = 0
+        for t in range(max(indices)):
             for i, j in enumerate(schedule):
-                if j > 0.0:
-                    consumed_t += load_profile_utils.power(self.producer.schedule[i][1].load_profile, t)
-            produced_t = load_profile_utils.power(self.producer.prediction, t)
+                c = load_profile_utils.power(self.producer.schedule[i][1].load_profile, t)
+                consumed_t[t + j] += c
+                consumed += c
+            p = load_profile_utils.power(self.producer.prediction, t)
 
-            produced += produced_t
-            consumed += consumed_t
-            if produced_t - consumed_t < 0:
-                penalty += 1
+            produced_t[t] += produced
+            produced += p
 
-        score = math.fabs(produced - consumed) + penalty * 0
+
+        for t, c in consumed_t.items():
+            p = produced_t[t]
+            penalty += p - c
+
+        score = math.fabs(produced - consumed) + math.fabs(penalty * 1)
         return score

@@ -12,13 +12,14 @@ from backend.optimizer import Optimizer
 
 
 class Producer(ThreadingActor):
-    def __init__(self, power_rating):
+    def __init__(self, power_rating, manager):
         super(Producer, self).__init__()
         self.power_rating = power_rating
         self.optimizer = Optimizer(self)
         self.schedule = []
         self.prediction = pd.Series(data=[0.0, 10.0], index=[0.0, 7200.0])
         self.logger = logging.getLogger("src.Producer")
+        self.manager = manager
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
@@ -55,7 +56,17 @@ class Producer(ThreadingActor):
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
         self.logger.info("Running optimizer ...")
-        self.optimizer.optimize(self.schedule)
+        result = self.optimizer.optimize(self.schedule)
+
+        #for i, s in enumerate(self.schedule):
+        #    sender, job, status = s
+        #    accepted = result[i]
+
+   #         if accepted:
+
+
+
+
 
         # Notify cancelled consumers
         [self.cancel(s[0]) for s in self.filter_schedule(JobStatus.cancelled)]
