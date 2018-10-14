@@ -43,6 +43,9 @@ class Manager:
         self.consumers.append(consumer)
         consumer._actor.request_producer()
 
+    def register_contract(self, contract):
+        self.clock.registrer_contract(contract)
+
     # Input API    
     # A job contains an earliest start time, latest start time and load profile
     # (seconds elapsed and power used)
@@ -57,7 +60,7 @@ class Manager:
     # Weather predictions will give a float that says how many percent of the maximum the
     # PV panels will produce
     def new_producer(self, power_rating):
-        producer_ref = Producer.start(power_rating)
+        producer_ref = Producer.start(power_rating, self)
         self.register_producer(producer_ref)
         self.broadcast_new_producer(producer_ref)
 
