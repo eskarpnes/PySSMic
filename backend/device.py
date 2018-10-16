@@ -5,3 +5,4 @@ class Device():
         self.name = name
         self.template = template
         self.type = devType
+        self.events = []
