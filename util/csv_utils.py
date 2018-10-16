@@ -1,11 +1,9 @@
 import csv
-import os
-from definitions import ROOT_DIR
 
-from src.backend.consumerEvent import ConsumerEvent
-from src.backend.producerEvent import ProducerEvent
-from src.backend.load import Load
-from src.backend.prediction import Prediction
+from backend.consumerEvent import ConsumerEvent
+from backend.producerEvent import ProducerEvent
+from backend.load import Load
+from backend.prediction import Prediction
 
 
 # Functions to convert a csv file into a list of objects of their respective type.

@@ -1,5 +1,8 @@
-from src.backend.manager import Manager
-from src.backend.producer import Producer
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+from backend.manager import Manager
+from backend.producer import Producer
 
 
 def test_register_producer():
