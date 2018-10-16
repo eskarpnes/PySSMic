@@ -11,6 +11,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
+from backend.neighbourhood import Neighbourhood
+from backend.house import House
+from backend.device import Device
+from backend.user import User
 
 from app import app
 
@@ -53,7 +60,7 @@ def newHousePopup():
                                 html.P(
                                     [
                                         "Here you can add settins for the popup. See link commented in code",
-                                        #Ex: https://github.com/plotly/dash-salesforce-crm/blob/master/apps/leads.py
+                                        # Ex: https://github.com/plotly/dash-salesforce-crm/blob/master/apps/leads.py
 
                                     ],
                                     style={
@@ -67,7 +74,7 @@ def newHousePopup():
                             className="row",
                             style={"padding": "2% 8%"},
                         ),
-                        #create house button
+                        # create house button
                         html.Span(
                             "Submit",
                             id="submit_new_lead",
@@ -142,6 +149,21 @@ def parse_contents(contents):
 # Creates a dataFrame of the root
 
 
+def create_neighborhood_object(treeroot):
+    n = Neighbourhood(treeroot.get("id"))
+    for house in treeroot:
+        h = House(house.get("id"))
+        for user in house:
+            u = User(user.get("id"))
+            for device in user:
+                d = Device(int(device.find("id").text), device.find("name").text, int(
+                    device.find("template").text), device.find("type").text)
+                u.devices.append(d)
+            h.users.append(u)
+        n.houses.append(h)
+    return n
+
+
 def eltreeToDataframe(treeRoot):
     df = pd.DataFrame(columns=[
         "houseId", "deviceId", "UserId", "DeviceName", "DevTemp", "DevType"])
@@ -166,40 +188,11 @@ def removeDevice(data, deviceId):
     df = df.drop(index=deviceId)
     return df
 
-
-# Creates a simple html output for the neighborhood input (XML file)
-
-
-def create_neighborhood_html(neighborhood):
-    htmlString = "<div>"
-    htmlString += "Nabolag:"
-
-    houses = []
-    for house in neighborhood:
-        htmlString += "<div>"
-        htmlString += "Hus id: " + str(house.get("id"))
-        houses.append(house)
-        for user in house:
-            htmlString += "<div>"
-            htmlString += "user id: " + str(user.get("id")) + "<ul>"
-            for device in user:
-                htmlString += "<li> device id: " + \
-                    str(device.find("id").text) + \
-                    " Name: " + str(device.find("name").text) + \
-                    " Template: " + str(device.find("template").text) + \
-                    " Type: " + str(device.find("type").text) + \
-                    "</li>"  # closes device listelement
-            htmlString += "</ul> </div> <br />"  # closes list and user element
-        htmlString += "</div>  <br />"  # closes house div
-    htmlString += "</div>"  # closes neighborhood
-    print(houses)
-    return htmlString
-
-
 @app.callback(Output('datatable', 'rows'), [Input('upload-data', 'contents')])
 def update_table(contents):
     root = parse_contents(contents)
     df = eltreeToDataframe(root)
+    create_neighborhood_object(root)
     return df.to_dict('records')
 
 
@@ -223,6 +216,8 @@ def update_output(contents):
 @app.callback(Output('output', 'children'),
               [Input('btnAddHouse', 'contents')])
 def update_neigborhood(neighborhood):
+    #n = create_neighborhood_object(neighborhood)
+    print(neighbourhood)
     htmlstr = create_neighborhood_html(neighborhood)
     return html.Div([
         html.Iframe(
@@ -234,6 +229,8 @@ def update_neigborhood(neighborhood):
     ])
 
 # hide/show popup
+
+
 @app.callback(Output("leads_popup", "style"), [Input("btnAddHouse", "n_clicks")])
 def display_leads_modal_callback(n):
     if n > 0:
@@ -241,9 +238,12 @@ def display_leads_modal_callback(n):
     return {"display": "none"}
 
 # reset to 0 add button n_clicks property
+
+
 @app.callback(
     Output("btnAddHouse", "n_clicks"),
-    [Input("leads_modal_close", "n_clicks"), Input("submit_new_lead", "n_clicks")],
+    [Input("leads_modal_close", "n_clicks"),
+     Input("submit_new_lead", "n_clicks")],
 )
 def close_modal_callback(n, n2):
     return 0
