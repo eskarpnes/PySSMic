@@ -12,3 +12,8 @@ class Device():
         self.template = template
         self.type = devType
         self.events = []
+
+    def add_event(self, event):
+        if (isinstance(event, ConsumerEvent) and self.type == "consumer") or (isinstance(event, ProducerEvent) and self.type == "producer"):
+            if(event.deviceId == self.id):
+                self.events.append(event)
