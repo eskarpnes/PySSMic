@@ -188,29 +188,13 @@ def removeDevice(data, deviceId):
     df = df.drop(index=deviceId)
     return df
 
+
 @app.callback(Output('datatable', 'rows'), [Input('upload-data', 'contents')])
 def update_table(contents):
     root = parse_contents(contents)
     df = eltreeToDataframe(root)
     create_neighborhood_object(root)
     return df.to_dict('records')
-
-
-"""
-@app.callback(Output('output', 'children'),
-              [Input('upload-data', 'contents')])
-def update_output(contents):
-    root = parse_contents(contents)
-    htmlstr = create_neighborhood_html(root)
-    return html.Div([
-        html.Iframe(
-            sandbox='',
-            height=500,
-            width=600,
-            srcDoc=htmlstr
-        )
-    ])
-"""
 
 
 @app.callback(Output('output', 'children'),
