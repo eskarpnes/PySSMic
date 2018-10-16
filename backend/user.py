@@ -7,11 +7,11 @@ from backend.device import Device
 
 class User():
     def __init__(self, userId):
-        self.userId = userId
+        self.id = userId
         self.devices = []
 
     def get_id(self):
-        return self.userId
+        return self.id
 
     def add_device(self, device):
         self.devices.append(device)
