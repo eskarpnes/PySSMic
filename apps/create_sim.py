@@ -56,7 +56,9 @@ layout = html.Div(children=[
                 )
             ]),
 
-            html.Button("SIMULATE", className="btnSimulate")
+            html.A(html.Button('Start simulation', className='btnSimulate'),
+                   href='/apps/simulate_esn')
+
 
         ])
     ])
