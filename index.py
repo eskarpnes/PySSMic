@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import dash_table_experiments as dt
 
 from app import app
-from apps import create_sim, create_esn, main, base
+from apps import create_sim, create_esn, main, simulate_esn, base
 
 
 app.layout = html.Div([
@@ -24,6 +24,8 @@ def display_page(pathname):
         return base.header, create_sim.layout, base.footer
     elif pathname == '/apps/create_esn':
         return base.header, create_esn.layout, base.footer
+    elif pathname == '/apps/simulate_esn':
+        return base.header, simulate_esn.layout, base.footer
     else:
         return '404'
 
