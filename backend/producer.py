@@ -33,8 +33,8 @@ class Producer(ThreadingActor):
     def receive(self, message, sender):
         action = message['action']
 
-        if action == Action.prediction:
-            self.update_power_profile()
+        if action == Action.broadcast:
+            self.update_power_profile(message["prediction"])
             self.optimize()
 
         elif action == Action.request:
@@ -81,8 +81,8 @@ class Producer(ThreadingActor):
 
     # Function for updating the power profile of a producer when it has received
     # a PREDICTION and been optimized based on this
-    def update_power_profile(self):
-        pass
+    def update_power_profile(self, prediction):
+        self.prediction = prediction
 
     def create_contract(self, consumer, job):
         id = random.randint  # TODO: create cool id
