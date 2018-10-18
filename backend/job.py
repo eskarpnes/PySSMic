@@ -12,7 +12,8 @@ class JobStatus(Enum):
 
 class Job:
 
-    def __init__(self, est, lst, load_profile):
+    def __init__(self, id, est, lst, load_profile):
+        self.id = id
         self.est = est
         self.lst = lst
         self.load_profile = load_profile
