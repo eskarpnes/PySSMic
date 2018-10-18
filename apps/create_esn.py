@@ -38,7 +38,7 @@ def addHouse(house):
                      ])
 
 
-def newHousePopup():
+def newHouseModal():
     return html.Div(
         html.Div(
             [
@@ -104,7 +104,7 @@ def newHousePopup():
             ],
             className="modal",
         ),
-        id="leads_popup",
+        id="house_modal",
         style={"display": "none"},
     )
 
@@ -136,7 +136,7 @@ layout = html.Div([
     html.Button("Add house", id='btnAddHouse'),
     html.Br(),
     html.Div(id='output'),
-    newHousePopup()
+    newHouseModal()
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -174,7 +174,7 @@ def eltreeToDataframe(treeRoot):
             for device in user:
                 df = df.append({"houseId": (house.get("id")), "deviceId": (device.find("id").text), "UserId": (user.get("id")), "DeviceName": (device.find("name").text), "DevTemp": (device.find("template").text), "DevType": (device.find("type").text)},
                                ignore_index=True)
-    #df.set_index("deviceId", inplace=True)
+    # df.set_index("deviceId", inplace=True)
     return df
 
 
@@ -196,17 +196,13 @@ def create_house(contents):
     root = parse_contents(contents)
     nei = create_neighborhood_object(root)
     nabolag = create_neighborhood_output(nei)
-    print(nabolag)
-    htmlOut = [html.Div("Hello"), html.Div("World")]
-    print(htmlOut)
-
     return html.Div(children=nabolag)
 
 
 # hide/show popup
 
 
-@app.callback(Output("leads_popup", "style"), [Input("btnAddHouse", "n_clicks")])
+@app.callback(Output("house_modal", "style"), [Input("btnAddHouse", "n_clicks")])
 def display_leads_modal_callback(n):
     if n > 0:
         return {"display": "block"}
