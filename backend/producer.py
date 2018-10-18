@@ -18,7 +18,7 @@ class Producer(ThreadingActor):
         self.id = id
         self.optimizer = Optimizer(self)
         self.schedule = []
-        self.prediction = pd.Series()
+        self.prediction = None
         self.logger = logging.getLogger("src.Producer")
         self.manager = manager
         self.logger.info("New producer with made with id: " + str(self.id))
@@ -36,7 +36,7 @@ class Producer(ThreadingActor):
 
         if action == Action.prediction:
             self.update_power_profile(message["prediction"])
-            self.optimize()
+            # self.optimize()
 
         elif action == Action.request:
             job = message['job']
@@ -46,7 +46,7 @@ class Producer(ThreadingActor):
                 return dict(action=Action.accept)
             elif random.random() > 0.5:
                 self.schedule.append((sender, job, JobStatus.created))
-                self.optimize()
+                # self.optimize()
                 self.schedule.pop()
                 return dict(action=Action.accept)
             else:
@@ -87,7 +87,12 @@ class Producer(ThreadingActor):
     # Function for updating the power profile of a producer when it has received
     # a PREDICTION and been optimized based on this
     def update_power_profile(self, prediction):
-        self.prediction = prediction
+        if self.prediction is None:
+            self.prediction = prediction
+        else:
+            offset = self.prediction[int(prediction.first_valid_index())-3600]
+            new_prediction = prediction+offset
+            self.prediction = new_prediction.combine_first(self.prediction)
 
     def create_contract(self, consumer, job):
         id = random.randint  # TODO: create cool id
