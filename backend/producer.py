@@ -9,6 +9,7 @@ import random
 import pandas as pd
 from util import message_utils
 from backend.optimizer import Optimizer
+import time
 
 
 class Producer(ThreadingActor):
@@ -17,7 +18,7 @@ class Producer(ThreadingActor):
         self.power_rating = power_rating
         self.optimizer = Optimizer(self)
         self.schedule = []
-        self.prediction = pd.Series(data=[0.0, 10.0], index=[0.0, 7200.0])
+        self.prediction = pd.Series()
         self.logger = logging.getLogger("src.Producer")
         self.manager = manager
 
@@ -58,15 +59,15 @@ class Producer(ThreadingActor):
         self.logger.info("Running optimizer ...")
         result = self.optimizer.optimize(self.schedule)
 
-        #for i, s in enumerate(self.schedule):
-        #    sender, job, status = s
-        #    accepted = result[i]
+        for i, s in enumerate(self.schedule):
+            sender, job, status = s
+            accepted = result[i] > 0
 
-   #         if accepted:
-
-
-
-
+            if accepted and status == JobStatus.created:
+                contract = self.create_contract(sender, job)
+                self.manager.register_contract(contract)
+            elif not accepted:
+                self.cancel(sender)
 
         # Notify cancelled consumers
         [self.cancel(s[0]) for s in self.filter_schedule(JobStatus.cancelled)]
@@ -82,6 +83,17 @@ class Producer(ThreadingActor):
     # a PREDICTION and been optimized based on this
     def update_power_profile(self):
         pass
+
+    def create_contract(self, consumer, job):
+        id = random.randint  # TODO: create cool id
+        time = job.scheduled_time
+        time_of_agreement = int(round(time.time() * 1000))
+        load_profile = job.load_profile
+        consumer_id = consumer.__hash__()
+        producer_id = self.__hash__()
+
+        return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
+                    consumer_id=consumer_id, producer_id=producer_id)
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender
