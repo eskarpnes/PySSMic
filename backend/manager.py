@@ -7,7 +7,7 @@ from util.message_utils import Action
 class Manager:
     def __init__(self, clock=None):
         self.consumers = []
-        self.producers = []
+        self.producers = {}
         self.logger = logging.getLogger("src.Manager")
 
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
@@ -15,13 +15,12 @@ class Manager:
         self.clock = clock
 
     # Send out a new weather prediction
-    def broadcast_new_prediction(self, prediction):
-        for producer in self.producers:
-            producer.tell({
-                'sender': '',
-                'action': Action.broadcast,
-                'prediction': prediction
-            })
+    def send_new_prediction(self, prediction, producer):
+        producer.tell({
+            'sender': '',
+            'action': Action.prediction,
+            'prediction': prediction
+        })
 
     # Broadcasts new producers so existing consumers can use them
     def broadcast_new_producer(self, producer):
@@ -33,9 +32,8 @@ class Manager:
             })
 
     # Register a new producer. Every consumer should be notified about this producer
-    def register_producer(self, producer):
-        self.logger.debug("Registering new producer %s", producer)
-        self.producers.append(producer)
+    def register_producer(self, producer, id):
+        self.producers[id] = producer
         self.broadcast_new_producer(producer)
 
     # Register a new consumer
@@ -46,24 +44,28 @@ class Manager:
     def register_contract(self, contract):
         self.clock.registrer_contract(contract)
 
+    def terminate_producers(self):
+        for producer in self.producers.values():
+            producer.stop()
+        self.producers = {}
+
     # Input API    
     # A job contains an earliest start time, latest start time and load profile
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
     def new_job(self, job):
-        consumer_ref = Consumer.start(self.producers, job, self.clock)
+        consumer_ref = Consumer.start(list(self.producers.values()), job, self.clock)
         self.register_consumer(consumer_ref)
 
     # Input API
-    # Power rating is the maximum power the PV panels can output given perfect conditions
-    # Given in watts
-    # Weather predictions will give a float that says how many percent of the maximum the
-    # PV panels will produce
-    def new_producer(self):
-        producer_ref = Producer.start(self)
-        self.register_producer(producer_ref)
-        self.broadcast_new_producer(producer_ref)
+    def new_producer(self, producer_id):
+        producer_ref = Producer.start(producer_id, self)
+        self.register_producer(producer_ref, producer_id)
 
     # Input API
-    def new_prediction(self, prediction):
-        self.broadcast_new_prediction(prediction)
+    def new_prediction(self, prediction_event):
+        producer_id = prediction_event["id"]
+        if producer_id not in self.producers.keys():
+            self.new_producer(producer_id)
+        producer = self.producers[producer_id]
+        self.send_new_prediction(prediction_event["prediction"], producer)
