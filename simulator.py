@@ -19,9 +19,9 @@ class Simulator:
         self.end_time = config["length"] if "length" in config else 86400
 
         # The manager that is simulated. Every new load and prediction should be sent to it.
-        self.manager = Manager(self.neighbourhood)
+        self.manager = Manager(self)
 
-        self.manager.new_producer(1.0)
+        self.manager.new_producer()
 
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}

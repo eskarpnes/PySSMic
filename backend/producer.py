@@ -9,16 +9,17 @@ import random
 import pandas as pd
 from util import message_utils
 from backend.optimizer import Optimizer
+import time
 
 
 class Producer(ThreadingActor):
-    def __init__(self, power_rating):
+    def __init__(self, manager):
         super(Producer, self).__init__()
-        self.power_rating = power_rating
         self.optimizer = Optimizer(self)
         self.schedule = []
-        self.prediction = pd.Series(data=[0.0, 10.0], index=[0.0, 7200.0])
+        self.prediction = pd.Series()
         self.logger = logging.getLogger("src.Producer")
+        self.manager = manager
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
@@ -31,8 +32,8 @@ class Producer(ThreadingActor):
     def receive(self, message, sender):
         action = message['action']
 
-        if action == Action.prediction:
-            self.update_power_profile()
+        if action == Action.broadcast:
+            self.update_power_profile(message["prediction"])
             self.optimize()
 
         elif action == Action.request:
@@ -55,7 +56,21 @@ class Producer(ThreadingActor):
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
         self.logger.info("Running optimizer ...")
-        self.optimizer.optimize(self.schedule)
+        result = self.optimizer.optimize(self.schedule)
+
+        for i, s in enumerate(self.schedule):
+            sender, job, status = s
+
+            if len(self.schedule) > 1:
+                accepted = result.x[i] > 0
+            else:
+                accepted = result.x > 0
+
+            if accepted and status == JobStatus.created:
+                contract = self.create_contract(sender, job)
+                self.manager.register_contract(contract)
+            elif not accepted:
+                self.cancel(sender)
 
         # Notify cancelled consumers
         [self.cancel(s[0]) for s in self.filter_schedule(JobStatus.cancelled)]
@@ -69,8 +84,19 @@ class Producer(ThreadingActor):
 
     # Function for updating the power profile of a producer when it has received
     # a PREDICTION and been optimized based on this
-    def update_power_profile(self):
-        pass
+    def update_power_profile(self, prediction):
+        self.prediction = prediction
+
+    def create_contract(self, consumer, job):
+        id = random.randint  # TODO: create cool id
+        time = job.scheduled_time
+        time_of_agreement = int(round(time.time() * 1000))
+        load_profile = job.load_profile
+        consumer_id = consumer.__hash__()
+        producer_id = self.__hash__()
+
+        return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
+                    consumer_id=consumer_id, producer_id=producer_id)
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender

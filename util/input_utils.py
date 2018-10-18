@@ -46,8 +46,8 @@ def prediction_profile_from_csv(prediction_csv):
     for line in split_by_new_line:
         if line is not "":
             split_line = line.split(" ")
-            timestamps.append(split_line[0])
-            values.append(split_line[1])
+            timestamps.append(int(split_line[0]))
+            values.append(float(split_line[1]))
     return pd.Series(data=values, index=timestamps)
 
 

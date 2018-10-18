@@ -1,7 +1,9 @@
 import logging
+from collections import defaultdict
 from itertools import chain
 import numpy as np
 import pandas as pd
+from random import randint
 
 from scipy import optimize, math
 
@@ -15,8 +17,9 @@ class Optimizer:
 
     # The main function that optimizes the schedule. How the schedule and job should be implemented is up for discussion
     def optimize(self, schedule):
-        objective = np.zeros(len(schedule))
-        return optimize.minimize(self.to_minimize, objective, tol=2500.0, method="powell")
+        objective = [0 for x in self.producer.schedule]
+        # bounds = list(map(lambda x: (x[1].est, x[1].lst), schedule))
+        return optimize.minimize(self.to_minimize, objective, tol=1.0, method="powell")
 
     def to_minimize(self, schedule):
         indices = list(set(chain.from_iterable(
