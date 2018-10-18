@@ -1,3 +1,5 @@
+import simpy
+
 from .consumer import Consumer
 from .producer import Producer
 import logging
@@ -42,7 +44,7 @@ class Manager:
         consumer._actor.request_producer()
 
     def register_contract(self, contract):
-        self.clock.registrer_contract(contract)
+        pass
 
     def terminate_producers(self):
         for producer in self.producers.values():
