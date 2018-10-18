@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 import pandas as pd
 
@@ -17,6 +18,7 @@ class Job:
         self.est = est
         self.lst = lst
         self.load_profile = load_profile
+        self.scheduled_time = random.randint(est, lst)
 
     def __eq__(self, other):
         return self.est == other.est and \
@@ -36,16 +38,4 @@ class Job:
     def normalize_time(self, offset):
         self.est = self.est-offset
         self.lst = self.lst-offset
-
-    def power(self, t):
-        if t in self.load_profile.index.values:
-            return self.load_profile[t]
-        elif t < 0:
-            return 0
-        elif t > max(self.load_profile.index.values):
-            return self.load_profile[self.load_profile.index[-1]]
-        else:
-            appended = self.load_profile.append(pd.Series(data=[float('nan')], index=[t])).sort_index()
-            interpolated = appended.interpolate(method='barycentric')
-            return interpolated[t]
-
+        self.scheduled_time = self.scheduled_time-offset
