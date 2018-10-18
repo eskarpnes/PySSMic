@@ -23,10 +23,10 @@ class Consumer(ThreadingActor):
             action = answer['action']
             if action == Action.decline:
                 self.logger.info('Job declined. Time = ' + str(self.clock.now))
+                self.producers.pop()
                 self.request_producer()
             else:
                 self.logger.info('Job accepted. Time = ' + str(self.clock.now))
-                self.register_contract()
         except Timeout:
             self.request_producer()
 
@@ -42,6 +42,10 @@ class Consumer(ThreadingActor):
     # Function for selecting a producer for a job
     def request_producer(self):
         # TODO Implement priority queue
+        if len(self.producers) <= 0:
+            self.logger.info("No producer remaining. Buying power from the grid.")
+            self.stop()
+            return
         producer = self.producers[0]
         message = {
             'sender': self.actor_ref,
@@ -49,10 +53,6 @@ class Consumer(ThreadingActor):
             'job': self.job
         }
         self.send(message, producer)
-
-    def register_contract(self):
-        # TODO Design contract
-        self.stop()
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender

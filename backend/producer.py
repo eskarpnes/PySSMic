@@ -4,10 +4,8 @@ from pykka import ThreadingActor
 import logging
 from backend.job import JobStatus
 from util.message_utils import Action
-import util.conf_logger
 import random
 import pandas as pd
-from util import message_utils
 from backend.optimizer import Optimizer
 import time
 
@@ -44,38 +42,32 @@ class Producer(ThreadingActor):
             if 'pytest' in sys.modules:
                 self.schedule.append((sender, job, JobStatus.created))
                 return dict(action=Action.accept)
-            elif random.random() > 0.5:
-                self.schedule.append((sender, job, JobStatus.created))
-                # self.optimize()
-                self.schedule.pop()
-                return dict(action=Action.accept)
             else:
-                return dict(action=Action.decline)
-
-        elif action == Action.cancel:
-            pass
+                self.schedule.append((sender, job, JobStatus.created))
+                result = self.optimize()
+                if result > 0:
+                    contract = self.create_contract(sender._actor, job)
+                    self.manager.register_contract(contract)
+                    return dict(action=Action.accept)
+                else:
+                    return dict(action=Action.decline)
 
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
         self.logger.info("Running optimizer ... Time = " + str(self.manager.clock.now))
-        result = self.optimizer.optimize(self.schedule)
+        # result = self.optimizer.optimize(self.schedule) TODO: Use this
+        result = [1 for x in range(len(self.schedule))]
 
         for i, s in enumerate(self.schedule):
             sender, job, status = s
 
-            if len(self.schedule) > 1:
-                accepted = result.x[i] > 0
-            else:
-                accepted = result.x > 0
-
-            if accepted and status == JobStatus.created:
-                contract = self.create_contract(sender, job)
-                self.manager.register_contract(contract)
-            elif not accepted:
+            if result[-1] < 0:
                 self.cancel(sender)
 
-        # Notify cancelled consumers
-        [self.cancel(s[0]) for s in self.filter_schedule(JobStatus.cancelled)]
+        if random.random() < 0.5:
+            return 1.0
+        else:
+            return -1.0
 
     def cancel(self, consumer):
         message = dict(action=Action.cancel)
@@ -97,10 +89,10 @@ class Producer(ThreadingActor):
     def create_contract(self, consumer, job):
         id = random.randint  # TODO: create cool id
         time = job.scheduled_time
-        time_of_agreement = int(round(time.time() * 1000))
+        time_of_agreement = self.manager.clock.now()
         load_profile = job.load_profile
-        consumer_id = consumer.__hash__()
-        producer_id = self.__hash__()
+        consumer_id = consumer.job.id
+        producer_id = self.id
 
         return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
                     consumer_id=consumer_id, producer_id=producer_id)
