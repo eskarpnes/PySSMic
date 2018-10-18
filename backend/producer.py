@@ -13,13 +13,15 @@ import time
 
 
 class Producer(ThreadingActor):
-    def __init__(self, manager):
+    def __init__(self, id, manager):
         super(Producer, self).__init__()
+        self.id = id
         self.optimizer = Optimizer(self)
         self.schedule = []
         self.prediction = pd.Series()
         self.logger = logging.getLogger("src.Producer")
         self.manager = manager
+        self.logger.info("New producer with made with id: " + str(self.id))
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
@@ -32,7 +34,7 @@ class Producer(ThreadingActor):
     def receive(self, message, sender):
         action = message['action']
 
-        if action == Action.broadcast:
+        if action == Action.prediction:
             self.update_power_profile(message["prediction"])
             self.optimize()
 

@@ -10,8 +10,10 @@ class Consumer(ThreadingActor):
         super(Consumer, self).__init__()
         self.producers = producers
         self.job = job
+        self.id = job.id
         self.logger = logging.getLogger("src.Consumer")
         self.clock = clock
+        self.logger.info("New consumer made with id: " + str(self.id))
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):

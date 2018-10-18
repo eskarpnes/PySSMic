@@ -11,13 +11,13 @@ from backend.producer import Producer
 
 def test_optimize():
     man = Manager()
-    producer = Producer(man)
-    job0 = (None, Job(0, 0, pd.Series(index=[0, 3], data=[40, 40])), JobStatus.active)
-    job1 = (None, Job(0, 0, pd.Series(index=[2, 4], data=[30, 30])), JobStatus.active)
-    job2 = (None, Job(0, 0, pd.Series(index=[5, 6], data=[10, 10])), JobStatus.active)
-    job3 = (None, Job(0, 0, pd.Series(index=[5, 6], data=[40, 40])), JobStatus.active)
-    job4 = (None, Job(0, 0, pd.Series(index=[7, 10], data=[50, 50])), JobStatus.active)
-    job5 = (None, Job(0, 0, pd.Series(index=[7, 10], data=[40, 40])), JobStatus.active)
+    producer = Producer("id", man)
+    job0 = (None, Job("id", 0, 0, pd.Series(index=[0, 3], data=[40, 40])), JobStatus.active)
+    job1 = (None, Job("id", 0, 0, pd.Series(index=[2, 4], data=[30, 30])), JobStatus.active)
+    job2 = (None, Job("id", 0, 0, pd.Series(index=[5, 6], data=[10, 10])), JobStatus.active)
+    job3 = (None, Job("id", 0, 0, pd.Series(index=[5, 6], data=[40, 40])), JobStatus.active)
+    job4 = (None, Job("id", 0, 0, pd.Series(index=[7, 10], data=[50, 50])), JobStatus.active)
+    job5 = (None, Job("id", 0, 0, pd.Series(index=[7, 10], data=[40, 40])), JobStatus.active)
     producer.schedule = [job0, job1, job2, job3, job4, job5]
     producer.prediction = pd.Series(index=[0, 10], data=[50, 50])
 
