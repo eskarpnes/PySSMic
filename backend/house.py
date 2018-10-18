@@ -22,3 +22,6 @@ class House():
         for user in self.users:
             if (user.get_id() == user_id):
                 return user
+
+    def __str__(self):
+        return str(self.id)

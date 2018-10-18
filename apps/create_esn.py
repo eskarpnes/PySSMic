@@ -146,8 +146,6 @@ def parse_contents(contents):
             root = ET.fromstring(decoded)
             return root
 
-# Creates a dataFrame of the root
-
 
 def create_neighborhood_object(treeroot):
     n = Neighbourhood(treeroot.get("id"))
@@ -193,24 +191,10 @@ def removeDevice(data, deviceId):
 def update_table(contents):
     root = parse_contents(contents)
     df = eltreeToDataframe(root)
-    create_neighborhood_object(root)
+    nei = create_neighborhood_object(root)
+    print(nei)
     return df.to_dict('records')
 
-
-@app.callback(Output('output', 'children'),
-              [Input('btnAddHouse', 'contents')])
-def update_neigborhood(neighborhood):
-    #n = create_neighborhood_object(neighborhood)
-    print(neighbourhood)
-    htmlstr = create_neighborhood_html(neighborhood)
-    return html.Div([
-        html.Iframe(
-            sandbox='',
-            height=500,
-            width=600,
-            srcDoc=htmlstr
-        )
-    ])
 
 # hide/show popup
 

@@ -22,3 +22,6 @@ class Neighbourhood():
         for house in self.houses:
             if(house.get_id() == house_id):
                 return house
+
+    def __str__(self):
+        return str(self.id)

@@ -18,3 +18,6 @@ class User():
 
     def remove_device(self, device):
         self.devices.remove(device)
+
+    def __str__(self):
+        return str(self.id)

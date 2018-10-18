@@ -17,3 +17,6 @@ class Device():
         if (isinstance(event, ConsumerEvent) and self.type == "consumer") or (isinstance(event, ProducerEvent) and self.type == "producer"):
             if(event.deviceId == self.id):
                 self.events.append(event)
+
+    def __str__(self):
+        return str(self.name)
