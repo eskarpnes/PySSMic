@@ -59,8 +59,8 @@ class Manager:
     # Given in watts
     # Weather predictions will give a float that says how many percent of the maximum the
     # PV panels will produce
-    def new_producer(self, power_rating):
-        producer_ref = Producer.start(power_rating, self)
+    def new_producer(self):
+        producer_ref = Producer.start(self)
         self.register_producer(producer_ref)
         self.broadcast_new_producer(producer_ref)
 

@@ -13,9 +13,8 @@ import time
 
 
 class Producer(ThreadingActor):
-    def __init__(self, power_rating, manager):
+    def __init__(self, manager):
         super(Producer, self).__init__()
-        self.power_rating = power_rating
         self.optimizer = Optimizer(self)
         self.schedule = []
         self.prediction = pd.Series()
