@@ -7,6 +7,8 @@ import pandas as pd
 
 from app import app
 
+"""-------------------------ENERGY USE-------------------------"""
+
 
 def get_energy_df():
     return pd.DataFrame({'c1': [384, 827], 'c2': [848, 874]})
@@ -29,10 +31,63 @@ def energy_use(df):
     )
 
 
+""""-------------------------CONTRACT OVERVIEW-------------------------"""
+
+
 def get_contracts():
     return {"Contract ID": [1], "Contract signed (time)": [12.32], "Start of contract (time)": [14.55], "Consumer": ["c1"], "Producer": ["p1"]}
 
 
+def contract_overview(records):
+    return (
+        dt.DataTable(
+            rows=[records],
+            columns=["Contract ID", "Contract signed (time)", "Start of contract (time)", "Consumer", "Producer"],
+            row_selectable=True,
+            filterable=True,
+            sortable=True,
+            selected_row_indices=[],
+            id="datatable"
+        )
+    )
+
+
+"""-------------------------AVAILABLE VS USED ENERGY-------------------------"""
+
+
+def get_consumption():
+    return
+
+
+def energy_consumption():
+    return (
+        dcc.Graph(
+            figure=go.Figure(
+                data=[
+                    #TODO: Update to input values from simulator
+                    go.Scatter(
+                        x=[1, 2, 3, 4], y=[4, 3, 2, 1],
+                        name="Energy available"
+                    ),
+                    go.Scatter(
+                        x=[4, 3, 2, 1], y=[3, 3, 3, 3],
+                        name="Energy used"
+                    )
+                ],
+                layout=go.Layout(
+                    xaxis={
+                        'title': 'Time'
+                    },
+                    yaxis={
+                        'title': 'Energy'
+                    }
+                )
+            )
+        )
+    )
+
+
+"""-------------------------LAYOUT-------------------------"""
 layout = html.Div([
     html.Div(
         html.H2("Energy use")
@@ -44,16 +99,16 @@ layout = html.Div([
         html.H2("Contracts")
     ),
     html.Div(
-        dt.DataTable(
-            rows=[get_contracts()],
-            columns=["Contract ID", "Contract signed (time)", "Start of contract (time)", "Consumer", "Producer"],
-            row_selectable=True,
-            filterable=True,
-            sortable=True,
-            selected_row_indices=[],
-            id="datatable"
-        )
+        contract_overview(get_contracts())
+    ),
+    html.Div(
+        html.H2("Available vs Used energy")
+    ),
+    html.Div(
+        #energy_consumption()
+        #TODO: Fix that consumption don't overwrite pie chart when uncommented
     )
 ])
+
 
 
