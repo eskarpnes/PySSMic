@@ -49,10 +49,96 @@ def remote_versus_local(contracts, grid_id):
 
 #OUTPUT TABLE
 def contract_table(contracts):
-    #Write the contracts to a pandas dataframe
+    #Write the contracts to a pandas data frame
     df = pd.DataFrame.from_dict(contracts)
     #Drop the columns load_profile and time as they are not used
     df = df.drop(['load_profile', 'time'], axis=1)
     # Reorder the columns in the prefered order
     df = df[['contract_id', 'time_of_agreement', 'consumer_id','producer_id']]
     return df
+
+# ENERGY OVER TIME
+# Produce a time and cumulative energy from a series of load/producer profiles
+  def change_index_time(df_energy_list, start_times):
+    i = 0
+    energy_dict = dict()
+    for df_energy in df_energy_list:
+
+        index_list = df_energy.index.tolist()
+        step_size = int((index_list[1] - index_list[0]) / 60)
+
+        if step_size == 1:
+            new_indeces = list(range(start_times[i], len(df_energy.index) + start_times[i]))
+        else:
+            new_indeces = list(range(start_times[i], len(index_list) * step_size, step_size))
+        i += 1
+        df_energy.index = new_indeces
+
+        # Remove cumulative per load
+        load_profile_list = df_energy.tolist()
+        load_profile_flat = []
+        j = 0
+        for lp in load_profile_list:
+            if j == 0:
+                load_profile_flat.append(lp)
+            else:
+                load_profile_flat.append(lp - load_profile_list[j - 1])
+            j += 1
+
+        # Replace the new none cumulative load profiles by the old ones
+        df_energy = pd.DataFrame(data=load_profile_flat, index=new_indeces)
+
+        # the new index is the time the simulator is running
+        # use this index/time to save the energy consumed in that minute
+        for index in new_indeces:
+            if index in energy_dict:
+                energy_dict[index] += df_energy.ix[index].values[0]
+            else:
+                energy_dict[index] = df_energy.ix[index].values[0]
+
+    # Make an time and cumulative energy
+    energy_tuples = list(energy_dict.items())
+    x_energy = []
+    y_temp = []
+    for x, y in energy_tuples:
+        x_energy.append(x)
+        y_temp.append(y)
+
+    # Add cumulative for all loads bundled
+    accum = 0
+    y_energy = []
+    for y in y_temp:
+        accum += y
+        y_energy.append(accum)
+
+    return [x_energy, y_energy]
+
+
+# Energy production/usage over time
+def energy_over_time(contracts, producer_profiles):
+    # CONSUMING
+    # Load the contracts into a data frame
+    df = pd.DataFrame.from_dict(contracts)
+
+    # Change the seconds into minutes (round downwards)
+    agreement_times = df['time_of_agreement'].tolist()
+    agreement_minutes = []
+    for at in agreement_times:
+        agreement_minutes.append(int(at / 60))
+    df['time_of_agreement_minutes'] = agreement_minutes
+
+    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), agreement_minutes)
+
+    # PRODUCTION
+    x_production, y_production = change_index_time(producer_profiles, [0] * len(producer_profiles))
+
+    # # FOR MYSELF!
+    # plt.plot(x_consumption, y_consumption, label='consumption')
+    # plt.plot(x_production, y_production, label='production')
+    # plt.xlabel('Time (minutes simulation is running)')
+    # plt.ylabel('Amount of energy')
+    # plt.title('Energy production and usage over time')
+    # plt.legend()
+    # print(plt.show())
+
+    return [x_consumption, y_consumption, x_production, y_production]
