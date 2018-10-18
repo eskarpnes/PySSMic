@@ -21,6 +21,22 @@ from backend.user import User
 
 from app import app
 
+# Returns a list of divs.
+
+
+def create_neighborhood_output(nei):
+    houses = []
+    for house in nei.houses:
+        houses.append(addHouse(house))
+    return houses
+
+
+def addHouse(house):
+    return html.Div(["House",
+                     html.Span(str(house.id)),
+                     html.Button("Config house")
+                     ])
+
 
 def newHousePopup():
     return html.Div(
@@ -96,14 +112,9 @@ def newHousePopup():
 layout = html.Div([
     # hidden div to save data in
     html.Div(id="hidden-div", style={'display': 'none'}),
-    html.H2("Create a new neighbourhood"),
-    dcc.Link('Go back to Create Simulation', href='/apps/create_sim'),
-    html.Br(),
-    html.Button("Add house", id='btnAddHouse'),
-    html.Br(),
-    html.Button("Add user in house"),
-    html.Br(),
-    html.Button("Add a userdevice"),
+    html.H4("Create a new neighbourhood"),
+
+
 
     dcc.Upload(
         id="upload-data",
@@ -122,16 +133,9 @@ layout = html.Div([
             'margin': '10px'
         }
     ),
-    dt.DataTable(
-        rows=[{}],
-        row_selectable=True,
-        filterable=True,
-        sortable=True,
-        selected_row_indices=[],
-        id="datatable"
-    ),
+    html.Button("Add house", id='btnAddHouse'),
+    html.Br(),
     html.Div(id='output'),
-
     newHousePopup()
 ])
 
@@ -187,13 +191,16 @@ def removeDevice(data, deviceId):
     return df
 
 
-@app.callback(Output('datatable', 'rows'), [Input('upload-data', 'contents')])
-def update_table(contents):
+@app.callback(Output('output', 'children'), [Input('upload-data', 'contents')])
+def create_house(contents):
     root = parse_contents(contents)
-    df = eltreeToDataframe(root)
     nei = create_neighborhood_object(root)
-    print(nei)
-    return df.to_dict('records')
+    nabolag = create_neighborhood_output(nei)
+    print(nabolag)
+    htmlOut = [html.Div("Hello"), html.Div("World")]
+    print(htmlOut)
+
+    return html.Div(children=nabolag)
 
 
 # hide/show popup
