@@ -6,11 +6,12 @@ import util.conf_logger
 
 class Consumer(ThreadingActor):
 
-    def __init__(self, producers, job):
+    def __init__(self, producers, job, clock):
         super(Consumer, self).__init__()
         self.producers = producers
         self.job = job
         self.logger = logging.getLogger("src.Consumer")
+        self.clock = clock
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
@@ -19,10 +20,10 @@ class Consumer(ThreadingActor):
             answer = receiver.ask(message, timeout=60)
             action = answer['action']
             if action == Action.decline:
-                self.logger.info('Job declined %s', self.job)
+                self.logger.info('Job declined. Time = ' + str(self.clock.now))
                 self.request_producer()
             else:
-                self.logger.info('Job accepted %s', self.job)
+                self.logger.info('Job accepted. Time = ' + str(self.clock.now))
                 self.register_contract()
         except Timeout:
             self.request_producer()

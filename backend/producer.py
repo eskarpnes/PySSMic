@@ -55,7 +55,7 @@ class Producer(ThreadingActor):
 
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
-        self.logger.info("Running optimizer ...")
+        self.logger.info("Running optimizer ... Time = " + str(self.manager.clock.now))
         result = self.optimizer.optimize(self.schedule)
 
         for i, s in enumerate(self.schedule):

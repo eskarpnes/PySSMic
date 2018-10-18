@@ -19,7 +19,7 @@ class Simulator:
         self.end_time = config["length"] if "length" in config else 86400
 
         # The manager that is simulated. Every new load and prediction should be sent to it.
-        self.manager = Manager(self)
+        self.manager = Manager(self.neighbourhood)
 
         self.manager.new_producer()
 
@@ -66,20 +66,19 @@ class Simulator:
     # Starts a new consumer event
     # Will call corresponding function in manager
     def new_load(self, job):
-        print("A new load happened! Time=" + str(self.neighbourhood.now))
-        print("Load: " + str(job) + "\n")
+        self.logger.info("A new load happened! Time=" + str(self.neighbourhood.now))
         self.manager.new_job(job)
 
     # Sends out a new weather prediction (every 6 hours)
     # Will call corresponding function in manager
     def new_prediction(self, prediction):
-        print("A new prediction happened! Time=" + str(self.neighbourhood.now))
+        self.logger.info("A new prediction happened! Time=" + str(self.neighbourhood.now))
         self.manager.new_prediction(prediction)
 
     # Register a contract between a consumer and producer
     # It is added as a Simpy event with a timeout until it should start
     def register_contract(self, contract):
-        print("Registering contract")
+        self.logger.info("Registering contract. Time = " + str(self.neighbourhood.now))
         id = contract["id"]
         contract_time = contract["timestamp"]
         delay = contract_time - self.neighbourhood.now
@@ -89,7 +88,7 @@ class Simulator:
             yield event
             self.fulfill_contract(contract)
         except simpy.Interrupt as i:
-            print("Contract with id " + str(id) + " was interrupted.")
+            self.logger.info("Contract with id " + str(id) + " was interrupted.")
 
     # Cancel a contract between a consumer and producer
     # Makes sure that invalid contracts won't be executed
@@ -100,8 +99,7 @@ class Simulator:
 
     # Call when a contract is fulfilled.
     def fulfill_contract(self, contract):
-        print("Contract fulfilled. Contract details: ")
-        print(contract)
+        self.logger.info("Contract fulfilled. Contract id: " + contract[id])
         # TODO Implement fulfillment logic
 
     # Loading functions
@@ -112,9 +110,7 @@ class Simulator:
 
     # Starts the simulation
     def start(self):
-        print("####################")
-        print("Starting simulation")
-        print("####################\n")
+        self.logger.info("Starting simulation")
         self.neighbourhood.run(until=self.end_time)
 
 
