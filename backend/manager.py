@@ -51,7 +51,7 @@ class Manager:
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
     def new_job(self, job):
-        consumer_ref = Consumer.start(self.producers, job)
+        consumer_ref = Consumer.start(self.producers, job, self.clock)
         self.register_consumer(consumer_ref)
 
     # Input API
