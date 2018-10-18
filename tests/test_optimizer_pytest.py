@@ -11,7 +11,7 @@ from backend.producer import Producer
 
 def test_optimize():
     man = Manager()
-    producer = Producer(1.0, man)
+    producer = Producer(man)
     job0 = (None, Job(0, 0, pd.Series(index=[0, 3], data=[40, 40])), JobStatus.active)
     job1 = (None, Job(0, 0, pd.Series(index=[2, 4], data=[30, 30])), JobStatus.active)
     job2 = (None, Job(0, 0, pd.Series(index=[5, 6], data=[10, 10])), JobStatus.active)

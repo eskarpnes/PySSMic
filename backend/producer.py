@@ -60,7 +60,11 @@ class Producer(ThreadingActor):
 
         for i, s in enumerate(self.schedule):
             sender, job, status = s
-            accepted = result[i] > 0
+
+            if len(self.schedule) > 1:
+                accepted = result.x[i] > 0
+            else:
+                accepted = result.x > 0
 
             if accepted and status == JobStatus.created:
                 contract = self.create_contract(sender, job)
