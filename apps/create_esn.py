@@ -4,7 +4,6 @@ import io
 import json
 import xml.etree.ElementTree as ET
 import pandas as pd
-
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
@@ -22,7 +21,7 @@ from backend.user import User
 from app import app
 
 # Returns a list of divs.
-
+main_neighbourhood = None
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -187,6 +186,11 @@ def create_neighborhood_object(treeroot):
     return nabolag
 
 
+def create_neighborhood_from_dict(nei_dict):
+    for key in nei_dict:
+        print(key, nei_dict[key])
+
+
 def eltreeToDataframe(treeRoot):
     df = pd.DataFrame(columns=[
         "houseId", "deviceId", "UserId", "DeviceName", "DevTemp", "DevType"])
@@ -206,19 +210,21 @@ def addDevice(data, houseId, deviceId, userId, deviceName, devTemp, devType):
     return pd.concat([df, df2])
 
 
-"""
-@app.callback(Output('output', 'children'), [Input('neighbourhood-div', 'children')])
-def show_house():
-   """
-
-
-@app.callback(Output('output', 'children'), [Input('upload-data', 'contents')])
+@app.callback(Output('neibourhood_div', 'children'), [Input('upload-data', 'contents')])
 def create_house(contents):
+    global main_neighbourhood
     root = parse_contents(contents)
-    nei = create_neighborhood_object(root)
-    nabolag = create_neighborhood_output(nei)
-    return html.Div(children=nabolag)
+    main_neighbourhood = create_neighborhood_object(root)
+    nabolag = main_neighbourhood.to_json()
+    return html.Div(nabolag)
 
+
+@app.callback(Output('output', 'children'), [Input('neibourhood_div', 'children')])
+def showNeihbourhood(dictonary):
+    global main_neighbourhood
+    neighbourhood = main_neighbourhood
+    nabolag = create_neighborhood_output(neighbourhood)
+    return html.Div(children=nabolag)
 
 # hide/show popup
 

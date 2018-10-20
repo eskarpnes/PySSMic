@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.house import House
 
@@ -22,6 +23,10 @@ class Neighbourhood():
         for house in self.houses:
             if(house.get_id() == house_id):
                 return house
+
+    # delete
+    def to_json(self):
+        return json.dumps(self, default=lambda x: x.__dict__)
 
     def __str__(self):
         return str(self.id)
