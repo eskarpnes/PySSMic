@@ -21,7 +21,7 @@ from backend.user import User
 from app import app
 
 # Returns a list of divs.
-main_neighbourhood = None
+main_neighbourhood = Neighbourhood(99)
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -44,23 +44,24 @@ def displayHouse(house):
 
     return html.Div(["House",
                      html.Span(str(house.id)),
-                     html.Button("Config house"),
+                     html.Button("Config house", id="config_house_hidden"),
                      html.Br(),
                      html.Span("Number of users: " + str(numOfUsers)),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
-                     html.Br()
+                     html.Br(),
+                     configHouseModal(house.id)
                      ])
 
 
-def addHouseToNeighbourhood(neighbourhood):
-    lastId = int(neighbourhood.houses[-1].id)
-    house = House(lastId + 1)
+def addHouseToNeighbourhood(neighbourhood, houseId):
+    #lastId = int(neighbourhood.houses[-1].id)
+    house = House(houseId)
     neighbourhood.houses.append(house)
     return neighbourhood
 
 
-def newHouseModal():
+def configHouseModal(house_id):
     return html.Div(
         html.Div(
             [
@@ -70,7 +71,7 @@ def newHouseModal():
                         html.Div(
                             [
                                 html.Span(
-                                    "New House - ID X",
+                                    "Configure House" + str(house_id),
                                     style={
                                         "color": "#506784",
                                         "fontWeight": "bold",
@@ -107,7 +108,7 @@ def newHouseModal():
                                         "marginBottom": "2",
                                     },
                                     className="row",
-                                ),
+                                )
                             ],
                             className="row",
                             style={"padding": "2% 8%"},
@@ -115,7 +116,7 @@ def newHouseModal():
                         # create house button
                         html.Span(
                             "Submit",
-                            id="submit_new_lead",
+                            id="submit_new_house",
                             n_clicks=0,
                             className="button button--primary add"
                         ),
@@ -153,10 +154,12 @@ layout = html.Div([
             'margin': '10px'
         }
     ),
+    dcc.Input(id="new_house_id", value=0, type='number', style={
+        'width': '100'}),
     html.Button("Add house", id='btnAddHouse'),
     html.Br(),
     html.Div(id='output'),
-    newHouseModal()
+    html.Button(id="config_house_hidden", style={"display": "none"})
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -219,29 +222,30 @@ def create_house(contents):
     return html.Div(nabolag)
 
 
-@app.callback(Output('output', 'children'), [Input('neibourhood_div', 'children')])
-def showNeihbourhood(dictonary):
+@app.callback(Output('output', 'children'), [Input('neibourhood_div', 'children'), Input("btnAddHouse", "n_clicks"), Input('new_house_id', 'value')])
+def showNeihbourhood(dictonary, n, value):
     global main_neighbourhood
-    neighbourhood = main_neighbourhood
-    nabolag = create_neighborhood_output(neighbourhood)
+    if n > 0:
+        addHouseToNeighbourhood(main_neighbourhood, value)
+    nabolag = create_neighborhood_output(main_neighbourhood)
     return html.Div(children=nabolag)
 
 # hide/show popup
 
 
-@app.callback(Output("house_modal", "style"), [Input("btnAddHouse", "n_clicks")])
+@app.callback(Output("house_modal", "style"), [Input("config_house_hidden", "n_clicks")])
 def display_leads_modal_callback(n):
+    global main_neighbourhood
     if n > 0:
         return {"display": "block"}
     return {"display": "none"}
-
 # reset to 0 add button n_clicks property
 
 
 @app.callback(
-    Output("btnAddHouse", "n_clicks"),
+    Output("config_house_hidden", "n_clicks"),
     [Input("leads_modal_close", "n_clicks"),
-     Input("submit_new_lead", "n_clicks")],
+     Input("submit_new_house", "n_clicks")],
 )
 def close_modal_callback(n, n2):
     return 0
