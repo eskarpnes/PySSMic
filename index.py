@@ -7,8 +7,6 @@ from app import app
 from apps import create_sim, create_esn, main, base
 from backend.neighbourhood import Neighbourhood
 
-
-neighbourhood = Neighbourhood(99)
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content'),

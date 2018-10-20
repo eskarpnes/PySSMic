@@ -23,18 +23,35 @@ from app import app
 
 # Returns a list of divs.
 
+nabolag = Neighbourhood(99)
+newDevice = Device(100, "xbox", 99, "producer")
+
 
 def create_neighborhood_output(nei):
     houses = []
     for house in nei.houses:
-        houses.append(addHouse(house))
+        houses.append(displayHouse(house))
     return houses
 
+# Takes in a house object. see backend.house
 
-def addHouse(house):
+
+def displayHouse(house):
+    numOfUsers = 0
+    numOfDevices = 0
+    for user in house.users:
+        numOfUsers += 1
+        for device in user.devices:
+            numOfDevices += 1
+
     return html.Div(["House",
                      html.Span(str(house.id)),
-                     html.Button("Config house")
+                     html.Button("Config house"),
+                     html.Br(),
+                     html.Span("Number of users: " + str(numOfUsers)),
+                     html.Br(),
+                     html.Span("Number of devices: " + str(numOfDevices)),
+                     html.Br()
                      ])
 
 
@@ -114,12 +131,10 @@ layout = html.Div([
     html.Div(id="hidden-div", style={'display': 'none'}),
     html.H4("Create a new neighbourhood"),
 
-
-
     dcc.Upload(
         id="upload-data",
         children=html.Div([
-            'Drag and Drop or ',
+            'Add neighbourhood XML file by Drag and Drop or ',
             html.A('Select Files')
         ]),
         style={
@@ -152,7 +167,7 @@ def parse_contents(contents):
 
 
 def create_neighborhood_object(treeroot):
-    n = Neighbourhood(treeroot.get("id"))
+    nabolag = Neighbourhood(treeroot.get("id"))
     for house in treeroot:
         h = House(house.get("id"))
         for user in house:
@@ -162,8 +177,8 @@ def create_neighborhood_object(treeroot):
                     device.find("template").text), device.find("type").text)
                 u.devices.append(d)
             h.users.append(u)
-        n.houses.append(h)
-    return n
+        nabolag.houses.append(h)
+    return nabolag
 
 
 def eltreeToDataframe(treeRoot):
@@ -185,10 +200,10 @@ def addDevice(data, houseId, deviceId, userId, deviceName, devTemp, devType):
     return pd.concat([df, df2])
 
 
-def removeDevice(data, deviceId):
-    df = data
-    df = df.drop(index=deviceId)
-    return df
+"""
+@app.callback(Output('output', 'children'), [Input('neighbourhood-div', 'children')])
+def show_house():
+   """
 
 
 @app.callback(Output('output', 'children'), [Input('upload-data', 'contents')])
