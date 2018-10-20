@@ -23,8 +23,7 @@ from app import app
 
 # Returns a list of divs.
 
-nabolag = Neighbourhood(99)
-newDevice = Device(100, "xbox", 99, "producer")
+# TODO: modal for adding house. modal with input field to set houseID
 
 
 def create_neighborhood_output(nei):
@@ -53,6 +52,13 @@ def displayHouse(house):
                      html.Span("Number of devices: " + str(numOfDevices)),
                      html.Br()
                      ])
+
+
+def addHouseToNeighbourhood(neighbourhood):
+    lastId = int(neighbourhood.houses[-1].id)
+    house = House(lastId + 1)
+    neighbourhood.houses.append(house)
+    return neighbourhood
 
 
 def newHouseModal():
