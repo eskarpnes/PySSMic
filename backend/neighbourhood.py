@@ -10,21 +10,14 @@ class Neighbourhood():
         self.id = n_id
         self.houses = []
 
-    def add_house(self, house):
-        self.houses.append(house)
-
-    def remove_house(self, house):
-        self.houses.remove(house)
-
-    def get_houses(self):
-        return self.houses
-
-    def get_house(self, house_id):
+    def findHouseById(self, houseId):
         for house in self.houses:
-            if(house.get_id() == house_id):
+            if house.id == houseId:
                 return house
+        return None
 
     # delete
+
     def to_json(self):
         return json.dumps(self, default=lambda x: x.__dict__)
 
