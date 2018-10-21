@@ -9,7 +9,6 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -17,11 +16,11 @@ from backend.neighbourhood import Neighbourhood
 from backend.house import House
 from backend.device import Device
 from backend.user import User
-
 from app import app
 
 # Returns a list of divs.
 main_neighbourhood = Neighbourhood(99)
+active_house = House(99)
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -44,24 +43,23 @@ def displayHouse(house):
 
     return html.Div(["House",
                      html.Span(str(house.id)),
-                     html.Button("Config house", id="config_house_hidden"),
+                     html.Button("Delete house", id="deleteHouse"),
                      html.Br(),
                      html.Span("Number of users: " + str(numOfUsers)),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
                      html.Br(),
-                     configHouseModal(house.id)
                      ])
 
 
-def addHouseToNeighbourhood(neighbourhood, houseId):
+def addHouseToNeighbourhood(houseId):
+    global main_neighbourhood
     #lastId = int(neighbourhood.houses[-1].id)
     house = House(houseId)
-    neighbourhood.houses.append(house)
-    return neighbourhood
+    main_neighbourhood.houses.append(house)
 
 
-def configHouseModal(house_id):
+def configHouseModal(house):
     return html.Div(
         html.Div(
             [
@@ -71,7 +69,7 @@ def configHouseModal(house_id):
                         html.Div(
                             [
                                 html.Span(
-                                    "Configure House" + str(house_id),
+                                    "Configure House" + str(house.id),
                                     style={
                                         "color": "#506784",
                                         "fontWeight": "bold",
@@ -113,6 +111,8 @@ def configHouseModal(house_id):
                             className="row",
                             style={"padding": "2% 8%"},
                         ),
+                        html.Div(id='user-in-house-dropdown'),
+                        html.Div(id='user-device-dropdown'),
                         # create house button
                         html.Span(
                             "Submit",
@@ -144,7 +144,7 @@ layout = html.Div([
             html.A('Select Files')
         ]),
         style={
-            'width': '100%',
+            'width': '500px',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -158,8 +158,12 @@ layout = html.Div([
         'width': '100'}),
     html.Button("Add house", id='btnAddHouse'),
     html.Br(),
+    html.Div(id="dropdowndiv", style={"width": "300px"}),
+    html.Div(id="active_house_hidden", style={"display": "none"}),
+    html.Button("config House", id="config_neighbourhood"),
     html.Div(id='output'),
-    html.Button(id="config_house_hidden", style={"display": "none"})
+
+    configHouseModal(active_house)
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -222,30 +226,44 @@ def create_house(contents):
     return html.Div(nabolag)
 
 
-@app.callback(Output('output', 'children'), [Input('neibourhood_div', 'children'), Input("btnAddHouse", "n_clicks"), Input('new_house_id', 'value')])
+@app.callback(Output('output', 'children'), [Input('neibourhood_div', 'children'), Input("btnAddHouse", "n_clicks")], [State('new_house_id', 'value')])
 def showNeihbourhood(dictonary, n, value):
     global main_neighbourhood
-    if n > 0:
-        addHouseToNeighbourhood(main_neighbourhood, value)
+    if n and n > 0:
+        addHouseToNeighbourhood(value)
     nabolag = create_neighborhood_output(main_neighbourhood)
     return html.Div(children=nabolag)
 
 # hide/show popup
 
 
-@app.callback(Output("house_modal", "style"), [Input("config_house_hidden", "n_clicks")])
+@app.callback(Output("house_modal", "style"), [Input("config_neighbourhood", "n_clicks")])
 def display_leads_modal_callback(n):
-    global main_neighbourhood
     if n > 0:
         return {"display": "block"}
     return {"display": "none"}
+
+
 # reset to 0 add button n_clicks property
 
-
 @app.callback(
-    Output("config_house_hidden", "n_clicks"),
+    Output("config_neighbourhood", "n_clicks"),
     [Input("leads_modal_close", "n_clicks"),
      Input("submit_new_house", "n_clicks")],
 )
 def close_modal_callback(n, n2):
     return 0
+
+# Callbacks for dynamic form in config house
+
+
+@app.callback(Output("dropdowndiv", "children"), [Input('neibourhood_div', 'children'), Input('btnAddHouse', 'n_clicks')])
+def fill_dropDown(dictionary, n):
+    global main_neighbourhood
+    if(dictionary or (n > 0)):
+        return dcc.Dropdown(id='user-dropdown', options=[{'label': house.id, 'value': house.id} for house in main_neighbourhood.houses]),
+
+
+@app.callback(Output("active-house-hidden", "children"), [Input("dropdowndiv", "value")])
+def setActiveHouse(value):
+    print(value)
