@@ -75,12 +75,17 @@ class Simulator:
     # Register a contract between a consumer and producer
     # It is added as a Simpy event with a timeout until it should start
     def register_contract(self, contract):
+        print("Adding contract to queue.")
+        self.neighbourhood.process(self.register_new_contract(contract))
+
+
+    def register_new_contract(self, contract):
         self.logger.info("Registering contract. Time = " + str(self.neighbourhood.now))
         id = contract["id"]
-        contract_time = contract["timestamp"]
+        contract_time = contract["time"]
         delay = contract_time - self.neighbourhood.now
         try:
-            event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=id)
+            event = self.neighbourhood.timeout(delay)
             self.active_contracts[id] = event
             yield event
             self.fulfill_contract(contract)
@@ -96,7 +101,7 @@ class Simulator:
 
     # Call when a contract is fulfilled.
     def fulfill_contract(self, contract):
-        self.logger.info("Contract fulfilled. Contract id: " + contract[id])
+        self.logger.info("Contract fulfilled. Contract id: " + str(contract["id"]))
         # TODO Implement fulfillment logic
 
     # Loading functions
