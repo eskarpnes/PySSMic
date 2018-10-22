@@ -48,11 +48,18 @@ class Manager:
         self.simulator.register_contract(contract)
 
     def terminate_producers(self):
+        self.logger.info("Killing producers ...")
         for producer in self.producers.values():
             producer.stop()
         self.producers = {}
 
-    # Input API    
+    def terminate_consumers(self):
+        self.logger.info("Killing consumers ...")
+        for consumer in self.consumers:
+            consumer.stop()
+            self.consumers = []
+
+    # Input API
     # A job contains an earliest start time, latest start time and load profile
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
