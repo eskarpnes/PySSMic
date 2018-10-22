@@ -12,7 +12,8 @@ app.layout = html.Div([
     html.Div(id='page-content'),
     # needed to make it work on create_esn
     html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
-])
+], className="main")
+
 
 
 @app.callback(Output('page-content', 'children'),
