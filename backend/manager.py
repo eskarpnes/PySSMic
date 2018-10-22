@@ -7,14 +7,15 @@ from util.message_utils import Action
 
 
 class Manager:
-    def __init__(self, clock=None):
+    def __init__(self, simulator=None):
         self.consumers = []
         self.producers = {}
         self.logger = logging.getLogger("src.Manager")
 
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
         # simulator start
-        self.clock = clock
+        self.simulator = simulator
+        self.clock = simulator.neighbourhood
 
     # Send out a new weather prediction
     def send_new_prediction(self, prediction, producer):
@@ -44,7 +45,8 @@ class Manager:
         consumer._actor.request_producer()
 
     def register_contract(self, contract):
-        pass
+        print("Registering contract")
+        self.simulator.register_contract(contract)
 
     def terminate_producers(self):
         for producer in self.producers.values():
