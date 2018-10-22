@@ -45,7 +45,6 @@ class Manager:
         consumer._actor.request_producer()
 
     def register_contract(self, contract):
-        print("Registering contract")
         self.simulator.register_contract(contract)
 
     def terminate_producers(self):
@@ -73,3 +72,9 @@ class Manager:
             self.new_producer(producer_id)
         producer = self.producers[producer_id]
         self.send_new_prediction(prediction_event["prediction"], producer)
+
+    def get_production_profiles(self):
+        production_profiles = {}
+        for producer in self.producers.values():
+            production_profiles[producer._actor.id] = producer._actor.prediction
+        return production_profiles
