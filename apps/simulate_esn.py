@@ -9,7 +9,6 @@ from app import app
 
 """-------------------------ENERGY USE-------------------------"""
 
-
 def get_energy_df():
     return pd.DataFrame({'c1': [384, 827], 'c2': [848, 874]})
 
