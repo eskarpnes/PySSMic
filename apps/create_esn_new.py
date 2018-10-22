@@ -81,7 +81,7 @@ def addHouseToNeighbourhood(houseId):
 
 layout = html.Div([
     # hidden div to save data in
-    html.Div(id="hidden-div", style={'display': 'none'}),
+    html.Div(id="hidden-div-n-houses", style={'display': 'none'}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
         html.Button("Create from XML", id="btnXmlInput"),
@@ -111,6 +111,11 @@ layout = html.Div([
             html.Button("Create Neighbourhood", id="btnCreateNewNeighbourhood")
         ],
             style={'display': 'block'}),
+    ]),
+    html.Div(id="newHouseInput", children=[
+        dcc.Input(id="new_house_id", type='number', style={
+                'width': '100'}),
+        html.Button("Add house", id="btnAddHouse"),
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
@@ -160,34 +165,43 @@ Callback to render id inputfield for a new Neighbourhood
 """
 
 
-@app.callback(Output('newNeighbourhoodInput', 'style'), [Input("btnNewNeighbourhood", "n_clicks")])
+@app.callback(Output('newNeighbourhoodInput', 'style'),
+              [Input("btnNewNeighbourhood", "n_clicks")])
 def showNewNeighbourhoodInput(n):
     if n == 1:
         return {'display': 'block'}
     return {"display": "none"}
 
+
 # Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
 
 
-@app.callback(Output('neibourhood_div', 'children'), [Input('upload-data', 'contents')])
-def create_house(contents):
+@app.callback(Output('neibourhood_div', 'children'),
+              [Input('upload-data', 'contents'),
+               Input('btnCreateNewNeighbourhood', 'n_clicks')],
+              [State('newNeighbourhoodInput', 'value')])
+def create_house(contents, n, value):
     global main_neighbourhood
-    root = parse_contents(contents)
-    main_neighbourhood = create_neighborhood_object(root)
+    if n and n > 0:
+        main_neighbourhood = Neighbourhood(value)
+    else:
+        root = parse_contents(contents)
+        main_neighbourhood = create_neighborhood_object(root)
     nabolag = main_neighbourhood.to_json()
     return html.Div(nabolag)
 
 
-@app.callback(Output('tabs', 'children'), [Input('neibourhood_div', 'children'), Input('btnCreateNewNeighbourhood', 'n_clicks')], [State('newNeighbourhoodInput', 'value')])
+@app.callback(Output('tabs', 'children'),
+              [Input('neibourhood_div', 'children'),
+               Input('btnAddHouse', 'n_clicks')],
+              [State('new_house_id', 'value')])
 def showNeihbourhood(dictionary, n, value):
     global main_neighbourhood
     if n and n > 0:
-        main_neighbourhood = Neighbourhood(value)
+        main_neighbourhood.houses.append(House(value))
+        n = 0
     tabs = create_house_tabs(main_neighbourhood)
     return html.Div(children=[
-        dcc.Input(id="new_house_id", type='number', style={
-            'width': '100'}),
-        html.Button("Add house", id="btnAddHouse"),
         dcc.Tabs(id='neighbourhoodTabs', children=tabs),
         html.Div(id='tabs-content', children=["some cool content"])
     ])
@@ -209,9 +223,13 @@ def fill_dropDown(dictionary, n):
 # generate content for tabs
 @app.callback(Output('tabs-content', 'children'),
               [Input('neighbourhoodTabs', 'value')])
-def render_content(tab):
+def render_content(value):
     global main_neighbourhood
-    tabId = int(tab)
+    if value is not None:
+        tabId = int(value)
+    else:
+        # get the id of first house
+        tabId = int(main_neighbourhood.houses[0].id)
     print(tabId)
     if main_neighbourhood is not None:
         house = main_neighbourhood.findHouseById(tabId)
