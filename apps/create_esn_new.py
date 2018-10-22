@@ -20,7 +20,7 @@ from app import app
 
 # Returns a list of divs.
 main_neighbourhood = None
-active_house = None
+active_user = None
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -62,13 +62,13 @@ def displayHouse(house):
     return html.Div(["House",
                      html.Span(str(house.id)),
                      html.Button("Delete house", id="deleteHouse"),
+                     html.Button("Configure", id="btnConfigHouse"),
                      html.Br(),
                      html.Span("Number of users: " + str(numOfUsers)),
-                     html.Button("Add user", id="addUserInHouse"),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
-                     html.Button("Add device", id="addUserDeviceInHouse"),
-                     html.Div(children=create_house_view(house))
+                     html.Div(children=create_house_view(house)),
+                     configHouseModal(house)
                      ])
 
 
@@ -77,6 +77,79 @@ def addHouseToNeighbourhood(houseId):
     # lastId = int(neighbourhood.houses[-1].id)
     house = House(houseId)
     main_neighbourhood.houses.append(house)
+
+
+def configHouseModal(house):
+    return html.Div(
+        html.Div(
+            [
+                html.Div(
+                    [
+                        # header
+                        html.Div(
+                            [
+                                html.Span(
+                                    "Configure House" + str(house.id),
+                                    style={
+                                        "color": "#506784",
+                                        "fontWeight": "bold",
+                                        "fontSize": "20",
+                                    },
+                                ),
+                                html.Span(
+                                    "×",
+                                    id="leads_modal_close",
+                                    n_clicks=0,
+                                    style={
+                                        "float": "right",
+                                        "cursor": "pointer",
+                                        "marginTop": "0",
+                                        "marginBottom": "17",
+                                    },
+                                ),
+                            ],
+                            className="popup",
+                            style={"borderBottom": "1px solid #C8D4E3"},
+                        ),
+                        # form
+                        html.Div(
+                            [
+                                html.P(
+                                    [
+                                        "Here you can add settins for the popup. See link commented in code",
+                                        # Ex: https://github.com/plotly/dash-salesforce-crm/blob/master/apps/leads.py
+
+                                    ],
+                                    style={
+                                        "float": "left",
+                                        "marginTop": "4",
+                                        "marginBottom": "2",
+                                    },
+                                    className="row",
+                                )
+                            ],
+                            className="row",
+                            style={"padding": "2% 8%"},
+                        ),
+                        dcc.Dropdown(id='user-dropdown', options=[{'label': user.id, 'value': user.id} for user in house.users]),
+                        dcc.Dropdown(id='user-device-dropdown'),
+                        # create house button
+                        html.Span(
+                            "Save",
+                            id="save_new_house",
+                            n_clicks=0,
+                            className="button button--primary add"
+                        ),
+                    ],
+                    className="modal-content",
+                    style={"textAlign": "center"},
+                )
+            ],
+            className="modal",
+        ),
+        id="house_modal",
+        style={"display": "none"},
+    )
 
 
 layout = html.Div([
@@ -197,6 +270,7 @@ def create_house(contents, n, value):
               [State('new_house_id', 'value')])
 def showNeihbourhood(dictionary, n, value):
     global main_neighbourhood
+    global active_house
     if n and n > 0:
         main_neighbourhood.houses.append(House(value))
         n = 0
@@ -212,14 +286,6 @@ def hideButton(children):
     if len(children) > 1:
         return {'display': 'none'}
 
-
-@app.callback(Output("dropdowndiv", "children"), [Input('neibourhood_div', 'children'), Input('btnNewNeighbourhood', 'n_clicks')])
-def fill_dropDown(dictionary, n):
-    global main_neighbourhood
-    if(dictionary or (n > 0)):
-        return dcc.Dropdown(id='user-dropdown', options=[{'label': house.id, 'value': house.id} for house in main_neighbourhood.houses]),
-
-
 # generate content for tabs
 @app.callback(Output('tabs-content', 'children'),
               [Input('neighbourhoodTabs', 'value')])
@@ -230,7 +296,6 @@ def render_content(value):
     else:
         # get the id of first house
         tabId = int(main_neighbourhood.houses[0].id)
-    print(tabId)
     if main_neighbourhood is not None:
         house = main_neighbourhood.findHouseById(tabId)
         if house is not None:
@@ -238,12 +303,23 @@ def render_content(value):
             return html.Div([dis])
 
 
-@app.callback(Output('neighbourhood-info', 'children'), [Input('tabs', 'children')])
-def showNeihbourhoodInfo(children):
-    if len(children) > 0:
-        global main_neighbourhood
-        numOfHouses = 0
-        numOfUsers = 0
-        numOfDevices = 0
-        numOfJobs = 0
-        neiId = str(main_neighbourhood.id)
+@app.callback(Output("house_modal", "style"), [Input("btnConfigHouse", "n_clicks")])
+def display_leads_modal_callback(n):
+    if n > 0:
+        return {"display": "block"}
+    return {"display": "none"}
+
+
+# reset to 0 add button n_clicks property
+
+@app.callback(
+    Output("btnConfigHouse", "n_clicks"),
+    [Input("leads_modal_close", "n_clicks"),
+     Input("save_new_house", "n_clicks")],
+)
+def close_modal_callback(n, n2):
+    return 0
+
+@app.callback(Output("user-device-dropdown", "options"), [Input("user-dropdown", "value")])
+def setUserDeviceOptions(value):
+    return [{'label': i, 'value': i} for i in [1,2,3]]
