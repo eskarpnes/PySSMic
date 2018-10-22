@@ -1,9 +1,6 @@
-import sys
-import os
-
 from backend.manager import Manager
+from backend.optimizer import Optimizer
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 import pandas as pd
 from backend.job import Job, JobStatus
 from backend.producer import Producer
@@ -12,19 +9,36 @@ from backend.producer import Producer
 def test_optimize():
     man = Manager()
     producer = Producer("id", man)
-    job0 = (None, Job("id", 0, 0, pd.Series(index=[0, 3], data=[40, 40])), JobStatus.active)
-    job1 = (None, Job("id", 0, 0, pd.Series(index=[2, 4], data=[30, 30])), JobStatus.active)
-    job2 = (None, Job("id", 0, 0, pd.Series(index=[5, 6], data=[10, 10])), JobStatus.active)
-    job3 = (None, Job("id", 0, 0, pd.Series(index=[5, 6], data=[40, 40])), JobStatus.active)
-    job4 = (None, Job("id", 0, 0, pd.Series(index=[7, 10], data=[50, 50])), JobStatus.active)
-    job5 = (None, Job("id", 0, 0, pd.Series(index=[7, 10], data=[40, 40])), JobStatus.active)
-    producer.schedule = [job0, job1, job2, job3, job4, job5]
-    producer.prediction = pd.Series(index=[0, 10], data=[50, 50])
+    job0 = (None, Job("id", 0, 0, pd.Series(index=[0, 5], data=[0.0, 40.0])), JobStatus.active)
+    job1 = (None, Job("id", 0, 0, pd.Series(index=[0, 2], data=[0.0, 20.0])), JobStatus.active)
+    job2 = (None, Job("id", 0, 0, pd.Series(index=[2, 5], data=[0.0, 30.0])), JobStatus.active)
+    producer.schedule = [job0, job1, job2]
+    producer.prediction = pd.Series(index=[0, 5], data=[0.0, 50.0])
 
-    result = producer.optimizer.optimize(producer.schedule)
-    assert result.x[0] > 0
-    assert result.x[1] > 0
-    assert result.x[2] > 0
-    assert result.x[3] > 0
-    assert result.x[4] > 0
-    assert result.x[5] < 0
+    result = producer.optimizer.optimize()
+
+    assert result[0] == 0
+    assert result[1] == 1
+    assert result[2] == 1
+
+
+def test_differentiate():
+    o = Optimizer(None)
+    series1 = pd.Series(index=[0, 3600], data=[0.0, 1.0])
+    expected1 = pd.Series(index=[0, 3600], data=[0, 1.0])
+    actual1 = o.differentiate(series1)
+
+    series2 = pd.Series(index=[0, 1, 2, 3, 4, 5], data=[0.0, 0.5, 1.0, 2.0, 2.0, 3.0])
+    expected2 = pd.Series(index=[0, 1, 2, 3, 4, 5], data=[0.0, 0.5, 0.5, 1.0, 0.0, 1.0])
+    actual2 = o.differentiate(series2)
+
+    assert all(list(expected1 == actual1))
+    assert all(list(expected2 == actual2))
+
+
+def test_interpolate():
+    o = Optimizer(None)
+    series = pd.Series(index=[2, 4, 6], data=[4.0, 8.0, 12.0])
+    actual = o.interpolate(series, [0, 1, 2, 3, 4, 5, 6, 7, 8]).round(4)
+    expected = pd.Series(index=[0, 1, 2, 3, 4, 5, 6, 7, 8], data=[4.0, 4.0, 4.0, 6.0, 8.0, 10.0, 12.0, 12.0, 12.0])
+    assert all(list(actual.data == expected))
