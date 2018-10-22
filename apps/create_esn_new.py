@@ -184,8 +184,10 @@ def showNeihbourhood(dictionary, n, value):
     if n and n > 0:
         main_neighbourhood = Neighbourhood(value)
     tabs = create_house_tabs(main_neighbourhood)
-    print(tabs)
     return html.Div(children=[
+        dcc.Input(id="new_house_id", type='number', style={
+            'width': '100'}),
+        html.Button("Add house", id="btnAddHouse"),
         dcc.Tabs(id='neighbourhoodTabs', children=tabs),
         html.Div(id='tabs-content', children=["some cool content"])
     ])
