@@ -23,10 +23,7 @@ class Producer(ThreadingActor):
 
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
-        pass
-        # 1: ACCEPT contract
-        # 2: CANCEL contract
-        # 2: DECLINE contract
+        receiver.tell(message)
 
     # Receive a message in a framework agnostic way
     def receive(self, message, sender):
@@ -46,7 +43,7 @@ class Producer(ThreadingActor):
                 self.schedule.append((sender, job, JobStatus.created))
                 result = self.optimize()
                 if result > 0:
-                    contract = self.create_contract(sender._actor, job)
+                    contract = self.create_contract(job)
                     self.manager.register_contract(contract)
                     return dict(action=Action.accept)
                 else:
@@ -86,16 +83,17 @@ class Producer(ThreadingActor):
             new_prediction = prediction+offset
             self.prediction = new_prediction.combine_first(self.prediction)
 
-    def create_contract(self, consumer, job):
-        id = random.randint(0, 1000)  # TODO: create cool id
+    def create_contract(self, job):
+        current_time = self.manager.clock.now
+        id = self.id + ";" + job.id + ";" + str(current_time)
         time = job.scheduled_time
-        time_of_agreement = self.manager.clock.now
+        time_of_agreement = current_time
         load_profile = job.load_profile
-        consumer_id = consumer.job.id
+        job_id = job.id
         producer_id = self.id
 
         return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
-                    consumer_id=consumer_id, producer_id=producer_id)
+                    job_id=job_id, producer_id=producer_id)
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender

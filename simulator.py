@@ -59,8 +59,8 @@ class Simulator:
         self.new_prediction(prediction)
 
     def kill_producers(self):
-        self.logger.info("Killing producers ...")
         self.manager.terminate_producers()
+        self.manager.terminate_consumers()
 
     # Starts a new consumer event
     # Will call corresponding function in manager
