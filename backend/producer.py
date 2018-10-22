@@ -87,7 +87,7 @@ class Producer(ThreadingActor):
             self.prediction = new_prediction.combine_first(self.prediction)
 
     def create_contract(self, consumer, job):
-        id = random.randint  # TODO: create cool id
+        id = random.randint(0, 1000)  # TODO: create cool id
         time = job.scheduled_time
         time_of_agreement = self.manager.clock.now
         load_profile = job.load_profile
