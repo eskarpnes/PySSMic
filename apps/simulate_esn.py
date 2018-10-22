@@ -19,6 +19,7 @@ def energy_use(df):
     n = 100/(df_sum[0]+df_sum[1])
     return (
         dcc.Graph(
+            id="energy-use-graph",
             figure=go.Figure(
                 data=[
                     go.Pie(
@@ -57,7 +58,8 @@ def contract_overview():
     return (
         dt.DataTable(
             rows=get_contracts(),
-            columns=["Contract ID", "Contract signed (time)", "Start of contract (time)", "Consumer", "Producer"],
+            columns=[
+                "Contract ID", "Contract signed (time)", "Start of contract (time)", "Consumer", "Producer"],
             row_selectable=True,
             filterable=True,
             sortable=True,
@@ -77,9 +79,10 @@ def get_consumption():
 def energy_consumption():
     return (
         dcc.Graph(
+            id="energy-consumption-graph",
             figure=go.Figure(
                 data=[
-                    #TODO: Update to input values from simulator
+                    # TODO: Update to input values from simulator
                     go.Scatter(
                         x=[1, 2, 3, 4], y=[4, 3, 2, 1],
                         name="Energy available"
@@ -122,10 +125,7 @@ layout = html.Div([
         html.H2("Available vs Used energy")
     ),
     html.Div([
-        #TODO: Fix that consumption don't overwrite pie chart when uncommented
-        #energy_consumption()
+        # TODO: Fix that consumption don't overwrite pie chart when uncommented
+        energy_consumption()
     ], className="consumption-graph")
 ], className="test")
-
-
-
