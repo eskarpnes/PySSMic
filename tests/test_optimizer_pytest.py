@@ -4,10 +4,12 @@ from backend.optimizer import Optimizer
 import pandas as pd
 from backend.job import Job, JobStatus
 from backend.producer import Producer
+from simulator import Simulator
 
 
 def test_optimize():
-    man = Manager()
+    sim = Simulator()
+    man = Manager(sim)
     producer = Producer("id", man)
     job0 = (None, Job("id", 0, 0, pd.Series(index=[0, 5], data=[0.0, 40.0])), JobStatus.active)
     job1 = (None, Job("id", 0, 0, pd.Series(index=[0, 2], data=[0.0, 20.0])), JobStatus.active)
