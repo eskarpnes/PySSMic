@@ -42,10 +42,10 @@ def create_house_view(house):
             content.append(
                 html.Div(className="DeviceInHouse", children=[
                     html.Span("userid: " + str(user.id) + "\t\t"),
-                    html.Span(str(device.id)),
-                    html.Span(device.name),
-                    html.Span(str(device.id)),
-                    html.Span(device.type)
+                    html.Span("DeviceID: " + str(device.id) + "\t\t"),
+                    html.Span("DeviceName: " + device.name + "\t\t"),
+                    html.Span("DeviceTemplate: " + str(device.id) + "\t\t"),
+                    html.Span("DeviceType: " + device.type + "\t\t")
                 ])
             )
     return content
