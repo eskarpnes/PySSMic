@@ -34,7 +34,21 @@ def create_house_tabs(nei):
         houses.append(create_house_tab(house))
     return houses
 
-# Takes in a house object. see backend.house
+
+def create_house_view(house):
+    content = []
+    for user in house.users:
+        for device in user.devices:
+            content.append(
+                html.Div(className="DeviceInHouse", children=[
+                    html.Span("userid: " + str(user.id) + "\t\t"),
+                    html.Span(str(device.id)),
+                    html.Span(device.name),
+                    html.Span(str(device.id)),
+                    html.Span(device.type)
+                ])
+            )
+    return content
 
 
 def displayHouse(house):
@@ -53,7 +67,8 @@ def displayHouse(house):
                      html.Button("Add user", id="addUserInHouse"),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
-                     html.Button("Add device", id="addUserDeviceInHouse")
+                     html.Button("Add device", id="addUserDeviceInHouse"),
+                     html.Div(children=create_house_view(house))
                      ])
 
 
