@@ -35,13 +35,28 @@ def energy_use(df):
 
 
 def get_contracts():
-    return {"Contract ID": [1], "Contract signed (time)": [12.32], "Start of contract (time)": [14.55], "Consumer": ["c1"], "Producer": ["p1"]}
+    return [
+        {
+            "Contract ID": [1],
+            "Contract signed (time)": [12.32],
+            "Start of contract (time)": [14.55],
+            "Consumer": ["c1"],
+            "Producer": ["p1"]
+        },
+        {
+            "Contract ID": [2],
+            "Contract signed (time)": [13.45],
+            "Start of contract (time)": [15.07],
+            "Consumer": ["c2"],
+            "Producer": ["p2"]
+        }
+    ]
 
 
-def contract_overview(records):
+def contract_overview():
     return (
         dt.DataTable(
-            rows=[records],
+            rows=get_contracts(),
             columns=["Contract ID", "Contract signed (time)", "Start of contract (time)", "Consumer", "Producer"],
             row_selectable=True,
             filterable=True,
@@ -100,7 +115,7 @@ layout = html.Div([
         html.H2("Contracts")
     ),
     html.Div([
-        contract_overview(get_contracts())
+        contract_overview()
     ], className="contract-table"),
 
     html.Div(
