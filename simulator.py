@@ -24,6 +24,12 @@ class Simulator:
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}
 
+        # A list of completed contracts
+        self.fulfilled_contracts = []
+
+        # A dict of production profiles
+        self.production_profiles = {}
+
         # Name of the configuration to be ran. Defaults to "test"
         config_name = config["neighbourhood"] if "neighbourhood" in config else "test"
 
@@ -40,8 +46,6 @@ class Simulator:
             schedule = self.schedule_prediction(prediction["timestamp"], prediction)
             simpy.events.Process(self.neighbourhood, schedule)
 
-        simpy.events.Process(self.neighbourhood, self.kill_producers())
-
 
     # Functions that schedule the events. Simpy-specific
     def schedule_load(self, delay, job):
@@ -55,8 +59,6 @@ class Simulator:
         self.new_prediction(prediction)
 
     def kill_producers(self):
-        event = simpy.events.Timeout(self.neighbourhood, delay=self.end_time-1)
-        yield event
         self.logger.info("Killing producers ...")
         self.manager.terminate_producers()
 
@@ -75,7 +77,6 @@ class Simulator:
     # Register a contract between a consumer and producer
     # It is added as a Simpy event with a timeout until it should start
     def register_contract(self, contract):
-        print("Adding contract to queue.")
         self.neighbourhood.process(self.register_new_contract(contract))
 
 
@@ -101,8 +102,8 @@ class Simulator:
 
     # Call when a contract is fulfilled.
     def fulfill_contract(self, contract):
-        self.logger.info("Contract fulfilled. Contract id: " + str(contract["id"]))
-        # TODO Implement fulfillment logic
+        self.logger.info("Contract fulfilled. Contract id: " + str(contract["id"]) + " Time: " + str(self.neighbourhood.now))
+        self.fulfilled_contracts.append(contract)
 
     # Loading functions
     def load_files_from_csv(self, name):
@@ -115,8 +116,16 @@ class Simulator:
         self.logger.info("Starting simulation")
         self.neighbourhood.run(until=self.end_time)
 
+    def get_output(self):
+        self.update_production_profiles()
+        return self.fulfilled_contracts, self.production_profiles
+
+    def update_production_profiles(self):
+        self.production_profiles = self.manager.get_production_profiles()
+
 
 if __name__ == "__main__":
+    import time
     # Hardcoded example
     config = {
         "neighbourhood": "test",
@@ -125,3 +134,11 @@ if __name__ == "__main__":
     }
     sim = Simulator(config)
     sim.start()
+    time.sleep(config["length"]*config["timefactor"])
+    contracts, profiles = sim.get_output()
+    print("DONE!")
+    print("Contracts: ")
+    print(contracts)
+    print("\n\nProfiles: ")
+    print(profiles)
+    sim.kill_producers()
