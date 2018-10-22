@@ -89,7 +89,7 @@ class Producer(ThreadingActor):
     def create_contract(self, consumer, job):
         id = random.randint  # TODO: create cool id
         time = job.scheduled_time
-        time_of_agreement = self.manager.clock.now()
+        time_of_agreement = self.manager.clock.now
         load_profile = job.load_profile
         consumer_id = consumer.job.id
         producer_id = self.id
