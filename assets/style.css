@@ -17,3 +17,16 @@
     width: 50%; /* Could be more or less, depending on screen size */
     color:#506784;
 }
+
+.pie-chart {
+}
+
+.contract-table{
+}
+
+.consumption-graph{
+}
+
+.test {
+    overflow: auto;
+}
