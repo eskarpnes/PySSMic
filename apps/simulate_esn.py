@@ -92,23 +92,25 @@ layout = html.Div([
     html.Div(
         html.H2("Energy use")
     ),
-    html.Div(
+    html.Div([
         energy_use(get_energy_df())
-    ),
+    ], className="pie-chart"),
+
     html.Div(
         html.H2("Contracts")
     ),
-    html.Div(
+    html.Div([
         contract_overview(get_contracts())
-    ),
+    ], className="contract-table"),
+
     html.Div(
         html.H2("Available vs Used energy")
     ),
-    html.Div(
-        #energy_consumption()
+    html.Div([
         #TODO: Fix that consumption don't overwrite pie chart when uncommented
-    )
-])
+        #energy_consumption()
+    ], className="consumption-graph")
+], className="test")
 
 
 
