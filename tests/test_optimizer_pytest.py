@@ -1,3 +1,5 @@
+import time
+
 from backend.manager import Manager
 from backend.optimizer import Optimizer
 
@@ -27,12 +29,12 @@ def test_optimize():
 def test_differentiate():
     o = Optimizer(None)
     series1 = pd.Series(index=[0, 3600], data=[0.0, 1.0])
-    expected1 = pd.Series(index=[0, 3600], data=[0, 1.0])
-    actual1 = o.differentiate(series1)
+    expected1 = pd.Series(index=[0, 3600], data=[0.000278, 0.000278]).round(4)
+    actual1 = o.differentiate(series1).round(4)
 
     series2 = pd.Series(index=[0, 1, 2, 3, 4, 5], data=[0.0, 0.5, 1.0, 2.0, 2.0, 3.0])
-    expected2 = pd.Series(index=[0, 1, 2, 3, 4, 5], data=[0.0, 0.5, 0.5, 1.0, 0.0, 1.0])
-    actual2 = o.differentiate(series2)
+    expected2 = pd.Series(index=[0, 1, 2, 3, 4, 5], data=[0.5, 0.5, 1.0, 0.0, 1.0, 1.0]).round(4)
+    actual2 = o.differentiate(series2).round(4)
 
     assert all(list(expected1 == actual1))
     assert all(list(expected2 == actual2))
