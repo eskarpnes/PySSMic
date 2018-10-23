@@ -19,18 +19,36 @@ from backend.user import User
 from app import app
 
 # Returns a list of divs.
-main_neighbourhood = Neighbourhood(99)
-active_house = House(99)
+main_neighbourhood = None
+active_user = None
 # TODO: modal for adding house. modal with input field to set houseID
 
 
-def create_neighborhood_output(nei):
+def create_house_tab(house):
+    return(dcc.Tab(label='House Id: ' + str(house.id), value=str(house.id)))
+
+
+def create_house_tabs(nei):
     houses = []
     for house in nei.houses:
-        houses.append(displayHouse(house))
+        houses.append(create_house_tab(house))
     return houses
 
-# Takes in a house object. see backend.house
+
+def create_house_view(house):
+    content = []
+    for user in house.users:
+        for device in user.devices:
+            content.append(
+                html.Div(className="DeviceInHouse", children=[
+                    html.Span("userid: " + str(user.id) + "\t\t"),
+                    html.Span("DeviceID: " + str(device.id) + "\t\t"),
+                    html.Span("DeviceName: " + device.name + "\t\t"),
+                    html.Span("DeviceTemplate: " + str(device.id) + "\t\t"),
+                    html.Span("DeviceType: " + device.type + "\t\t")
+                ])
+            )
+    return content
 
 
 def displayHouse(house):
@@ -44,17 +62,19 @@ def displayHouse(house):
     return html.Div(["House",
                      html.Span(str(house.id)),
                      html.Button("Delete house", id="deleteHouse"),
+                     html.Button("Configure", id="btnConfigHouse"),
                      html.Br(),
                      html.Span("Number of users: " + str(numOfUsers)),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
-                     html.Br(),
+                     html.Div(children=create_house_view(house)),
+                     configHouseModal(house)
                      ])
 
 
 def addHouseToNeighbourhood(houseId):
     global main_neighbourhood
-    #lastId = int(neighbourhood.houses[-1].id)
+    # lastId = int(neighbourhood.houses[-1].id)
     house = House(houseId)
     main_neighbourhood.houses.append(house)
 
@@ -111,12 +131,12 @@ def configHouseModal(house):
                             className="row",
                             style={"padding": "2% 8%"},
                         ),
-                        html.Div(id='user-in-house-dropdown'),
-                        html.Div(id='user-device-dropdown'),
+                        dcc.Dropdown(id='user-dropdown', options=[{'label': user.id, 'value': user.id} for user in house.users]),
+                        dcc.Dropdown(id='user-device-dropdown'),
                         # create house button
                         html.Span(
-                            "Submit",
-                            id="submit_new_house",
+                            "Save",
+                            id="save_new_house",
                             n_clicks=0,
                             className="button button--primary add"
                         ),
@@ -134,36 +154,44 @@ def configHouseModal(house):
 
 layout = html.Div([
     # hidden div to save data in
-    html.Div(id="hidden-div", style={'display': 'none'}),
+    html.Div(id="hidden-div-n-houses", style={'display': 'none'}),
     html.H4("Create a new neighbourhood"),
-
-    dcc.Upload(
-        id="upload-data",
-        children=html.Div([
-            'Add neighbourhood XML file by Drag and Drop or ',
-            html.A('Select Files')
-        ]),
-        style={
-            'width': '500px',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        }
-    ),
-    dcc.Input(id="new_house_id", value=0, type='number', style={
-        'width': '100'}),
-    html.Button("Add house", id='btnAddHouse'),
-    html.Br(),
-    html.Div(id="dropdowndiv", style={"width": "300px"}),
-    html.Div(id="active_house_hidden", style={"display": "none"}),
-    html.Button("config House", id="config_neighbourhood"),
-    html.Div(id='output'),
-
-    configHouseModal(active_house)
+    html.Div(id="initChoices", children=[
+        html.Button("Create from XML", id="btnXmlInput"),
+        html.Button("Create a new", id="btnNewNeighbourhood"),
+        dcc.Upload(
+            id="upload-data",
+            children=html.Div([
+                'Add neighbourhood XML file by Drag and Drop or ',
+                html.A('Select Files')
+            ]),
+            style={
+                'width': '500px',
+                'height': '60px',
+                'lineHeight': '60px',
+                'borderWidth': '1px',
+                'borderStyle': 'dashed',
+                'borderRadius': '5px',
+                'textAlign': 'center',
+                'margin': '10px',
+                'display': 'none'
+            }
+        ),
+        html.Div(id="newNeighbourhoodInput", children=[
+            dcc.Input(id="newNeighbourhoodId", value=0, type="number", style={
+                'width': '50pxx'
+            }),
+            html.Button("Create Neighbourhood", id="btnCreateNewNeighbourhood")
+        ],
+            style={'display': 'block'}),
+    ]),
+    html.Div(id="newHouseInput", children=[
+        dcc.Input(id="new_house_id", type='number', style={
+                'width': '100'}),
+        html.Button("Add house", id="btnAddHouse"),
+    ]),
+    html.Div(id="neighbourhood-info"),
+    html.Div(id="tabs"),
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -179,11 +207,11 @@ def parse_contents(contents):
 
 
 def create_neighborhood_object(treeroot):
-    nabolag = Neighbourhood(treeroot.get("id"))
+    nabolag = Neighbourhood(int(treeroot.get("id")))
     for house in treeroot:
-        h = House(house.get("id"))
+        h = House(int(house.get("id")))
         for user in house:
-            u = User(user.get("id"))
+            u = User(int(user.get("id")))
             for device in user:
                 d = Device(int(device.find("id").text), device.find("name").text, int(
                     device.find("template").text), device.find("type").text)
@@ -193,51 +221,89 @@ def create_neighborhood_object(treeroot):
     return nabolag
 
 
-def create_neighborhood_from_dict(nei_dict):
-    for key in nei_dict:
-        print(key, nei_dict[key])
+"""
+Callback function to toggle the xml input field
+"""
 
 
-def eltreeToDataframe(treeRoot):
-    df = pd.DataFrame(columns=[
-        "houseId", "deviceId", "UserId", "DeviceName", "DevTemp", "DevType"])
-    for house in treeRoot:
-        for user in house:
-            for device in user:
-                df = df.append({"houseId": (house.get("id")), "deviceId": (device.find("id").text), "UserId": (user.get("id")), "DeviceName": (device.find("name").text), "DevTemp": (device.find("template").text), "DevType": (device.find("type").text)},
-                               ignore_index=True)
-    # df.set_index("deviceId", inplace=True)
-    return df
+@app.callback(Output("upload-data", "style"), [Input("btnXmlInput", "n_clicks")])
+def showXMLUpload(n):
+    if n % 2 == 0:
+        return {"display": "none"}
+    return {"display": "block"}
 
 
-def addDevice(data, houseId, deviceId, userId, deviceName, devTemp, devType):
-    df = data
-    df2 = pd.DataFrame([[houseId, userId, deviceName, devTemp, devType]], index=[
-        deviceId], columns=["houseId", "UserId", "DeviceName", "DevTemp", "DevType"])
-    return pd.concat([df, df2])
+"""
+Callback to render id inputfield for a new Neighbourhood
+"""
 
 
-@app.callback(Output('neibourhood_div', 'children'), [Input('upload-data', 'contents')])
-def create_house(contents):
+@app.callback(Output('newNeighbourhoodInput', 'style'),
+              [Input("btnNewNeighbourhood", "n_clicks")])
+def showNewNeighbourhoodInput(n):
+    if n == 1:
+        return {'display': 'block'}
+    return {"display": "none"}
+
+
+# Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
+
+
+@app.callback(Output('neibourhood_div', 'children'),
+              [Input('upload-data', 'contents'),
+               Input('btnCreateNewNeighbourhood', 'n_clicks')],
+              [State('newNeighbourhoodInput', 'value')])
+def create_house(contents, n, value):
     global main_neighbourhood
-    root = parse_contents(contents)
-    main_neighbourhood = create_neighborhood_object(root)
+    if n and n > 0:
+        main_neighbourhood = Neighbourhood(value)
+    else:
+        root = parse_contents(contents)
+        main_neighbourhood = create_neighborhood_object(root)
     nabolag = main_neighbourhood.to_json()
     return html.Div(nabolag)
 
 
-@app.callback(Output('output', 'children'), [Input('neibourhood_div', 'children'), Input("btnAddHouse", "n_clicks")], [State('new_house_id', 'value')])
-def showNeihbourhood(dictonary, n, value):
+@app.callback(Output('tabs', 'children'),
+              [Input('neibourhood_div', 'children'),
+               Input('btnAddHouse', 'n_clicks')],
+              [State('new_house_id', 'value')])
+def showNeihbourhood(dictionary, n, value):
     global main_neighbourhood
+    global active_house
     if n and n > 0:
-        addHouseToNeighbourhood(value)
-    nabolag = create_neighborhood_output(main_neighbourhood)
-    return html.Div(children=nabolag)
+        main_neighbourhood.houses.append(House(value))
+        n = 0
+    tabs = create_house_tabs(main_neighbourhood)
+    return html.Div(children=[
+        dcc.Tabs(id='neighbourhoodTabs', children=tabs),
+        html.Div(id='tabs-content', children=["some cool content"])
+    ])
 
-# hide/show popup
+
+@app.callback(Output('initChoices', 'style'), [Input('tabs', 'children')])
+def hideButton(children):
+    if len(children) > 1:
+        return {'display': 'none'}
+
+# generate content for tabs
+@app.callback(Output('tabs-content', 'children'),
+              [Input('neighbourhoodTabs', 'value')])
+def render_content(value):
+    global main_neighbourhood
+    if value is not None:
+        tabId = int(value)
+    else:
+        # get the id of first house
+        tabId = int(main_neighbourhood.houses[0].id)
+    if main_neighbourhood is not None:
+        house = main_neighbourhood.findHouseById(tabId)
+        if house is not None:
+            dis = displayHouse(house)
+            return html.Div([dis])
 
 
-@app.callback(Output("house_modal", "style"), [Input("config_neighbourhood", "n_clicks")])
+@app.callback(Output("house_modal", "style"), [Input("btnConfigHouse", "n_clicks")])
 def display_leads_modal_callback(n):
     if n > 0:
         return {"display": "block"}
@@ -247,23 +313,13 @@ def display_leads_modal_callback(n):
 # reset to 0 add button n_clicks property
 
 @app.callback(
-    Output("config_neighbourhood", "n_clicks"),
+    Output("btnConfigHouse", "n_clicks"),
     [Input("leads_modal_close", "n_clicks"),
-     Input("submit_new_house", "n_clicks")],
+     Input("save_new_house", "n_clicks")],
 )
 def close_modal_callback(n, n2):
     return 0
 
-# Callbacks for dynamic form in config house
-
-
-@app.callback(Output("dropdowndiv", "children"), [Input('neibourhood_div', 'children'), Input('btnAddHouse', 'n_clicks')])
-def fill_dropDown(dictionary, n):
-    global main_neighbourhood
-    if(dictionary or (n > 0)):
-        return dcc.Dropdown(id='user-dropdown', options=[{'label': house.id, 'value': house.id} for house in main_neighbourhood.houses]),
-
-
-@app.callback(Output("active-house-hidden", "children"), [Input("dropdowndiv", "value")])
-def setActiveHouse(value):
-    print(value)
+@app.callback(Output("user-device-dropdown", "options"), [Input("user-dropdown", "value")])
+def setUserDeviceOptions(value):
+    return [{'label': i, 'value': i} for i in [1,2,3]]
