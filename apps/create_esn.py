@@ -131,13 +131,19 @@ def configHouseModal(house):
                             className="row",
                             style={"padding": "2% 8%"},
                         ),
-                        dcc.Dropdown(
-                            id='user-dropdown', options=[{'label': user.id, 'value': user.id} for user in house.users]),
-                        dcc.Dropdown(id='user-device-dropdown'),
-                        # create house button
+                        html.Button("Add device", id='btnAddDevice'),
+                        dcc.Dropdown(id='user-device-dropdown', options=[{'label': device.id, 'value': device.id}
+                                                                         for user in house.users for device in user.devices], placeholder='or select an existing one'),
+
+                        # Form to change/add device. Every user in the system have id=1
+                        html.Div(id="deviceConfig", children=[
+                            # see callbackmethod
+                        ], style={'display': 'block'}),
+
+
                         html.Span(
                             "Save",
-                            id="save_new_house",
+                            id="save_house",
                             n_clicks=0,
                             className="button button--primary add"
                         ),
@@ -180,7 +186,7 @@ layout = html.Div([
         ),
         html.Div(id="newNeighbourhoodInput", children=[
             dcc.Input(id="newNeighbourhoodId", value=0, type="number", style={
-                'width': '50pxx'
+                'width': '50px'
             }),
             html.Button("Create Neighbourhood",
                         id="btnCreateNewNeighbourhood", n_clicks_timestamp='0')
@@ -289,11 +295,10 @@ def display(contents, btnAddHouse, btn2, btn3):
                Input('btnDeleteHouse', 'n_clicks_timestamp')])
 def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse):
     global main_neighbourhood
-
     if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse):
         main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
     elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse):
-        main_neighbourhood.houses.append(House(909))
+        main_neighbourhood.houses.append(House(909))  # TODO: logic to set id.
     elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse):
         main_neighbourhood.houses.remove(
             main_neighbourhood.houses[0])
@@ -344,24 +349,49 @@ def render_content(value):
             return html.Div([dis])
 
 
+""" ------------------- configHouseModal callbacks ----------------------"""
+
+
 @app.callback(Output("house_modal", "style"), [Input("btnConfigHouse", "n_clicks")])
 def display_leads_modal_callback(n):
     if n > 0:
         return {"display": "block"}
     return {"display": "none"}
-
-
 # reset to 0 add button n_clicks property
+
 
 @app.callback(
     Output("btnConfigHouse", "n_clicks"),
     [Input("leads_modal_close", "n_clicks"),
-     Input("save_new_house", "n_clicks")],
+     Input("save_house", "n_clicks")],
 )
 def close_modal_callback(n, n2):
     return 0
 
 
-@app.callback(Output("user-device-dropdown", "options"), [Input("user-dropdown", "value")])
-def setUserDeviceOptions(value):
-    return [{'label': i, 'value': i} for i in [1, 2, 3]]
+@app.callback(Output('deviceConfig', 'children'), [Input('btnAddDevice', 'n_clicks'), Input('user-device-dropdown', 'value')])
+def renderDeviceForm(n, value):
+    if n > 0:
+        return html.Div([
+            dcc.Input(id="newDeviceId", type="number", placeholder="DeviceID", style={
+                'width': '100px'
+            }),
+            html.Br(),
+            dcc.Input(id="newDeviceName", type="text", placeholder="DeviceName", style={
+                'width': '100px'
+            }),
+            html.Br(),
+            dcc.Input(id="newDeviceTemplate", type="number", placeholder="TemplateName", style={
+                'width': '100px'
+            }),
+            html.Br(),
+            dcc.Dropdown(id="newDeviceType", placeholder="TemplateType",
+            options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}])
+        ])
+    elif value is not None:
+        return html.Div()
+
+
+@app.callback(Output('btnAddDevice', 'n_clicks'), [Input('user-device-dropdown', 'value')])
+def resetBtnAddDeviceClicks(value):
+    return 0
