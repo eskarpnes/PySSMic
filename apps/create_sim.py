@@ -1,8 +1,12 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, Event
+import logging
 
 from app import app
+from simulator import Simulator
+from apps import simulate_esn
+import pandas as pd
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
@@ -56,7 +60,7 @@ layout = html.Div(children=[
                 )
             ]),
 
-            html.A(html.Button('Start simulation', className='btnSimulate'),
+            html.A(html.Button('Start simulation', className='btnSimulate', id='btn-simulate'),
                    href='/apps/simulate_esn')
 
 
@@ -72,3 +76,34 @@ layout = html.Div(children=[
 )
 def update_weather(input_weather):
     return input_weather
+
+
+@app.callback(
+    Output(component_id="btn-simulate", component_property="children"),
+    events=[Event("btn-simulate", "click")],
+)
+def on_click():
+    import time
+    # Hardcoded example
+    config = {
+        "neighbourhood": "test",
+        "timefactor": 0.000000000001,
+        "length": 86400
+    }
+    sim = Simulator(config)
+    sim.start()
+    time.sleep(5)
+    contracts, profiles = sim.get_output()
+    #Data processing contracts
+    contracts = pd.DataFrame.from_dict(contracts)
+    contracts = contracts.drop(['load_profile', 'time'], axis=1)
+    contracts = contracts[['contract_id', 'time_of_agreement', 'consumer_id', 'producer_id']]
+    #Sending to simulation
+    simulate_esn.RECORDS = contracts
+    print("DONE!")
+    #print("Contracts: ")
+    #print(contracts)
+    #print("\n\nProfiles: ")
+    #print(profiles)
+    sim.kill_producers()
+    return contracts
