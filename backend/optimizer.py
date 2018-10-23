@@ -91,22 +91,13 @@ class Optimizer:
         return derivative
 
     def differentiate(self, series: pd.Series):
-        indices = list(series.index)
-        values = list(series.values)
-        derivative = []
-        for i in range(1, len(indices) + 1):
-            if i >= len(indices):
-                derivative.insert(0, values[0])
-            else:
-                p0 = values[i - 1]
-                t0 = indices[i - 1]
-                p1 = values[i]
-                t1 = indices[i]
+        x = series.index
+        y = series.values
+        dy = np.zeros(y.shape, np.float)
+        dy[0:-1] = np.diff(y)/np.diff(x)
+        dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-                d = (p1 - p0)
-                derivative.append(d)
-
-        return pd.Series(index=indices, data=derivative)
+        return pd.Series(index=x, data=dy)
 
     def interpolate(self, series: pd.Series, indices: List[int]):
         not_included = list(filter(lambda t: t not in series.index.values, indices))
