@@ -3,11 +3,12 @@ import dash_html_components as html
 import dash_table_experiments as dt
 import plotly.graph_objs as go
 import pandas as pd
-
+from apps import create_sim
 
 from app import app
 
 """-------------------------ENERGY USE-------------------------"""
+
 
 def get_energy_df():
     return pd.DataFrame({'c1': [384, 827], 'c2': [848, 874]})
@@ -34,31 +35,16 @@ def energy_use(df):
 """"-------------------------CONTRACT OVERVIEW-------------------------"""
 
 
-def get_contracts():
-    return [
-        {
-            "Contract ID": [1],
-            "Contract signed (time)": [12.32],
-            "Start of contract (time)": [14.55],
-            "Consumer": ["c1"],
-            "Producer": ["p1"]
-        },
-        {
-            "Contract ID": [2],
-            "Contract signed (time)": [13.45],
-            "Start of contract (time)": [15.07],
-            "Consumer": ["c2"],
-            "Producer": ["p2"]
-        }
-    ]
+# Updated in create_sim, method "on-click"
+RECORDS = [{}]
 
 
 def contract_overview():
     return (
         dt.DataTable(
-            rows=get_contracts(),
+            rows=RECORDS,
             columns=[
-                "Contract ID", "Contract signed (time)", "Start of contract (time)", "Consumer", "Producer"],
+                "id", "time_of_agreement", "consumer_id", "producer_id"],
             row_selectable=True,
             filterable=True,
             sortable=True,
@@ -124,7 +110,14 @@ layout = html.Div([
         html.H2("Available vs Used energy")
     ),
     html.Div([
-        # TODO: Fix that consumption don't overwrite pie chart when uncommented
         energy_consumption()
     ], className="consumption-graph")
 ], className="test")
+
+# @app.callback(Output("datatable", "rows"),
+# [Input("datatable", "datatable")],
+# )
+# def update_table(rows):
+#     df = pd.DataFrame(rows)
+#     df['available'] = df['recommendation'].astype(int) - df['manual input'].astype(int)
+#     return df
