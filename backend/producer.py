@@ -40,35 +40,36 @@ class Producer(ThreadingActor):
                 self.schedule.append((sender, job, JobStatus.created))
                 return dict(action=Action.accept)
             else:
-                self.schedule.append((sender, job, JobStatus.created))
+                schedule_object = (sender, job, JobStatus.created)
+                self.schedule.append(schedule_object)
                 result = self.optimize()
                 if result > 0:
                     contract = self.create_contract(job)
                     self.manager.register_contract(contract)
                     return dict(action=Action.accept)
                 else:
+                    self.schedule.remove(schedule_object)
                     return dict(action=Action.decline)
 
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
         self.logger.info("Running optimizer ... Time = " + str(self.manager.clock.now))
-        # result = self.optimizer.optimize(self.schedule) TODO: Use this
-        result = [1 for x in range(len(self.schedule))]
+        result = self.optimizer.optimize()
 
         for i, s in enumerate(self.schedule):
             sender, job, status = s
-
-            if result[-1] < 0:
+            if result[i] <= 0 and status != JobStatus.created:
                 self.cancel(sender)
 
-        if random.random() < 0.5:
-            return 1.0
-        else:
-            return -1.0
+            if result[i] > 0 and status != JobStatus.active:
+                self.schedule[i][2] = JobStatus.active
 
-    def cancel(self, consumer):
-        message = dict(action=Action.cancel)
-        self.send(message, consumer)
+        return result[-1]
+
+    def cancel(self, schedule_object):
+        message = dict(action=Action.decline)
+        self.schedule.remove(schedule_object)
+        self.send(message, schedule_object[0])
 
     def filter_schedule(self, status):
         return filter(lambda x: x[2] == status, self.schedule)
@@ -79,8 +80,8 @@ class Producer(ThreadingActor):
         if self.prediction is None:
             self.prediction = prediction
         else:
-            offset = self.prediction[int(prediction.first_valid_index())-3600]
-            new_prediction = prediction+offset
+            offset = self.prediction[int(prediction.first_valid_index()) - 3600]
+            new_prediction = prediction + offset
             self.prediction = new_prediction.combine_first(self.prediction)
 
     def create_contract(self, job):

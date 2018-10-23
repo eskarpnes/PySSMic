@@ -1,23 +1,29 @@
 import itertools
 import logging
+import math
+from collections import defaultdict
 from itertools import chain
+from random import randint
 from typing import List
 
 import numpy as np
 import pandas as pd
+from scipy import optimize
 
 
 class Optimizer:
-    def __init__(self, producer):
+    def __init__(self, producer, algorithm='bounded'):
         self.producer = producer
+        self.algorithm = algorithm
         self.logger = logging.getLogger("src.Optimizer")
         self.differentiated_loads = []
         self.differentiated_production = None
         self.indices = []
         self.penalty_factor = 1.0
+        self.previous_objective_score = float('inf')
 
     # The main function that optimizes the schedule. How the schedule and job should be implemented is up for discussion
-    def optimize(self):
+    def optimize(self) -> (List[float], List[bool]):
         indices = list(set(chain.from_iterable(
             map(lambda x: self.producer.schedule[x][1].load_profile.index.values.tolist(),
                 range(0, len(self.producer.schedule))))))
@@ -26,36 +32,58 @@ class Optimizer:
 
         # Interpolate and differentiate load profiles before optimization.
         self.differentiated_production = self.differentiate_and_interpolate(self.producer.prediction, indices)
+        print("length: %d" %len(self.producer.schedule))
+        self.differentiated_loads = []
         for s in self.producer.schedule:
             self.differentiated_loads.append(self.differentiate_and_interpolate(s[1].load_profile, indices))
 
-        objective = np.zeros(len(self.producer.schedule))
-        # return optimize.minimize(self.to_minimize, objective, tol=1.0, method="trust-ncg")
-        configs = list(map(list, itertools.product([0, 1], repeat=len(self.differentiated_loads))))
-        return self.recursive_binary_optimizer(configs, float('inf'), configs[0])
+        if self.algorithm == 'bounded':
+            bounds = [(s[1].est, s[1].lst) for s in self.producer.schedule]
+            x0 = np.array([randint(b[0], b[1]) for b in bounds])
+            # x0 = [0, 2, 4, 6, 6]
+            self.logger.debug("x0:" + str(x0))
+            options=dict(eps=1.0)
+            result = optimize.minimize(fun=self.to_minimize, x0=x0, bounds=bounds, method="SLSQP", options=options)
+            should_keep = [True for x in range(len(bounds))]
+            x = list([int(round(e)) for e in result.x])
+            if result.fun > self.previous_objective_score:
+                should_keep[-1] = False
+                return x, should_keep
+            else:
+                return x, should_keep
+
+        elif self.algorithm == 'alpha_beta':
+            configs = list(map(list, itertools.product([0, 1], repeat=len(self.differentiated_loads))))
+            return self.recursive_binary_optimizer(configs, float('inf'), configs[0])
 
     def to_minimize(self, schedule: List[float]):
-        produced = []
-        consumed = []
+        consumed = defaultdict(float)
 
         for t in self.indices:
-            consumed_t = 0
             for i, load in enumerate(self.differentiated_loads):
-                if schedule[i] > 0:
-                    consumed_t += load[t]
+                consumed[int(round(t + schedule[i]))] += load[t]
 
-            consumed.append(consumed_t)
-            produced.append(self.differentiated_production[t])
 
         penalty = 0
         diff = 0
-        for p, c in zip(produced, consumed):
-            diff_t = abs(p - c)
+        all_indices = list(consumed.keys())
+        all_indices.extend(self.indices)
+        all_indices.extend(self.producer.prediction.index.values)
+        ts = sorted(list(set(all_indices)))
+        produced = self.differentiate_and_interpolate(self.producer.prediction, ts)
+        for i, t in enumerate(ts):
+            if i == 0:
+                delta = ts[1] - ts[0]
+            else:
+                delta = t-ts[i-1]
+            p = produced[t]
+            c = consumed[t]
+            diff_t = abs(p - c) * delta
             diff += diff_t
             if c > p:
                 penalty += diff_t
 
-        return diff, penalty
+        return diff
 
     def binary_optimzier(self):
         configs = map(list, itertools.product([0, 1], repeat=len(self.differentiated_loads)))

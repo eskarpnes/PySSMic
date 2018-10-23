@@ -13,17 +13,19 @@ def test_optimize():
     sim = Simulator()
     man = Manager(sim)
     producer = Producer("id", man)
-    job0 = (None, Job("id", 0, 0, pd.Series(index=[0, 5], data=[0.0, 40.0])), JobStatus.active)
-    job1 = (None, Job("id", 0, 0, pd.Series(index=[0, 2], data=[0.0, 20.0])), JobStatus.active)
-    job2 = (None, Job("id", 0, 0, pd.Series(index=[2, 5], data=[0.0, 30.0])), JobStatus.active)
-    producer.schedule = [job0, job1, job2]
-    producer.prediction = pd.Series(index=[0, 5], data=[0.0, 50.0])
+    job0 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
+    job1 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
+    job2 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
+    job3 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
+    job4 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
+    producer.schedule = [job0, job1, job2, job3, job4]
+    producer.prediction = pd.Series(index=[0, 10], data=[0.0, 100.0])
 
-    result = producer.optimizer.optimize()
+    schedule_time, should_keep = producer.optimizer.optimize()
 
-    assert result[0] == 0
-    assert result[1] == 1
-    assert result[2] == 1
+    assert schedule_time[0] == 0
+    assert schedule_time[1] == 1
+    assert schedule_time[2] == 1
 
 
 def test_differentiate():

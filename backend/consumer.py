@@ -39,7 +39,7 @@ class Consumer(ThreadingActor):
         action = message['action']
         if action == Action.broadcast:
             self.producers.append(message['producer'])
-        elif action == Action.cancel:
+        elif action == Action.decline:
             # TODO Implement renegotiation when a contract is cancelled
             pass
 
