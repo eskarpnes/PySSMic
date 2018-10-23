@@ -61,7 +61,7 @@ def displayHouse(house):
 
     return html.Div(["House",
                      html.Span(str(house.id)),
-                     html.Button("Delete house", id="deleteHouse"),
+
                      html.Button("Configure", id="btnConfigHouse"),
                      html.Br(),
                      html.Span("Number of users: " + str(numOfUsers)),
@@ -131,7 +131,8 @@ def configHouseModal(house):
                             className="row",
                             style={"padding": "2% 8%"},
                         ),
-                        dcc.Dropdown(id='user-dropdown', options=[{'label': user.id, 'value': user.id} for user in house.users]),
+                        dcc.Dropdown(
+                            id='user-dropdown', options=[{'label': user.id, 'value': user.id} for user in house.users]),
                         dcc.Dropdown(id='user-device-dropdown'),
                         # create house button
                         html.Span(
@@ -181,17 +182,20 @@ layout = html.Div([
             dcc.Input(id="newNeighbourhoodId", value=0, type="number", style={
                 'width': '50pxx'
             }),
-            html.Button("Create Neighbourhood", id="btnCreateNewNeighbourhood")
+            html.Button("Create Neighbourhood",
+                        id="btnCreateNewNeighbourhood", n_clicks_timestamp='0')
         ],
             style={'display': 'block'}),
     ]),
     html.Div(id="newHouseInput", children=[
         dcc.Input(id="new_house_id", type='number', style={
                 'width': '100'}),
-        html.Button("Add house", id="btnAddHouse"),
+        html.Button("Add house", id="btnAddHouse", n_clicks_timestamp='0'),
+        html.Button("Delete house", id="btnDeleteHouse",
+                    n_clicks_timestamp='0'),
     ]),
     html.Div(id="neighbourhood-info"),
-    html.Div(id="tabs"),
+    html.Div(id="tabs")
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -247,33 +251,66 @@ def showNewNeighbourhoodInput(n):
 
 
 # Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
-
-
-@app.callback(Output('neibourhood_div', 'children'),
+# Function to store and update main neighbourhood div / Controller
+'''
+@app.callback(Output('container', 'children'),
               [Input('upload-data', 'contents'),
-               Input('btnCreateNewNeighbourhood', 'n_clicks')],
-              [State('newNeighbourhoodInput', 'value')])
-def create_house(contents, n, value):
+               Input('btnAddHouse', 'n_clicks_timestamp'),
+               Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
+               Input('btnRemoveHouse', 'n_clicks_timestamp')
+               ])
+def display(contents, btnAddHouse, btn2, btn3):
+    if int(btnAddHouse) > int(btn2) and int(btnAddHouse) > int(btn3):
+        msg = 'Button 1 was most recently clicked'
+    elif int(btn2) > int(btnAddHouse) and int(btn2) > int(btn3):
+        msg = 'Button 2 was most recently clicked'
+    elif int(btn3) > int(btnAddHouse) and int(btn3) > int(btn2):
+        msg = 'Button 3 was most recently clicked'
+    elif contents is not None:
+        root = parse_contents(contents)
+        nabolag = create_neighborhood_object(root).to_json()
+
+        msg = nabolag
+    return html.Div([
+        html.Div('btnAddHouse: {}'.format(btnAddHouse)),
+        html.Div('btn2: {}'.format(btn2)),
+        html.Div('btn3: {}'.format(btn3)),
+        html.Div(msg)
+    ])
+
+
+'''
+
+
+@app.callback(Output('neighbourhood_div', 'children'),
+              [Input('upload-data', 'contents'),
+               Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
+               Input('btnAddHouse', 'n_clicks_timestamp'),
+               Input('btnDeleteHouse', 'n_clicks_timestamp')])
+def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse):
     global main_neighbourhood
-    if n and n > 0:
-        main_neighbourhood = Neighbourhood(value)
-    else:
+
+    if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse):
+        main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
+    elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse):
+        main_neighbourhood.houses.append(House(909))
+    elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse):
+        main_neighbourhood.houses.remove(
+            main_neighbourhood.houses[0])
+    elif contents is not None:
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
     nabolag = main_neighbourhood.to_json()
+    print(nabolag)
     return html.Div(nabolag)
+
+# Function to update the view based on neighbourhood div
 
 
 @app.callback(Output('tabs', 'children'),
-              [Input('neibourhood_div', 'children'),
-               Input('btnAddHouse', 'n_clicks')],
-              [State('new_house_id', 'value')])
-def showNeihbourhood(dictionary, n, value):
+              [Input('neighbourhood_div', 'children')])
+def neighbourhood_tab_view(dictionary):
     global main_neighbourhood
-    global active_house
-    if n and n > 0:
-        main_neighbourhood.houses.append(House(value))
-        n = 0
     tabs = create_house_tabs(main_neighbourhood)
     return html.Div(children=[
         dcc.Tabs(id='neighbourhoodTabs', children=tabs),
@@ -287,15 +324,19 @@ def hideButton(children):
         return {'display': 'none'}
 
 # generate content for tabs
+
+
 @app.callback(Output('tabs-content', 'children'),
               [Input('neighbourhoodTabs', 'value')])
 def render_content(value):
     global main_neighbourhood
+    global active_house
     if value is not None:
         tabId = int(value)
     else:
         # get the id of first house
         tabId = int(main_neighbourhood.houses[0].id)
+    active_house = tabId
     if main_neighbourhood is not None:
         house = main_neighbourhood.findHouseById(tabId)
         if house is not None:
@@ -320,6 +361,7 @@ def display_leads_modal_callback(n):
 def close_modal_callback(n, n2):
     return 0
 
+
 @app.callback(Output("user-device-dropdown", "options"), [Input("user-dropdown", "value")])
 def setUserDeviceOptions(value):
-    return [{'label': i, 'value': i} for i in [1,2,3]]
+    return [{'label': i, 'value': i} for i in [1, 2, 3]]

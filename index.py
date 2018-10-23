@@ -12,7 +12,7 @@ app.layout = html.Div([
     html.Div(id='page-content'),
     # needed to make it work on create_esn
     html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
-    html.Div(id="neibourhood_div", style={'display': 'none'})
+    html.Div(id="neighbourhood_div", style={'display': 'none'})
 ])
 
 
