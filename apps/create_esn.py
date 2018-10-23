@@ -41,7 +41,6 @@ def create_house_view(house):
         for device in user.devices:
             content.append(
                 html.Div(className="DeviceInHouse", children=[
-                    html.Span("userid: " + str(user.id) + "\t\t"),
                     html.Span("DeviceID: " + str(device.id) + "\t\t"),
                     html.Span("DeviceName: " + device.name + "\t\t"),
                     html.Span("DeviceTemplate: " + str(device.id) + "\t\t"),
@@ -62,8 +61,6 @@ def displayHouse(house):
     return html.Div(["House",
                      html.Span(str(house.id)),
                      html.Button("Configure", id="btnConfigHouse"),
-                     html.Br(),
-                     html.Span("Number of users: " + str(numOfUsers)),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
                      html.Div(children=create_house_view(house)),
@@ -124,8 +121,6 @@ def configHouseModal():
                             ]),
                             # form
                             html.Div(id='configHouse-content'),
-                          #  html.Button("Add device", id='btnAddDevice'),
-
                             html.Span(
                                 "Save",
                                 id="save_house",
@@ -150,7 +145,7 @@ layout = html.Div([
     html.Div(id='nInfo', children=[
         html.Div('nabolag: ' + str(main_neighbourhood), id="main_neighbourhood-info"),
         html.Div('hus: ' + str(active_house), id="active_house-info"),
-        html.Div('device: ' + str(active_device), id="acitve_device-info")
+        html.Div('device: ' + str(active_device), id="active_device-info")
     ]),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
@@ -329,6 +324,7 @@ def showHouseConfigContent(value):
         return html.Div([
             dcc.Dropdown(id='user-device-dropdown', options=[{'label': device.name, 'value': device.id}
                             for user in active_house.users for device in user.devices], placeholder='Select device'),
+            html.Div(id="deviceConfigForm")
         ])
     elif value == 'addNewDevice':
         return html.Div([
@@ -348,10 +344,26 @@ def showHouseConfigContent(value):
                          options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}])
         ])
 
+@app.callback(Output('deviceConfigForm', 'children'), [Input('active_device-info', 'children')])
+def renderConfigForm(children):
+    if active_device is not None:
+        return html.Div([
+            dcc.Input(id="newDeviceId", type="number", value=active_device.id, style={
+                'width': '100px'
+            }),
+            html.Br(),
+            dcc.Input(id="newDeviceName", type="text", value=active_device.name, style={
+                'width': '100px'
+            }),
+            html.Br(),
+            dcc.Input(id="newDeviceTemplate", type="number", value=active_device.template, style={
+                'width': '100px'
+            }),
+            html.Br(),
+            dcc.Dropdown(id="newDeviceType", value=active_device.type,
+                         options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}])
+        ])
 
-@app.callback(Output('btnAddDevice', 'n_clicks'), [Input('user-device-dropdown', 'value')])
-def resetBtnAddDeviceClicks(value):
-    return 0
 
 
 @app.callback(
@@ -375,7 +387,7 @@ def showNid(children):
     return html.Div([
         html.Div('nabolag: ' + str(main_neighbourhood), id="main_neighbourhood-info"),
         html.Div('hus: ' + str(active_house), id="active_house-info"),
-        html.Div('device: ' + str(active_device), id="acitve_device-info")
+        html.Div('device: ' + str(active_device), id="active_device-info")
     ])
 
 # set active house.
@@ -389,7 +401,7 @@ def setActiveHouse(value):
         active_house = main_neighbourhood.findHouseById(int(value))
     return html.Div(str(active_house))
 
-@app.callback(Output('acitve_device-info', 'children'), [Input('user-device-dropdown', 'value')])
+@app.callback(Output('active_device-info', 'children'), [Input('user-device-dropdown', 'value')])
 def setActiveDevice(value):
     global active_house
     global active_device
