@@ -1,7 +1,7 @@
 import csv
 
-from backend.consumerEvent import ConsumerEvent
-from backend.producerEvent import ProducerEvent
+from backend.consumer_event import ConsumerEvent
+from backend.producer_event import ProducerEvent
 from backend.load import Load
 from backend.prediction import Prediction
 
