@@ -150,7 +150,7 @@ layout = html.Div([
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
         html.Button("Create from XML", id="btnXmlInput"),
-        html.Button("Create a new", id="btnNewNeighbourhood"),
+        html.Button("Create new", id="btnNewNeighbourhood"),
         dcc.Upload(
             id="upload-data",
             children=html.Div([
