@@ -6,13 +6,14 @@ import util.conf_logger
 
 class Consumer(ThreadingActor):
 
-    def __init__(self, producers, job, clock):
+    def __init__(self, producers, job, manager):
         super(Consumer, self).__init__()
         self.producers = producers
         self.job = job
         self.id = job.id
         self.logger = logging.getLogger("src.Consumer")
-        self.clock = clock
+        self.manager = manager
+        self.clock = manager.clock
         self.logger.info("New consumer made with id: " + str(self.id))
 
     # Send a message to another actor in a framework agnostic way
@@ -44,6 +45,7 @@ class Consumer(ThreadingActor):
         # TODO Implement priority queue
         if len(self.producers) <= 0:
             self.logger.info("No producer remaining. Buying power from the grid.")
+            self.manager.register_contract(self.create_grid_contract(self.job))
             self.stop()
             return
         producer = self.producers[0]
@@ -53,6 +55,19 @@ class Consumer(ThreadingActor):
             'job': self.job
         }
         self.send(message, producer)
+
+    # If the consumer buys power from the grid, they make a grid-contract
+    def create_grid_contract(self, job):
+        current_time = self.clock.now
+        id = "grid" + ";" + job.id + ";" + str(current_time)
+        time = job.scheduled_time
+        time_of_agreement = current_time
+        load_profile = job.load_profile
+        job_id = job.id
+        producer_id = "grid"
+
+        return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
+                    job_id=job_id, producer_id=producer_id)
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender
