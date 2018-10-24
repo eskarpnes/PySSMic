@@ -3,6 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, Event
 import dash_table_experiments as dt
 import plotly.graph_objs as go
+import json
 import pandas as pd
 from apps import create_sim
 from app import app
@@ -128,5 +129,5 @@ layout = html.Div([
                Input('datatableDiv', 'children')])
 def update_table(n, children):
     if n and n > 0:
-        a = children
+        a = json.loads(children)
         return a
