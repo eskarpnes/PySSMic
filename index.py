@@ -4,16 +4,16 @@ from dash.dependencies import Input, Output
 import dash_table_experiments as dt
 
 from app import app
+from backend.neighbourhood import Neighbourhood
 from apps import create_sim, create_esn, main, simulate_esn, base
-
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content'),
     # needed to make it work on create_esn
     html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
+    html.Div(id="neighbourhood_div", style={'display': 'none'})
 ], className="main")
-
 
 
 @app.callback(Output('page-content', 'children'),
