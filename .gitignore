@@ -177,3 +177,6 @@ fabric.properties
 
 # Log files
 log.txt
+
+# Pickled files
+*.pkl
