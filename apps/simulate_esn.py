@@ -5,7 +5,6 @@ import dash_table_experiments as dt
 import plotly.graph_objs as go
 import pandas as pd
 from apps import create_sim
-
 from app import app
 
 """-------------------------ENERGY USE-------------------------"""
@@ -51,7 +50,7 @@ def contract_overview():
         dt.DataTable(
             rows=[{}],
             columns=[
-                "id", "time_of_agreement", "consumer_id", "producer_id"],
+                "id", "time_of_agreement", "job_id", "producer_id"],
             row_selectable=True,
             filterable=True,
             sortable=True,
@@ -118,13 +117,16 @@ layout = html.Div([
     ),
     html.Div([
         energy_consumption()
-    ], className="consumption-graph")
+    ], className="consumption-graph"),
+    html.Button("Start simulation", id="btnSimulationStart"),
+    html.Div(id='testtest')
 ], className="test")
 
-# @app.callback(Output("datatable", "rows"),
-# [Input("datatable", "datatable")],
-# )
-# def update_table(rows):
-#     df = pd.DataFrame(rows)
-#     df['available'] = df['recommendation'].astype(int) - df['manual input'].astype(int)
-#     return df
+
+@app.callback(Output("contract-table", "rows"),
+              [Input("btnSimulationStart", "n_clicks"),
+               Input('datatableDiv', 'children')])
+def update_table(n, children):
+    if n and n > 0:
+        a = children
+        return a

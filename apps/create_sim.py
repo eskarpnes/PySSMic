@@ -60,8 +60,8 @@ layout = html.Div(children=[
                 )
             ]),
 
-            html.A(html.Button('Start simulation', className='btnSimulate', id='btn-simulate'),
-                   href='/apps/simulate_esn')
+            html.A(html.Button('Start simulation',
+                               className='btnSimulate', id='btn-simulate'))
 
 
         ])
@@ -95,10 +95,10 @@ def on_click():
     time.sleep(5)
     contracts, profiles = sim.get_output()
     contracts = pd.DataFrame.from_dict(contracts)
+    print("CONTRACTS:::::")
+    print(contracts)
     contracts = contracts.drop(['load_profile', 'time'], axis=1)
     contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
     sim.kill_producers()
     print("Producers killed")
-    print(contracts.to_json(orient='split'))
-    return html.Div(contracts.to_json(orient='split'))
-
+    return contracts.to_json(orient='records')

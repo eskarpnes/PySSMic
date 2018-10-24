@@ -196,12 +196,6 @@ def create_neighborhood_html(neighborhood):
     return htmlString
 
 
-@app.callback(Output('datatable', 'rows'), [Input('upload-data', 'contents')])
-def update_table(contents):
-    root = parse_contents(contents)
-    df = eltreeToDataframe(root)
-    return df.to_dict('records')
-
 
 """
 @app.callback(Output('output', 'children'),
