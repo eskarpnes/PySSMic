@@ -1,11 +1,9 @@
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, Event
-import logging
 
 from app import app
 from simulator import Simulator
-from apps import simulate_esn
 import pandas as pd
 
 # TODO: Add/remove users from the neighbourhood
@@ -84,7 +82,6 @@ def update_weather(input_weather):
 )
 def on_click():
     import time
-    # Hardcoded example
     config = {
         "neighbourhood": "test",
         "timefactor": 0.000000000001,
@@ -95,10 +92,7 @@ def on_click():
     time.sleep(5)
     contracts, profiles = sim.get_output()
     contracts = pd.DataFrame.from_dict(contracts)
-    print("CONTRACTS:::::")
-    print(contracts)
     contracts = contracts.drop(['load_profile', 'time'], axis=1)
     contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
     sim.kill_producers()
-    print("Producers killed")
     return contracts.to_json(orient='records')

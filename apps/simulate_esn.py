@@ -5,7 +5,6 @@ import dash_table_experiments as dt
 import plotly.graph_objs as go
 import json
 import pandas as pd
-from apps import create_sim
 from app import app
 
 """-------------------------ENERGY USE-------------------------"""
@@ -34,16 +33,6 @@ def energy_use(df):
 
 
 """"-------------------------CONTRACT OVERVIEW-------------------------"""
-
-
-# @app.callback(
-#     Output(component_id='contract-table', component_property='rows'),
-#     events=[Event("btn-simulate", "click")],
-# )
-# def update_records(records):
-#     print("Update records method")
-#     print(records)
-#     return 0
 
 
 def contract_overview():
@@ -119,9 +108,8 @@ layout = html.Div([
     html.Div([
         energy_consumption()
     ], className="consumption-graph"),
-    html.Button("Start simulation", id="btnSimulationStart"),
-    html.Div(id='testtest')
-], className="test")
+    html.Button("Start simulation", id="btnSimulationStart")
+])
 
 
 @app.callback(Output("contract-table", "rows"),
@@ -129,5 +117,4 @@ layout = html.Div([
                Input('datatableDiv', 'children')])
 def update_table(n, children):
     if n and n > 0:
-        a = json.loads(children)
-        return a
+        return json.loads(children)
