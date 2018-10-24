@@ -60,11 +60,9 @@ def displayHouse(house):
 
     return html.Div(["House",
                      html.Span(str(house.id)),
-                     html.Button("Configure", id="btnConfigHouse"),
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
                      html.Div(children=create_house_view(house)),
-                     configHouseModal()
                      ])
 
 
@@ -74,76 +72,71 @@ def addHouseToNeighbourhood(houseId):
     house = House(houseId)
     main_neighbourhood.houses.append(house)
 
-    
-def configHouseTabs():
-    return(
-        
-        html.Div('houseTabsContent')
-    )
-
 
 def configHouseModal():
-    if active_house is not None:
-        return html.Div(
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            # header
-                            html.Div(
-                                [
-                                    html.Span(
-                                        "Configure House" + str(active_house.id),
-                                        style={
-                                            "color": "#506784",
-                                            "fontWeight": "bold",
-                                            "fontSize": "20",
-                                        },
-                                    ),
-                                    html.Span(
-                                        "×",
-                                        id="leads_modal_close",
-                                        n_clicks=0,
-                                        style={
-                                            "float": "right",
-                                            "cursor": "pointer",
-                                            "marginTop": "0",
-                                            "marginBottom": "17",
-                                        },
-                                    ),
-                                ],
-                                className="popup",
-                                style={"borderBottom": "1px solid #C8D4E3"},
-                            ),
-                            dcc.Tabs(id="configHouseTabs", value='configHouseDevice', children=[
-                                dcc.Tab(label='Configure a device', value="configHouseDevice"),
-                                dcc.Tab(label='Add new device', value="addNewDevice")
-                            ]),
-                            # form
-                            html.Div(id='configHouse-content'),
-                            html.Span(
-                                "Save",
-                                id="save_house",
-                                n_clicks=0,
-                                className="button button--primary add"
-                            ),
-                        ],
-                        className="modal-content",
-                        style={"textAlign": "center"},
-                    )
-                ],
-                className="modal",
-            ),
-            id="house_modal",
-            style={"display": "none"},
-        )
+    return html.Div(
+        html.Div(
+            [
+                html.Div(
+                    [
+                        # header
+                        html.Div(
+                            [
+                                html.Span(
+                                    "Configure House",
+                                    style={
+                                        "color": "#506784",
+                                        "fontWeight": "bold",
+                                        "fontSize": "20",
+                                    },
+                                ),
+                                html.Span(
+                                    "×",
+                                    id="leads_modal_close",
+                                    n_clicks=0,
+                                    style={
+                                        "float": "right",
+                                        "cursor": "pointer",
+                                        "marginTop": "0",
+                                        "marginBottom": "17",
+                                    },
+                                ),
+                            ],
+                            className="popup",
+                            style={"borderBottom": "1px solid #C8D4E3"},
+                        ),
+                        dcc.Tabs(id="configHouseTabs", value='configHouseDevice', children=[
+                            dcc.Tab(label='Configure a device',
+                                    value="configHouseDevice"),
+                            dcc.Tab(label='Add new device',
+                                    value="addNewDevice")
+                        ]),
+                        # form
+                        html.Div(id='configHouse-content'),
+                        html.Span(
+                            "Save",
+                            id="save_house",
+                            n_clicks_timestamp='0',
+                            className="button button--primary add"
+                        ),
+                    ],
+                    className="modal-content",
+                    style={"textAlign": "center"},
+                )
+            ],
+            className="modal",
+        ),
+        id="house_modal",
+        style={"display": "none"},
+    )
 
 
 layout = html.Div([
     # hidden div to save data in
-    html.Div(id="hidden-div-n-houses", style={'display': 'none'}),
+    html.Div(id="new_device_div", style={'display': 'block'}),
     html.Div(id='nInfo', children=[
-        html.Div('nabolag: ' + str(main_neighbourhood), id="main_neighbourhood-info"),
+        html.Div('nabolag: ' + str(main_neighbourhood),
+                 id="main_neighbourhood-info"),
         html.Div('hus: ' + str(active_house), id="active_house-info"),
         html.Div('device: ' + str(active_device), id="active_device-info")
     ]),
@@ -179,14 +172,14 @@ layout = html.Div([
             style={'display': 'block'}),
     ]),
     html.Div(id="newHouseInput", children=[
-        dcc.Input(id="new_house_id", type='number', style={
-                'width': '100'}),
         html.Button("Add house", id="btnAddHouse", n_clicks_timestamp='0'),
         html.Button("Delete house", id="btnDeleteHouse",
                     n_clicks_timestamp='0'),
+        html.Button("Configure", id="btnConfigHouse", n_clicks_timestamp='0')
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
+    configHouseModal()
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -249,11 +242,12 @@ def showNewNeighbourhoodInput(n):
               [Input('upload-data', 'contents'),
                Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
                Input('btnAddHouse', 'n_clicks_timestamp'),
-               Input('btnDeleteHouse', 'n_clicks_timestamp')])
-def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse):
+               Input('btnDeleteHouse', 'n_clicks_timestamp'),
+               Input('save_house', 'n_clicks_timestamp')])
+def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave):
     global main_neighbourhood
     global active_house
-    if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse):
+    if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse) and int(btnNewNei) > int(btnSave):
         main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
     elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse):
         main_neighbourhood.houses.append(House(909))  # TODO: logic to set id.
@@ -283,6 +277,7 @@ def neighbourhood_tab_view(dictionary):
             dcc.Tabs(id='neighbourhoodTabs', children=tabs),
             html.Div(id='tabs-content', children=["some cool content"])
         ])
+
 
 @app.callback(Output('initChoices', 'style'), [Input('tabs', 'children')])
 def hideButton(children):
@@ -318,12 +313,13 @@ def display_leads_modal_callback(n):
     return {"display": "none"}
 # reset to 0 add button n_clicks property
 
+
 @app.callback(Output('configHouse-content', 'children'), [Input('configHouseTabs', 'value')])
 def showHouseConfigContent(value):
     if value == 'configHouseDevice':
         return html.Div([
             dcc.Dropdown(id='user-device-dropdown', options=[{'label': device.name, 'value': device.id}
-                            for user in active_house.users for device in user.devices], placeholder='Select device'),
+                                                             for user in active_house.users for device in user.devices], placeholder='Select device'),
             html.Div(id="deviceConfigForm")
         ])
     elif value == 'addNewDevice':
@@ -343,6 +339,7 @@ def showHouseConfigContent(value):
             dcc.Dropdown(id="newDeviceType", placeholder="TemplateType",
                          options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}])
         ])
+
 
 @app.callback(Output('deviceConfigForm', 'children'), [Input('active_device-info', 'children')])
 def renderConfigForm(children):
@@ -365,7 +362,6 @@ def renderConfigForm(children):
         ])
 
 
-
 @app.callback(
     Output("btnConfigHouse", "n_clicks"),
     [Input("leads_modal_close", "n_clicks"),
@@ -373,8 +369,6 @@ def renderConfigForm(children):
 )
 def close_modal_callback(n, n2):
     return 0
-
-
 
 
 ''' Functions for developing mode'''
@@ -385,7 +379,8 @@ def showNid(children):
     global main_neighbourhood
     global active_house
     return html.Div([
-        html.Div('nabolag: ' + str(main_neighbourhood), id="main_neighbourhood-info"),
+        html.Div('nabolag: ' + str(main_neighbourhood),
+                 id="main_neighbourhood-info"),
         html.Div('hus: ' + str(active_house), id="active_house-info"),
         html.Div('device: ' + str(active_device), id="active_device-info")
     ])
@@ -401,6 +396,7 @@ def setActiveHouse(value):
         active_house = main_neighbourhood.findHouseById(int(value))
     return html.Div(str(active_house))
 
+
 @app.callback(Output('active_device-info', 'children'), [Input('user-device-dropdown', 'value')])
 def setActiveDevice(value):
     global active_house
@@ -408,3 +404,8 @@ def setActiveDevice(value):
     if value is not None:
         active_device = active_house.findDeviceById(int(value))
     return html.Div(str(active_device))
+
+
+@app.callback(Output('new_device_div', 'children'), [Input('save_house', 'n_clicks_timestamp')])
+def testest(n):
+    return html.Div(n)
