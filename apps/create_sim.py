@@ -79,7 +79,7 @@ def update_weather(input_weather):
 
 
 @app.callback(
-    Output(component_id="btn-simulate", component_property="children"),
+    Output(component_id="datatableDiv", component_property="children"),
     events=[Event("btn-simulate", "click")],
 )
 def on_click():
@@ -94,16 +94,11 @@ def on_click():
     sim.start()
     time.sleep(5)
     contracts, profiles = sim.get_output()
-    #Data processing contracts
     contracts = pd.DataFrame.from_dict(contracts)
     contracts = contracts.drop(['load_profile', 'time'], axis=1)
-    contracts = contracts[['contract_id', 'time_of_agreement', 'consumer_id', 'producer_id']]
-    #Sending to simulation
-    simulate_esn.RECORDS = contracts
-    print("DONE!")
-    #print("Contracts: ")
-    #print(contracts)
-    #print("\n\nProfiles: ")
-    #print(profiles)
+    contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
     sim.kill_producers()
-    return contracts
+    print("Producers killed")
+    print(contracts.to_json(orient='split'))
+    return html.Div(contracts.to_json(orient='split'))
+

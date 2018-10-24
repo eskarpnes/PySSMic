@@ -11,7 +11,8 @@ app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content'),
     # needed to make it work on create_esn
-    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
+    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}, id='output-datatable'),
+    html.Div(id="datatableDiv", children=["hello world"])
 ], className="main")
 
 

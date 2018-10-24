@@ -1,5 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output, Event
 import dash_table_experiments as dt
 import plotly.graph_objs as go
 import pandas as pd
@@ -35,21 +36,27 @@ def energy_use(df):
 """"-------------------------CONTRACT OVERVIEW-------------------------"""
 
 
-# Updated in create_sim, method "on-click"
-RECORDS = [{}]
+# @app.callback(
+#     Output(component_id='contract-table', component_property='rows'),
+#     events=[Event("btn-simulate", "click")],
+# )
+# def update_records(records):
+#     print("Update records method")
+#     print(records)
+#     return 0
 
 
 def contract_overview():
     return (
         dt.DataTable(
-            rows=RECORDS,
+            rows=[{}],
             columns=[
                 "id", "time_of_agreement", "consumer_id", "producer_id"],
             row_selectable=True,
             filterable=True,
             sortable=True,
             selected_row_indices=[],
-            id="datatable"
+            id="contract-table"
         )
     )
 
@@ -67,7 +74,7 @@ def energy_consumption():
             id="energy-consumption-graph",
             figure=go.Figure(
                 data=[
-                    # TODO: Update to input values from simulator
+                    # TODO: Update to input values from simulator in 'get_consumption()'
                     go.Scatter(
                         x=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], y=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
                         name="Energy used"
