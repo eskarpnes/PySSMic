@@ -5,7 +5,7 @@ from backend.consumer import Consumer
 from backend.job import Job, JobStatus
 from backend.producer import Producer
 import pandas as pd
-from .mock_manager import MockManager
+from .mocks import MockManager
 
 def test_request_producer():
     producer = Producer.start("id", None)
