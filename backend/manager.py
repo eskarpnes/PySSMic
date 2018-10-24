@@ -11,7 +11,6 @@ class Manager:
         self.consumers = []
         self.producers = {}
         self.logger = logging.getLogger("src.Manager")
-
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
         # simulator start
         self.simulator = simulator
@@ -64,7 +63,7 @@ class Manager:
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
     def new_job(self, job):
-        consumer_ref = Consumer.start(list(self.producers.values()), job, self.clock)
+        consumer_ref = Consumer.start(list(self.producers.values()), job, self)
         self.register_consumer(consumer_ref)
 
     # Input API
