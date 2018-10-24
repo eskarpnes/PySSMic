@@ -4,7 +4,6 @@ from dash.dependencies import Input, Output
 import dash_table_experiments as dt
 
 from app import app
-from apps import create_sim, create_esn, main, base
 from backend.neighbourhood import Neighbourhood
 from apps import create_sim, create_esn, main, simulate_esn, base
 
