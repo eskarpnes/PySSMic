@@ -51,7 +51,9 @@ class Consumer(ThreadingActor):
             self.stop()
             return
         # The producer is the third object in the tuple. The first two are for priorities.
-        producer = self.producers.get()[2]
+        producer_pri = self.producers.get()
+        self.logger.info("Asking producer with ranking " + str(producer_pri[0]))
+        producer = producer_pri[2]
         message = {
             'sender': self.actor_ref,
             'action': Action.request,

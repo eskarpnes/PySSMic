@@ -1,19 +1,19 @@
+import pickle
 import queue
 from .consumer import Consumer
 from .producer import Producer
 import logging
 from util.message_utils import Action
 
-
 class Manager:
-    def __init__(self, simulator=None):
+    def __init__(self, simulator):
+        self.logger = logging.getLogger("src.Manager")
+        self.simulator = simulator
         self.consumers = []
         self.producers = {}
-        self.producer_rankings = {}
-        self.logger = logging.getLogger("src.Manager")
+        self.producer_rankings = self.load_producer_scores()
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
         # simulator start
-        self.simulator = simulator
         self.clock = simulator.neighbourhood
 
     # Send out a new weather prediction
@@ -36,7 +36,8 @@ class Manager:
     # Register a new producer. Every consumer should be notified about this producer
     def register_producer(self, producer, id):
         self.producers[id] = producer
-        self.producer_rankings[id] = 10
+        if id not in self.producer_rankings.keys():
+            self.producer_rankings[id] = 10
         self.broadcast_new_producer(producer)
 
     # Register a new consumer
@@ -94,13 +95,23 @@ class Manager:
         return production_profiles
 
     def save_producer_scores(self):
-        pass
+        pathname = self.simulator.DATA_DIR + "producer_scores"
+        with open(pathname + '.pkl', 'wb') as f:
+            pickle.dump(self.producer_rankings, f, pickle.HIGHEST_PROTOCOL)
 
     def load_producer_scores(self):
-        pass
+        pathname = self.simulator.DATA_DIR + "producer_scores"
+        try:
+            with open(pathname + '.pkl', 'rb') as f:
+                self.logger.info("Loading producer scores from file.")
+                producer_rankings = pickle.load(f)
+        except FileNotFoundError:
+            self.logger.info("No score file found. Making a fresh producer scoreboard")
+            producer_rankings = {}
+        return producer_rankings
 
     def reward_producer(self, id):
-        self.producer_rankings[id] += 1
+        self.producer_rankings[id] -= 1
 
     def punish_producer(self, id):
-        self.producer_rankings[id] -= 1
+        self.producer_rankings[id] += 1
