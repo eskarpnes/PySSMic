@@ -19,15 +19,18 @@ class Consumer(ThreadingActor):
     # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
         # Sends a blocking message to producers
+        receiver_id = receiver["id"]
+        receiver = receiver["producer"]
         try:
             answer = receiver.ask(message, timeout=60)
             action = answer['action']
             if action == Action.decline:
                 self.logger.info('Job declined. Time = ' + str(self.clock.now))
-                self.producers.pop()
+                self.manager.punish_producer(receiver_id)
                 self.request_producer()
             else:
                 self.logger.info('Job accepted. Time = ' + str(self.clock.now))
+                self.manager.reward_producer(receiver_id)
         except Timeout:
             self.request_producer()
 
@@ -42,13 +45,13 @@ class Consumer(ThreadingActor):
 
     # Function for selecting a producer for a job
     def request_producer(self):
-        # TODO Implement priority queue
-        if len(self.producers) <= 0:
+        if self.producers.empty():
             self.logger.info("No producer remaining. Buying power from the grid.")
             self.manager.register_contract(self.create_grid_contract(self.job))
             self.stop()
             return
-        producer = self.producers[0]
+        # The producer is the third object in the tuple. The first two are for priorities.
+        producer = self.producers.get()[2]
         message = {
             'sender': self.actor_ref,
             'action': Action.request,
@@ -65,7 +68,6 @@ class Consumer(ThreadingActor):
         load_profile = job.load_profile
         job_id = job.id
         producer_id = "grid"
-
         return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
                     job_id=job_id, producer_id=producer_id)
 

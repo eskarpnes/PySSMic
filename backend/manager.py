@@ -1,5 +1,4 @@
-import simpy
-
+import queue
 from .consumer import Consumer
 from .producer import Producer
 import logging
@@ -10,6 +9,7 @@ class Manager:
     def __init__(self, simulator=None):
         self.consumers = []
         self.producers = {}
+        self.producer_rankings = {}
         self.logger = logging.getLogger("src.Manager")
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
         # simulator start
@@ -36,6 +36,7 @@ class Manager:
     # Register a new producer. Every consumer should be notified about this producer
     def register_producer(self, producer, id):
         self.producers[id] = producer
+        self.producer_rankings[id] = 10
         self.broadcast_new_producer(producer)
 
     # Register a new consumer
@@ -63,7 +64,14 @@ class Manager:
     # (seconds elapsed and power used)
     # TODO: Load profile should be a data set designed for the optimizer algorithm
     def new_job(self, job):
-        consumer_ref = Consumer.start(list(self.producers.values()), job, self)
+        ranked_producers = queue.PriorityQueue()
+        # To settle tie-breakers in the priority queue
+        # Without this the priority queue tries to compare the dictionaries if the score is the same
+        counter = 0
+        for key, producer in self.producers.items():
+            ranked_producers.put((self.producer_rankings[key], counter, {"id": key, "producer": producer}))
+            counter += 1
+        consumer_ref = Consumer.start(ranked_producers, job, self)
         self.register_consumer(consumer_ref)
 
     # Input API
@@ -84,3 +92,15 @@ class Manager:
         for producer in self.producers.values():
             production_profiles[producer._actor.id] = producer._actor.prediction
         return production_profiles
+
+    def save_producer_scores(self):
+        pass
+
+    def load_producer_scores(self):
+        pass
+
+    def reward_producer(self, id):
+        self.producer_rankings[id] += 1
+
+    def punish_producer(self, id):
+        self.producer_rankings[id] -= 1
