@@ -4,6 +4,8 @@ import simpy.rt
 import simpy
 from backend.producer import Producer
 from util.input_utils import *
+from definitions import ROOT_DIR
+import os.path
 
 
 class Simulator:
@@ -18,8 +20,6 @@ class Simulator:
         # Default to one day
         self.end_time = config["length"] if "length" in config else 86400
 
-        # The manager that is simulated. Every new load and prediction should be sent to it.
-        self.manager = Manager(self)
 
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}
@@ -32,6 +32,11 @@ class Simulator:
 
         # Name of the configuration to be ran. Defaults to "test"
         config_name = config["neighbourhood"] if "neighbourhood" in config else "test"
+
+        self.DATA_DIR = os.path.join(ROOT_DIR, "input", config_name)
+
+        # The manager that is simulated. Every new load and prediction should be sent to it.
+        self.manager = Manager(self)
 
         # Loads in events and normalizes them
         events, predictions = self.load_files_from_csv(config_name)
@@ -58,7 +63,8 @@ class Simulator:
         yield event
         self.new_prediction(prediction)
 
-    def kill_producers(self):
+    def stop(self):
+        self.manager.save_producer_scores()
         self.manager.terminate_producers()
         self.manager.terminate_consumers()
 
@@ -129,7 +135,7 @@ if __name__ == "__main__":
     # Hardcoded example
     config = {
         "neighbourhood": "test",
-        "timefactor": 0.0001,
+        "timefactor": 0.0000001,
         "length": 86400
     }
     sim = Simulator(config)
@@ -137,8 +143,5 @@ if __name__ == "__main__":
     time.sleep(config["length"]*config["timefactor"])
     contracts, profiles = sim.get_output()
     print("DONE!")
-    print("Contracts: ")
-    print(contracts)
-    print("\n\nProfiles: ")
-    print(profiles)
-    sim.kill_producers()
+    print(sim.manager.producer_rankings)
+    sim.stop()

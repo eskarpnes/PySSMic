@@ -6,7 +6,7 @@ from simulator import Simulator
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.manager import Manager
 from backend.producer import Producer
-from .mock_clock import MockClock
+from .mocks import MockClock
 
 def test_register_producer():
     # Make a manager with no neighbourhood (not needed for testing)
