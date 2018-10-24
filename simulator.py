@@ -58,7 +58,7 @@ class Simulator:
         yield event
         self.new_prediction(prediction)
 
-    def kill_producers(self):
+    def stop(self):
         self.manager.terminate_producers()
         self.manager.terminate_consumers()
 
@@ -141,4 +141,4 @@ if __name__ == "__main__":
     print(contracts)
     print("\n\nProfiles: ")
     print(profiles)
-    sim.kill_producers()
+    sim.stop()
