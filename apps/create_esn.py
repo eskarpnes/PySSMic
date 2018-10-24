@@ -72,6 +72,10 @@ def addHouseToNeighbourhood(houseId):
     house = House(houseId)
     main_neighbourhood.houses.append(house)
 
+def addDeviceToHouse(device):
+    global active_house
+    active_house.users[0].devices.append(Device)
+
 
 def configHouseModal():
     return html.Div(
@@ -406,6 +410,16 @@ def setActiveDevice(value):
     return html.Div(str(active_device))
 
 
-@app.callback(Output('new_device_div', 'children'), [Input('save_house', 'n_clicks_timestamp')])
-def testest(n):
-    return html.Div(n)
+@app.callback(Output('new_device_div', 'children'),
+              [Input('save_house', 'n_clicks_timestamp')],
+              [
+    State('newDeviceId', 'value'),
+    State('newDeviceName', 'value'),
+    State('newDeviceTemplate', 'value'),
+    State('newDeviceType', 'value')
+],)
+def testest(n, dId, dName, dTemp, dType):
+    global active_house
+    if (dId or dName or dTemp or dType) is not None:
+        dev = Device(dId, dName, dTemp, dType)
+    return html.Div(str(dev))
