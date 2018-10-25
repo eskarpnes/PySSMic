@@ -94,5 +94,5 @@ def on_click():
     contracts = pd.DataFrame.from_dict(contracts)
     contracts = contracts.drop(['load_profile', 'time'], axis=1)
     contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
-    sim.kill_producers()
+    sim.stop()
     return contracts.to_json(orient='records')
