@@ -72,6 +72,7 @@ def addHouseToNeighbourhood(houseId):
     house = House(houseId)
     main_neighbourhood.houses.append(house)
 
+
 def addDeviceToHouse(device):
     global active_house
     active_house.users[0].devices.append(Device)
@@ -183,6 +184,7 @@ layout = html.Div([
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
+    html.Button(id="btnSaveNeighbourhood"),
     configHouseModal()
 ])
 
@@ -251,13 +253,16 @@ def showNewNeighbourhoodInput(n):
 def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave):
     global main_neighbourhood
     global active_house
+    print(str(btnNewNei) + str(btnAddHouse) + str(btnRemoveHouse) + str(btnSave))
     if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse) and int(btnNewNei) > int(btnSave):
         main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
-    elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse):
+    elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse) and int(btnAddHouse) > int(btnSave):
         main_neighbourhood.houses.append(House(909))  # TODO: logic to set id.
-    elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse):
+    elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse) and int(btnRemoveHouse) > int(btnSave):
         main_neighbourhood.houses.remove(
             active_house)
+    elif int(btnSave) > int(btnNewNei) and int(btnSave) > int(btnAddHouse) and int(btnSave) > int(btnRemoveHouse):
+        
     elif contents is not None:
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
@@ -422,4 +427,8 @@ def testest(n, dId, dName, dTemp, dType):
     global active_house
     if (dId or dName or dTemp or dType) is not None:
         dev = Device(dId, dName, dTemp, dType)
+        active_house.users[0].devices.append(dev)
+        for device in active_house.users[0].devices:
+            print(type(device))
+        print(type(dev))
     return html.Div(str(dev))
