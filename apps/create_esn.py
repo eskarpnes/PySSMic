@@ -243,6 +243,27 @@ def showNewNeighbourhoodInput(n):
 # Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
 # Function to store and update main neighbourhood div / Controller
 
+@app.callback(Output('new_device_div', 'children'),
+              [Input('save_house', 'n_clicks_timestamp')],
+              [
+    State('newDeviceId', 'value'),
+    State('newDeviceName', 'value'),
+    State('newDeviceTemplate', 'value'),
+    State('newDeviceType', 'value')
+],)
+def testest(n, dId, dName, dTemp, dType):
+    global active_house
+    global active_device
+    if (dId or dName or dTemp or dType) is not None:
+        #Update old one -- can be duplicate deviceIds
+    
+        dev = Device(dId, dName, dTemp, dType)
+        active_house.users[0].devices.append(dev)
+        for device in active_house.users[0].devices:
+            print(type(device))
+        print(type(dev))
+    return html.Div(str(dev))
+
 
 @app.callback(Output('neighbourhood_div', 'children'),
               [Input('upload-data', 'contents'),
@@ -262,7 +283,7 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         main_neighbourhood.houses.remove(
             active_house)
     elif int(btnSave) > int(btnNewNei) and int(btnSave) > int(btnAddHouse) and int(btnSave) > int(btnRemoveHouse):
-        
+        print("hello")   
     elif contents is not None:
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
@@ -413,22 +434,3 @@ def setActiveDevice(value):
     if value is not None:
         active_device = active_house.findDeviceById(int(value))
     return html.Div(str(active_device))
-
-
-@app.callback(Output('new_device_div', 'children'),
-              [Input('save_house', 'n_clicks_timestamp')],
-              [
-    State('newDeviceId', 'value'),
-    State('newDeviceName', 'value'),
-    State('newDeviceTemplate', 'value'),
-    State('newDeviceType', 'value')
-],)
-def testest(n, dId, dName, dTemp, dType):
-    global active_house
-    if (dId or dName or dTemp or dType) is not None:
-        dev = Device(dId, dName, dTemp, dType)
-        active_house.users[0].devices.append(dev)
-        for device in active_house.users[0].devices:
-            print(type(device))
-        print(type(dev))
-    return html.Div(str(dev))
