@@ -12,7 +12,7 @@ from scipy import optimize
 
 
 class Optimizer:
-    def __init__(self, producer, algorithm='bounded'):
+    def __init__(self, producer, algorithm='basinhopping'):
         self.producer = producer
         self.algorithm = algorithm
         self.logger = logging.getLogger("src.Optimizer")
@@ -22,7 +22,9 @@ class Optimizer:
         self.previous_objective_score = float('inf')
 
     # The main function that optimizes the schedule. How the schedule and job should be implemented is up for discussion
-    def optimize(self) -> (List[float], List[bool]):
+    def optimize(self, tol=1000.0, eps=0.001) -> (List[float], List[bool]):
+        dup = len(set([x['job'].id for x in self.producer.schedule])) < len(self.producer.schedule)
+
         indices = list(set(chain.from_iterable(
             map(lambda x: self.producer.schedule[x]['job'].load_profile.index.values.tolist(),
                 range(0, len(self.producer.schedule))))))
@@ -34,11 +36,12 @@ class Optimizer:
         for s in self.producer.schedule:
             self.differentiated_loads.append(self.differentiate(s['job'].load_profile))
 
-        if self.algorithm == 'bounded':
-            bounds = [(s['job'].est, s['job'].lst) for s in self.producer.schedule]
+        if self.algorithm == 'basinhopping':
+            now = self.producer.manager.clock.now
+            bounds = [(max(s['job'].est, now), s['job'].lst) for s in self.producer.schedule]
             x0 = np.array([randint(b[0], b[1]) for b in bounds])
-            # TODO: Find reasonable defautl values for eps and tol, and let frontend choose
-            kwargs=dict(method="L-BFGS-B", bounds=bounds, options=dict(eps=2.0), tol=100.0)
+            # TODO: Find reasonable default values for eps and tol, and let frontend choose
+            kwargs=dict(method="L-BFGS-B", bounds=bounds, options=dict(eps=eps), tol=tol)
 
             # The Basin-hopping algorithm is good at finding global minimums.
             result = optimize.basinhopping(func=self.to_minimize, x0=x0, minimizer_kwargs=kwargs)
@@ -51,6 +54,7 @@ class Optimizer:
                 should_keep[-1] = False
                 return x, should_keep
             else:
+                self.previous_objective_score = result.fun
                 return x, should_keep
 
     def to_minimize(self, schedule: List[float]):
@@ -66,6 +70,7 @@ class Optimizer:
         diff = 0
         ts = list(consumed.keys())
         produced = self.differentiate_and_interpolate(self.producer.prediction, ts)
+        ts.extend(list(produced.index.values))
         ts = sorted(ts)
         for i, t in enumerate(ts):
             if i == 0:
@@ -79,7 +84,7 @@ class Optimizer:
             if c > p:
                 penalty += diff_t
 
-        return diff
+        return diff + penalty
 
     def differentiate_and_interpolate(self, series: pd.Series, indices: List[int]):
         interpolated = self.interpolate(series, indices)

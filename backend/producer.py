@@ -57,11 +57,10 @@ class Producer(ThreadingActor):
         scheduled_time, should_keep = self.optimizer.optimize()
 
         for i, s in enumerate(self.schedule):
-            sender, job, status = s
-            if not should_keep[i] and status != JobStatus.created:
-                self.cancel(sender)
+            if not should_keep[i] and s['status'] != JobStatus.created:
+                self.cancel(s)
 
-            if should_keep and status != JobStatus.active:
+            if should_keep and s['status'] != JobStatus.active:
                 self.schedule[i]['status'] = JobStatus.active
 
         return should_keep[-1]

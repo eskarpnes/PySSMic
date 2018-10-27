@@ -13,15 +13,15 @@ def test_optimize():
     sim = Simulator()
     man = Manager(sim)
     producer = Producer("id", man)
-    job0 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
-    job1 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
-    job2 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
-    job3 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
-    job4 = (None, Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), JobStatus.active)
+    job0 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
+    job1 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
+    job2 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
+    job3 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
+    job4 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
     producer.schedule = [job0, job1, job2, job3, job4]
     producer.prediction = pd.Series(index=[0, 10], data=[0.0, 100.0])
 
-    schedule_time, should_keep = producer.optimizer.optimize()
+    schedule_time, should_keep = producer.optimizer.optimize(tol=0.5, eps=0.5)
 
     assert {0, 2, 4, 6, 8} == set([int(round(x)) for x in schedule_time])
 
