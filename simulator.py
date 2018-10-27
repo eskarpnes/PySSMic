@@ -109,6 +109,8 @@ class Simulator:
     # Call when a contract is fulfilled.
     def fulfill_contract(self, contract):
         self.logger.info("Contract fulfilled. Contract id: " + str(contract["id"]) + " Time: " + str(self.neighbourhood.now))
+        producer = self.manager.producers[contract['producer_id']]
+        producer._actor.fulfill_contract(contract)
         self.fulfilled_contracts.append(contract)
 
     # Loading functions

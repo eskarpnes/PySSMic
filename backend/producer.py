@@ -37,13 +37,13 @@ class Producer(ThreadingActor):
             job = message['job']
             # always accept in test
             if 'pytest' in sys.modules:
-                self.schedule.append((sender, job, JobStatus.created))
+                self.schedule.append(dict(consumer=sender, job=job, status=JobStatus.created))
                 return dict(action=Action.accept)
             else:
-                schedule_object = (sender, job, JobStatus.created)
+                schedule_object = dict(consumer=sender, job=job, status=JobStatus.created)
                 self.schedule.append(schedule_object)
-                result = self.optimize()
-                if result > 0:
+                should_keep = self.optimize()
+                if should_keep:
                     contract = self.create_contract(job)
                     self.manager.register_contract(contract)
                     return dict(action=Action.accept)
@@ -54,17 +54,17 @@ class Producer(ThreadingActor):
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
         self.logger.info("Running optimizer ... Time = " + str(self.manager.clock.now))
-        result = self.optimizer.optimize()
+        scheduled_time, should_keep = self.optimizer.optimize()
 
         for i, s in enumerate(self.schedule):
             sender, job, status = s
-            if result[i] <= 0 and status != JobStatus.created:
+            if not should_keep[i] and status != JobStatus.created:
                 self.cancel(sender)
 
-            if result[i] > 0 and status != JobStatus.active:
-                self.schedule[i][2] = JobStatus.active
+            if should_keep and status != JobStatus.active:
+                self.schedule[i]['status'] = JobStatus.active
 
-        return result[-1]
+        return should_keep[-1]
 
     def cancel(self, schedule_object):
         message = dict(action=Action.decline)
@@ -95,6 +95,10 @@ class Producer(ThreadingActor):
 
         return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
                     job_id=job_id, producer_id=producer_id)
+
+    def fulfill_contract(self, contract):
+        new_schedule = [s for s in self.schedule if s['job'].id != contract['job_id']]
+        self.schedule = new_schedule
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender

@@ -23,9 +23,7 @@ def test_optimize():
 
     schedule_time, should_keep = producer.optimizer.optimize()
 
-    assert schedule_time[0] == 0
-    assert schedule_time[1] == 1
-    assert schedule_time[2] == 1
+    assert {0, 2, 4, 6, 8} == set([int(round(x)) for x in schedule_time])
 
 
 def test_differentiate():
