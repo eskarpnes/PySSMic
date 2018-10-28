@@ -6,3 +6,6 @@ class MockClock:
 class MockManager:
     def __init__(self):
         self.clock = MockClock()
+
+    def register_contract(self, job):
+        pass

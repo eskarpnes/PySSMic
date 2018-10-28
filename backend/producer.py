@@ -37,38 +37,38 @@ class Producer(ThreadingActor):
             job = message['job']
             # always accept in test
             if 'pytest' in sys.modules:
-                self.schedule.append((sender, job, JobStatus.created))
+                self.schedule.append(dict(consumer=sender, job=job, status=JobStatus.created))
                 return dict(action=Action.accept)
             else:
-                self.schedule.append((sender, job, JobStatus.created))
-                result = self.optimize()
-                if result > 0:
+                schedule_object = dict(consumer=sender, job=job, status=JobStatus.created)
+                self.schedule.append(schedule_object)
+                should_keep = self.optimize()
+                if should_keep:
                     contract = self.create_contract(job)
                     self.manager.register_contract(contract)
                     return dict(action=Action.accept)
                 else:
+                    self.schedule.remove(schedule_object)
                     return dict(action=Action.decline)
 
     # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
         self.logger.info("Running optimizer ... Time = " + str(self.manager.clock.now))
-        # result = self.optimizer.optimize(self.schedule) TODO: Use this
-        result = [1 for x in range(len(self.schedule))]
+        scheduled_time, should_keep = self.optimizer.optimize()
 
         for i, s in enumerate(self.schedule):
-            sender, job, status = s
+            if not should_keep[i] and s['status'] != JobStatus.created:
+                self.cancel(s)
 
-            if result[-1] < 0:
-                self.cancel(sender)
+            if should_keep and s['status'] != JobStatus.active:
+                self.schedule[i]['status'] = JobStatus.active
 
-        if random.random() < 0.5:
-            return 1.0
-        else:
-            return -1.0
+        return should_keep[-1]
 
-    def cancel(self, consumer):
-        message = dict(action=Action.cancel)
-        self.send(message, consumer)
+    def cancel(self, schedule_object):
+        message = dict(action=Action.decline)
+        self.schedule.remove(schedule_object)
+        self.send(message, schedule_object[0])
 
     def filter_schedule(self, status):
         return filter(lambda x: x[2] == status, self.schedule)
@@ -79,8 +79,8 @@ class Producer(ThreadingActor):
         if self.prediction is None:
             self.prediction = prediction
         else:
-            offset = self.prediction[int(prediction.first_valid_index())-3600]
-            new_prediction = prediction+offset
+            offset = self.prediction[int(prediction.first_valid_index()) - 3600]
+            new_prediction = prediction + offset
             self.prediction = new_prediction.combine_first(self.prediction)
 
     def create_contract(self, job):
@@ -94,6 +94,10 @@ class Producer(ThreadingActor):
 
         return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
                     job_id=job_id, producer_id=producer_id)
+
+    def fulfill_contract(self, contract):
+        new_schedule = [s for s in self.schedule if s['job'].id != contract['job_id']]
+        self.schedule = new_schedule
 
     # FRAMEWORK SPECIFIC CODE
     # Every message should have a sender field with the reference to the sender
