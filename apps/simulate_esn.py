@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, Event
+from dash.dependencies import Input, Output, Event, State
 import dash_table_experiments as dt
 import plotly.graph_objs as go
 import json
@@ -88,27 +88,34 @@ def energy_consumption():
 
 """-------------------------LAYOUT-------------------------"""
 layout = html.Div([
-    html.Div(
-        html.H2("Energy use")
-    ),
-    html.Div([
-        energy_use(get_energy_df())
-    ], className="pie-chart"),
+    dcc.Tabs(id="tabs", children=[
+            dcc.Tab(label='All households', children=[
+                html.Div(
+                    html.H2("Energy use")
+                ),
+                html.Div([
+                    energy_use(get_energy_df())
+                ], className="pie-chart"),
 
-    html.Div(
-        html.H2("Contracts")
-    ),
-    html.Div([
-        contract_overview()
-    ], className="contract-table"),
+                html.Div(
+                    html.H2("Contracts")
+                ),
+                html.Div([
+                    contract_overview()
+                ], className="contract-table"),
 
-    html.Div(
-        html.H2("Available vs Used energy")
-    ),
-    html.Div([
-        energy_consumption()
-    ], className="consumption-graph"),
-    html.Button("Start simulation", id="btnSimulationStart")
+                html.Div(
+                    html.H2("Available vs Used energy")
+                ),
+                html.Div([
+                    energy_consumption()
+                ], className="consumption-graph"),
+                html.Button("Start simulation", id="btnSimulationStart")
+            ]),
+            dcc.Tab(label='One household', children=[
+                #TODO
+            ])
+    ])
 ])
 
 
