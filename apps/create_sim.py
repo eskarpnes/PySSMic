@@ -1,8 +1,10 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, Event
 
 from app import app
+from simulator import Simulator
+import pandas as pd
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
@@ -56,8 +58,8 @@ layout = html.Div(children=[
                 )
             ]),
 
-            html.A(html.Button('Start simulation', className='btnSimulate'),
-                   href='/apps/simulate_esn')
+            html.A(html.Button('Start simulation',
+                               className='btnSimulate', id='btn-simulate'))
 
 
         ])
@@ -72,3 +74,25 @@ layout = html.Div(children=[
 )
 def update_weather(input_weather):
     return input_weather
+
+
+@app.callback(
+    Output(component_id="datatableDiv", component_property="children"),
+    events=[Event("btn-simulate", "click")],
+)
+def on_click():
+    import time
+    config = {
+        "neighbourhood": "test",
+        "timefactor": 0.000000000001,
+        "length": 86400
+    }
+    sim = Simulator(config)
+    sim.start()
+    time.sleep(5)
+    contracts, profiles = sim.get_output()
+    contracts = pd.DataFrame.from_dict(contracts)
+    contracts = contracts.drop(['load_profile', 'time'], axis=1)
+    contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
+    sim.stop()
+    return contracts.to_json(orient='records')

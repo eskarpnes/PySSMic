@@ -59,7 +59,7 @@ def contract_table(contracts):
 
 # ENERGY OVER TIME
 # Produce a time and cumulative energy from a series of load/producer profiles
-  def change_index_time(df_energy_list, start_times):
+def change_index_time(df_energy_list, start_times):
     i = 0
     energy_dict = dict()
     for df_energy in df_energy_list:

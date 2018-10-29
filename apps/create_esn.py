@@ -221,11 +221,38 @@ Callback function to toggle the xml input field
 """
 
 
+def create_neighborhood_html(neighborhood):
+    htmlString = "<div>"
+    htmlString += "Nabolag:"
+
+    houses = []
+    for house in neighborhood:
+        htmlString += "<div>"
+        htmlString += "Hus id: " + str(house.get("id"))
+        houses.append(house)
+        for user in house:
+            htmlString += "<div>"
+            htmlString += "user id: " + str(user.get("id")) + "<ul>"
+            for device in user:
+                htmlString += "<li> device id: " + \
+                    str(device.find("id").text) + \
+                    " Name: " + str(device.find("name").text) + \
+                    " Template: " + str(device.find("template").text) + \
+                    " Type: " + str(device.find("type").text) + \
+                    "</li>"  # closes device listelement
+            htmlString += "</ul> </div> <br />"  # closes list and user element
+        htmlString += "</div>  <br />"  # closes house div
+    htmlString += "</div>"  # closes neighborhood
+    print(houses)
+    return htmlString
+
+
 @app.callback(Output("upload-data", "style"), [Input("btnXmlInput", "n_clicks")])
 def showXMLUpload(n):
     if n % 2 == 0:
         return {"display": "none"}
     return {"display": "block"}
+
 
 
 """
