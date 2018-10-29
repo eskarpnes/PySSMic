@@ -3,16 +3,16 @@ from simulator import Simulator
 import pickle
 import os.path
 
+
 class ThreadedSimulator:
 
     def __init__(self, config, callback):
         self.runs = config["runs"]
         self.callback = callback
         self.config = config
-        self.threads = {}
         self.counter = Value('i', 0)
         print("You have " + str(cpu_count()) + " cores.")
-        print("This program will run " + str(self.runs/cpu_count()) + " simulations per core.")
+        print("This program will run " + str(self.runs / cpu_count()) + " simulations per core.")
 
     def start(self):
         for i in range(self.runs):
@@ -47,18 +47,23 @@ class ThreadedSimulator:
 
 
 if __name__ == "__main__":
+    import time
+
+    start_time = time.time()
     # Hardcoded example
     config = {
         "neighbourhood": "test",
-        "timefactor": 0.0000001,
+        "timefactor": 0.0000000000001,
         "length": 86400,
-        "runs": 8
+        "runs": 64
     }
 
 
     def callback(contracts, profiles):
+        end_time = time.time()
         print(len(contracts))
         print(len(profiles))
+        print("Elapsed time: " + str(end_time - start_time) + " seconds.")
 
 
     sim = ThreadedSimulator(config, callback)
