@@ -1,7 +1,8 @@
 from multiprocessing import Process, cpu_count, Value
 from simulator import Simulator
 import pickle
-import os.path
+import os
+import shutil
 
 
 class ThreadedSimulator:
@@ -24,7 +25,9 @@ class ThreadedSimulator:
         with self.counter.get_lock():
             index = self.counter.value
             self.counter.value += 1
-            pathname = os.path.join("output", "run" + str(index))
+            if not os.path.isdir("tmp"):
+                os.makedirs("tmp")
+            pathname = os.path.join("tmp", "run" + str(index))
             with open(pathname + '.pkl', 'wb') as f:
                 pickle.dump((contracts, profiles), f)
             self.check_if_done()
@@ -38,11 +41,12 @@ class ThreadedSimulator:
     def unpickle_array(self):
         contracts, profiles = [], []
         for i in range(self.runs):
-            pathname = os.path.join("output", "run" + str(i))
+            pathname = os.path.join("tmp", "run" + str(i))
             with open(pathname + '.pkl', 'rb') as f:
                 result = pickle.load(f)
             contracts.append(result[0])
             profiles.append(result[1])
+        shutil.rmtree("tmp")
         return contracts, profiles
 
 
@@ -55,7 +59,7 @@ if __name__ == "__main__":
         "neighbourhood": "test",
         "timefactor": 0.0000000000001,
         "length": 86400,
-        "runs": 64
+        "runs": 4
     }
 
 
