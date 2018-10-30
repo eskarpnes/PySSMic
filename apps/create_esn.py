@@ -142,7 +142,7 @@ layout = html.Div([
     html.Div(id='nInfo', children=[
         html.Div('nabolag: ' + str(main_neighbourhood),
                  id="main_neighbourhood-info"),
-        html.Div('hus: ' + str(active_house), id="active_house-info"),
+        html.Div('hus: ' + str(type(active_house)), id="active_house-info"),
         html.Div('device: ' + str(active_device), id="active_device-info")
     ]),
     html.H4("Create a new neighbourhood"),
@@ -184,7 +184,7 @@ layout = html.Div([
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
-    html.Button(id="btnSaveNeighbourhood"),
+    html.Button("Save Neighbourhood",id="btnSaveNeighbourhood"),
     configHouseModal()
 ])
 
@@ -278,7 +278,10 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
     if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse) and int(btnNewNei) > int(btnSave):
         main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
     elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse) and int(btnAddHouse) > int(btnSave):
-        main_neighbourhood.houses.append(House(909))  # TODO: logic to set id.
+        newHouse = House(909)
+        newHouse.users.append(User(1))
+        main_neighbourhood.houses.append(newHouse)  # TODO: logic to set id.
+
     elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse) and int(btnRemoveHouse) > int(btnSave):
         main_neighbourhood.houses.remove(
             active_house)
@@ -409,9 +412,9 @@ def showNid(children):
     global main_neighbourhood
     global active_house
     return html.Div([
-        html.Div('nabolag: ' + str(main_neighbourhood),
+        html.Div('nabolag: ' + str(len(main_neighbourhood.houses)),
                  id="main_neighbourhood-info"),
-        html.Div('hus: ' + str(active_house), id="active_house-info"),
+        html.Div('hus: ' + str(type(active_house)), id="active_house-info"),
         html.Div('device: ' + str(active_device), id="active_device-info")
     ])
 
@@ -424,7 +427,7 @@ def setActiveHouse(value):
     global main_neighbourhood
     if value is not None:
         active_house = main_neighbourhood.findHouseById(int(value))
-    return html.Div(str(active_house))
+    return html.Div(str(type(active_house)))
 
 
 @app.callback(Output('active_device-info', 'children'), [Input('user-device-dropdown', 'value')])
@@ -434,3 +437,4 @@ def setActiveDevice(value):
     if value is not None:
         active_device = active_house.findDeviceById(int(value))
     return html.Div(str(active_device))
+
