@@ -17,6 +17,7 @@ from backend.house import House
 from backend.device import Device
 from backend.user import User
 from app import app
+from util.input_utils import prediction_profile_from_csv
 
 main_neighbourhood = None
 active_house = None
@@ -72,12 +73,6 @@ def addHouseToNeighbourhood(houseId):
     house = House(houseId)
     main_neighbourhood.houses.append(house)
 
-
-def addDeviceToHouse(device):
-    global active_house
-    active_house.users[0].devices.append(Device)
-
-
 def configHouseModal():
     return html.Div(
         html.Div(
@@ -124,6 +119,7 @@ def configHouseModal():
                             n_clicks_timestamp='0',
                             className="button button--primary add"
                         ),
+                        html.Button("Delete")
                     ],
                     className="modal-content",
                     style={"textAlign": "center"},
@@ -174,7 +170,7 @@ layout = html.Div([
             html.Button("Create Neighbourhood",
                         id="btnCreateNewNeighbourhood", n_clicks_timestamp='0')
         ],
-            style={'display': 'block'}),
+            style={'display': 'none'}),
     ]),
     html.Div(id="newHouseInput", children=[
         html.Button("Add house", id="btnAddHouse", n_clicks_timestamp='0'),
@@ -250,18 +246,14 @@ def showNewNeighbourhoodInput(n):
     State('newDeviceName', 'value'),
     State('newDeviceTemplate', 'value'),
     State('newDeviceType', 'value')
-],)
-def testest(n, dId, dName, dTemp, dType):
+])
+def addDevice(n, dId, dName, dTemp, dType):
     global active_house
     global active_device
     if (dId or dName or dTemp or dType) is not None:
         #Update old one -- can be duplicate deviceIds
-    
         dev = Device(dId, dName, dTemp, dType)
         active_house.users[0].devices.append(dev)
-        for device in active_house.users[0].devices:
-            print(type(device))
-        print(type(dev))
     return html.Div(str(dev))
 
 
@@ -270,23 +262,29 @@ def testest(n, dId, dName, dTemp, dType):
                Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
                Input('btnAddHouse', 'n_clicks_timestamp'),
                Input('btnDeleteHouse', 'n_clicks_timestamp'),
-               Input('save_house', 'n_clicks_timestamp')])
-def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave):
+               Input('save_house', 'n_clicks_timestamp')],
+               [State('newNeighbourhoodId', 'value')])
+def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, value):
     global main_neighbourhood
     global active_house
     print(str(btnNewNei) + str(btnAddHouse) + str(btnRemoveHouse) + str(btnSave))
     if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse) and int(btnNewNei) > int(btnSave):
+        newHouse = House(1)
+        newHouse.users.append(User(1))
         main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
+        main_neighbourhood.houses.append(newHouse)
     elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse) and int(btnAddHouse) > int(btnSave):
         newHouse = House(909)
         newHouse.users.append(User(1))
         main_neighbourhood.houses.append(newHouse)  # TODO: logic to set id.
-
     elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse) and int(btnRemoveHouse) > int(btnSave):
         main_neighbourhood.houses.remove(
             active_house)
+        if len(main_neighbourhood.houses) > 0:
+            active_house=main_neighbourhood.houses[0]
+
     elif int(btnSave) > int(btnNewNei) and int(btnSave) > int(btnAddHouse) and int(btnSave) > int(btnRemoveHouse):
-        print("hello")   
+        print("hello")
     elif contents is not None:
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
@@ -335,7 +333,17 @@ def render_content(value):
             dis = displayHouse(house)
             return html.Div([dis])
 
-
+#Change tab on delete. TODO:reset n
+@app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp'), Input('btnAddHouse', 'n_clicks_timestamp')])
+def tabChangeOnDelete(a, b):
+    if int(a) > int(b):
+        print(a)
+        return str(main_neighbourhood.houses[0].id)
+    elif int(b) > int(a):
+        print(b)
+        i = len(main_neighbourhood.houses) - 1
+        print(i)
+        return str(main_neighbourhood.houses[i].id)
 """ ------------------- configHouseModal callbacks ----------------------"""
 
 
@@ -391,8 +399,45 @@ def renderConfigForm(children):
             }),
             html.Br(),
             dcc.Dropdown(id="newDeviceType", value=active_device.type,
-                         options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}])
+                         options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}]),
+            dcc.Upload(id="LoadPredictionUpload",
+            children=html.Div([
+                'Add Load or Prediction CSV file by Drag and Drop or ',
+                html.A('Select Files')
+            ]),
+            style={
+                'width': '100%',
+                'height': '60px',
+            }
+        ),
+            html.Div(id=''),
+            dt.DataTable(
+                id="loadOrPredictionTable",
+                rows=[{}],
+            )
         ])
+
+
+def parse_csv(contents, filename):
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string) #decoded is now bytes
+    string = io.StringIO(decoded.decode('utf-8'))
+    timestamps = []
+    values = []
+    for line in string:
+        if line is not "":
+            split_line = line.split(" ")
+            timestamps.append(split_line[0])
+            values.append(split_line[1].rstrip())
+    output = [('Time', timestamps),
+              ('Value', values)]
+    df = pd.DataFrame.from_items(output)
+    return df
+
+@app.callback(Output('loadOrPredictionTable', 'rows'), [Input('LoadPredictionUpload', 'contents')], [State('LoadPredictionUpload', 'filename')])
+def update_table(contents, filename):
+    df = parse_csv(contents, filename)
+    return df.to_dict('records')
 
 
 @app.callback(
@@ -421,8 +466,8 @@ def showNid(children):
 # set active house.
 
 
-@app.callback(Output('active_house-info', 'children'), [Input('neighbourhoodTabs', 'value')])
-def setActiveHouse(value):
+@app.callback(Output('active_house-info', 'children'), [Input('neighbourhoodTabs', 'value'), Input('btnDeleteHouse', 'n_clicks')])
+def setActiveHouse(value, n):
     global active_house
     global main_neighbourhood
     if value is not None:
