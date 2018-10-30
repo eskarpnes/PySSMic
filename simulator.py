@@ -9,8 +9,10 @@ import os.path
 
 
 class Simulator:
-    def __init__(self, config={}):
+    def __init__(self, config, callback):
         self.logger = logging.getLogger("src.Simulator")
+
+        self.callback = callback
 
         # Default 1000 simulated seconds per second. 1 day = 86 seconds to run.
         factor = config["timefactor"] if "timefactor" in config else 0.001
@@ -50,6 +52,8 @@ class Simulator:
         for prediction in predictions:
             schedule = self.schedule_prediction(prediction["timestamp"], prediction)
             simpy.events.Process(self.neighbourhood, schedule)
+
+        simpy.events.Process(self.neighbourhood, self.end_simulation())
 
 
     # Functions that schedule the events. Simpy-specific
@@ -132,19 +136,33 @@ class Simulator:
     def update_production_profiles(self):
         self.production_profiles = self.manager.get_production_profiles()
 
+    def end_simulation(self):
+        event = simpy.events.Timeout(self.neighbourhood, delay=self.end_time - 1)
+        yield event
+        self.logger.info("Finishing run")
+        self.send_output()
+
+    def send_output(self):
+        contracts, profiles = self.get_output()
+        self.callback(contracts, profiles)
+        self.stop()
+
 
 if __name__ == "__main__":
     import time
     # Hardcoded example
+
+    def callback(contracts, profiles):
+        print(contracts)
+        print(profiles)
+
     config = {
         "neighbourhood": "test",
         "timefactor": 0.0000001,
         "length": 86400
     }
-    sim = Simulator(config)
+    sim = Simulator(config, callback)
     sim.start()
     time.sleep(config["length"]*config["timefactor"])
-    contracts, profiles = sim.get_output()
-    print("DONE!")
     print(sim.manager.producer_rankings)
     sim.stop()
