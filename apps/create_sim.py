@@ -31,7 +31,6 @@ layout = html.Div(children=[
                 html.Span("Days to simulate: "),
                 html.Span(id="numDays"),
                 dcc.Input(id="inputDays", type="int"),
-                html.Button("Set", className="btnSet")
             ]),
 
             html.Div(className="selectAlgo", children=[
@@ -60,7 +59,6 @@ layout = html.Div(children=[
                 html.Span("Number of repetitions: "),
                 html.Span(id="numReps"),
                 dcc.Input(id="inputReps", type="int"),
-                html.Button("Set", className="btnSet")
             ]),
 
             html.A(html.Button('Start simulation', className='btnSimulate'),
@@ -72,16 +70,6 @@ layout = html.Div(children=[
 
 ])
 
-
-@app.callback(
-    Output(component_id="numDays", component_property="children"),
-    [Input(component_id="inputDays", component_property="value")],
-)
-
-@app.callback(
-    Output(component_id="numReps", component_property="children"),
-    [Input(component_id="inputReps", component_property="value")],
-)
 
 def update_weather(input_weather):
     return input_weather
