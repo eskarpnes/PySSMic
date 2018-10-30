@@ -133,6 +133,7 @@ def configHouseModal():
 
 
 layout = html.Div([
+    html.Div(id="save_hidden", style={'display': 'none'}),
     # hidden div to save data in
     html.Div(id="new_device_div", style={'display': 'block'}),
     html.Div(id='nInfo', children=[
@@ -334,17 +335,7 @@ def render_content(value):
             dis = displayHouse(house)
             return html.Div([dis])
 
-#Change tab on delete. TODO:reset n
-@app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp'), Input('btnAddHouse', 'n_clicks_timestamp')])
-def tabChangeOnDelete(a, b):
-    if int(a) > int(b):
-        print(a)
-        return str(main_neighbourhood.houses[0].id)
-    elif int(b) > int(a):
-        print(b)
-        i = len(main_neighbourhood.houses) - 1
-        print(i)
-        return str(main_neighbourhood.houses[i].id)
+
 """ ------------------- configHouseModal callbacks ----------------------"""
 
 
@@ -449,9 +440,7 @@ def update_table(contents, filename):
 def close_modal_callback(n, n2):
     return 0
 
-
 ''' Functions for developing mode'''
-
 
 @app.callback(Output('nInfo', 'children'), [Input('neighbourhood_div', 'children')])
 def showNid(children):
@@ -465,7 +454,6 @@ def showNid(children):
     ])
 
 # set active house.
-
 
 @app.callback(Output('active_house-info', 'children'), [Input('neighbourhoodTabs', 'value'), Input('btnDeleteHouse', 'n_clicks')])
 def setActiveHouse(value, n):
@@ -483,4 +471,39 @@ def setActiveDevice(value):
     if value is not None:
         active_device = active_house.findDeviceById(int(value))
     return html.Div(str(active_device))
+
+
+#Change tab on delete. TODO:reset n and send signal instead of timestamp on adding house
+@app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp'), Input('btnAddHouse', 'n_clicks_timestamp')])
+def tabChangeOnDelete(a, b):
+    if int(a) > int(b):
+        print(a)
+        return str(main_neighbourhood.houses[0].id)
+    elif int(b) > int(a):
+        print(b)
+        i = len(main_neighbourhood.houses) - 1
+        print(i)
+        return str(main_neighbourhood.houses[i].id)
+
+
+'''
+TODO: Create csv file for consumer events, producer events and for loads and predictions
+'''
+@app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks')])
+def save_neighbourhood(n):
+    #go through neighbourhood and create files
+    for house in main_neighbourhood.houses:
+        for device in house.users[0].devices: #only one user in each house
+            for event in device.events: #Events are saved as dict. using utilfunction to create csv files for simulator
+                if device.type == "producer":
+                    print('producer') 
+                    #TODO: add to producerevents
+                    #TODO: add predictionfile
+                elif device.type == "consumer":
+                    print("consumer")
+                    #TODO: add to consumer events
+                    #TODO: add loadfile
+                print('event')
+            print(str(device.name))
+    
 
