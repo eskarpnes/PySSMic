@@ -9,11 +9,12 @@ def job_from_consumer_event(csv_line, config_name):
     split = csv_line.split(";")
     est = int(split[1])
     lst = int(split[2])
+    id = str(split[3])
     load_profile_name = split[4]
     load_profile_path = os.path.join(ROOT_DIR, "input", config_name, "loads", load_profile_name)
     load_profile_csv = open(load_profile_path, "r").read()
     load_profile = load_profile_from_csv(load_profile_csv)
-    return Job(est, lst, load_profile)
+    return Job(id, est, lst, load_profile)
 
 
 def load_profile_from_csv(csv):
@@ -46,14 +47,12 @@ def prediction_profile_from_csv(prediction_csv):
     for line in split_by_new_line:
         if line is not "":
             split_line = line.split(" ")
-            timestamps.append(split_line[0])
-            values.append(split_line[1])
+            timestamps.append(int(split_line[0]))
+            values.append(float(split_line[1]))
     return pd.Series(data=values, index=timestamps)
 
 
-def prediction_from_producer_event(csv_line, config_name):
-    split = csv_line.split(";")
-    prediction_file = split[2]
+def prediction_from_producer_event(prediction_file, config_name):
     prediction_profile_path = os.path.join(ROOT_DIR, "input", config_name, "predictions", prediction_file)
     prediction_csv = open(prediction_profile_path, "r").read()
     prediction_profile = prediction_profile_from_csv(prediction_csv)
@@ -67,10 +66,13 @@ def get_predictions_from_csv(config_name):
     predictions_lines = predictions_csv.split("\n")
     for line in predictions_lines:
         if line is not "":
-            timestamp = line.split(";")[0]
+            line = line.split(";")
+            id = line[1]
+            timestamp = line[0]
             predictions.append({
+                "id": id,
                 "timestamp": timestamp,
-                "prediction": prediction_from_producer_event(line, config_name)
+                "prediction": prediction_from_producer_event(line[2], config_name)
             })
     return predictions
 

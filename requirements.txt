@@ -8,3 +8,4 @@ dash-core-components==0.30.2
 dash-table-experiments==0.6.0
 simpy
 pandas
+plotly

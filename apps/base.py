@@ -11,12 +11,12 @@ This represents a base file which follows every layout
 
 header = html.Div([
     html.H1(children="CoSSMic Simulator"),
-    dcc.Link('Home', href='/'),
-    html.Br(),
-    dcc.Link('Go to Create Simulation', href='/apps/create_sim'),
-    html.Br(),
-    dcc.Link("Create neighbourhood", href='/apps/create_esn')
-
+    html.Div([
+        dcc.Link('Home', href='/'),
+        dcc.Link('Go to Create Simulation', href='/apps/create_sim'),
+        dcc.Link("Create neighbourhood", href='/apps/create_esn'),
+        dcc.Link('Simulation', href='/apps/simulate_esn')
+    ], className="links")
 ], className="header")
 
 

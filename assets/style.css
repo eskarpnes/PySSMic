@@ -17,3 +17,56 @@
     width: 50%; /* Could be more or less, depending on screen size */
     color:#506784;
 }
+
+.pie-chart {
+}
+
+.contract-table{
+}
+
+.consumption-graph{
+}
+
+.test {
+    overflow: auto;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+}
+
+.header h1 {
+    text-align: center;
+}
+
+.links {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    font-size: 2rem;
+}
+
+.links a {
+    padding: 20px;
+    text-decoration: none;
+}
+
+.footer {
+    text-align: center;
+}
+
+.simulatorSetup {
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+}
+
+#react-entry-point {
+    min-width: 50%;
+    max-width: 90%;
+}
