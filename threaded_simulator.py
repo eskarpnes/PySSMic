@@ -17,7 +17,7 @@ class ThreadedSimulator:
 
     def start(self):
         for i in range(self.runs):
-            sim = Simulator(config, self.get_run_results)
+            sim = Simulator(self.config, self.get_run_results)
             process = Process(target=sim.start)
             process.start()
 
