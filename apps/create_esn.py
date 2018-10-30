@@ -274,7 +274,8 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
         main_neighbourhood.houses.append(newHouse)
     elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse) and int(btnAddHouse) > int(btnSave):
-        newHouse = House(909)
+        i = main_neighbourhood.nextHouseId()
+        newHouse = House(i)
         newHouse.users.append(User(1))
         main_neighbourhood.houses.append(newHouse)  # TODO: logic to set id.
     elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse) and int(btnRemoveHouse) > int(btnSave):
