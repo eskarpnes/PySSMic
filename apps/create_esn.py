@@ -126,7 +126,7 @@ def configHouseModal():
                             n_clicks_timestamp='0',
                             className="button button--primary add"
                         ),
-                        html.Button("Delete")
+                        html.Button("Delete device", id='btnDeleteDevice', n_clicks_timestamp='0')
                     ],
                     className="modal-content",
                     style={"textAlign": "center"},
@@ -352,35 +352,44 @@ def addDevice(n, dId, dName, dTemp, dType):
 
 
 @app.callback(Output('neighbourhood_div', 'children'),
-              [Input('upload-data', 'contents'),
-               Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
-               Input('btnAddHouse', 'n_clicks_timestamp'),
-               Input('btnDeleteHouse', 'n_clicks_timestamp'),
-               Input('save_house', 'n_clicks_timestamp')],
+              [
+                Input('upload-data', 'contents'),
+                Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
+                Input('btnAddHouse', 'n_clicks_timestamp'),
+                Input('btnDeleteHouse', 'n_clicks_timestamp'),
+                Input('save_house', 'n_clicks_timestamp'),
+                Input('btnDeleteDevice', 'n_clicks_timestamp')
+                ],
                [State('newNeighbourhoodId', 'value')])
-def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, value):
+def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, btnDeleteDevice, value):
     global main_neighbourhood
     global active_house
-    print(str(btnNewNei) + str(btnAddHouse) + \
-          str(btnRemoveHouse) + str(btnSave))
-    if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse) and int(btnNewNei) > int(btnSave):
+    btnclicks = [btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, btnDeleteDevice]
+    btnclicks.sort(key=int)
+    print(btnclicks[-1])
+    print(btnAddHouse == btnclicks[-1])
+
+    if btnNewNei != '0' and btnNewNei == btnclicks[-1]:
         newHouse=House(1)
         newHouse.users.append(User(1))
         main_neighbourhood=Neighbourhood(90)  # TODO: logic to set id.
         main_neighbourhood.houses.append(newHouse)
-    elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse) and int(btnAddHouse) > int(btnSave):
+    elif btnAddHouse != '0' and btnAddHouse == btnclicks[-1]:
         i=main_neighbourhood.nextHouseId()
         newHouse=House(i)
         newHouse.users.append(User(1))
         main_neighbourhood.houses.append(newHouse)  # TODO: logic to set id.
-    elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse) and int(btnRemoveHouse) > int(btnSave):
+    elif btnRemoveHouse != '0' and btnRemoveHouse == btnclicks[-1]:
         main_neighbourhood.houses.remove(
             active_house)
         if len(main_neighbourhood.houses) > 0:
             active_house=main_neighbourhood.houses[0]
-
-    elif int(btnSave) > int(btnNewNei) and int(btnSave) > int(btnAddHouse) and int(btnSave) > int(btnRemoveHouse):
+    elif btnSave != '0' and btnSave == btnclicks[-1]:
         print("hello")
+
+    elif btnDeleteDevice != '0' and btnDeleteDevice == btnclicks[-1]:
+        active_house.users[0].devices.remove(active_device)
+
     elif contents is not None:
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
@@ -562,9 +571,10 @@ def update_table(contents, filename):
 @app.callback(
     Output("btnConfigHouse", "n_clicks"),
     [Input("leads_modal_close", "n_clicks"),
-     Input("save_house", "n_clicks")],
+     Input("save_house", "n_clicks"),
+     Input('btnDeleteDevice', 'n_clicks')]
 )
-def close_modal_callback(n, n2):
+def close_modal_callback(n, n2, n3):
     return 0
 
 @app.callback(
