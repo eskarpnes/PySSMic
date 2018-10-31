@@ -88,7 +88,7 @@ def on_click(n_clicks, neighbourhood, days, algo, runs):
     print(config)
     now_string = time.strftime("%d%b%y-%H%M")
     print(now_string)
-    filename = now_string + "_" + neighbourhood + "_" + algo + "_" + str(runs)
+    filename = now_string + "_" + neighbourhood + "_" + algo.replace("/", "") + "_" + str(runs)
 
     def save_results(contracts, profiles):
         print("Saving results")
