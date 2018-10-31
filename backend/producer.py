@@ -14,11 +14,12 @@ class Producer(ThreadingActor):
     def __init__(self, id, manager):
         super(Producer, self).__init__()
         self.id = id
-        self.optimizer = Optimizer(self)
         self.schedule = []
         self.prediction = None
         self.logger = logging.getLogger("src.Producer")
         self.manager = manager
+        options = dict(algo=manager.algo)
+        self.optimizer = Optimizer(self, options)
         self.logger.info("New producer with made with id: " + str(self.id))
 
     # Send a message to another actor in a framework agnostic way
