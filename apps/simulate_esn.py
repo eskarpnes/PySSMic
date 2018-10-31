@@ -8,6 +8,7 @@ import plotly.graph_objs as go
 import json
 import pandas as pd
 from app import app
+import pickle
 
 """-------------------------ENERGY USE-------------------------"""
 
@@ -90,16 +91,6 @@ def energy_consumption():
     )
 
 
-"""-------------------------LAYOUT-------------------------"""
-
-
-@app.callback(Output("result", "options"),
-              [Input("btn-update", "n_clicks")])
-def update_dropdown(n_clicks):
-    print("click")
-    return get_dropdown_options()
-
-
 def get_dropdown_options():
     print("Loading options")
     options = []
@@ -112,6 +103,9 @@ def get_dropdown_options():
     if not options:
         options.append({"label": "No results saved.", "value": []})
     return options
+
+
+"""-------------------------LAYOUT-------------------------"""
 
 
 layout = html.Div(children=[
@@ -147,14 +141,55 @@ layout = html.Div(children=[
         ]),
         dcc.Tab(label='One household', children=[
             # TODO
+        ]),
+        dcc.Tab(label='All simulations', children=[
+            # TODO
         ])
     ])
 ])
 
 
+"""-------------------------APP CALLBACKS-------------------------"""
+
+
+# @app.callback(Output("contract-table", "rows"),
+#               [Input("btnSimulationStart", "n_clicks"),
+#                Input('datatableDiv', 'children')])
+# def update_table(n, children):
+#     if n and n > 0:
+#         return json.loads(children)
+
+
+@app.callback(Output("result", "options"),
+              [Input("btn-update", "n_clicks")])
+def update_dropdown(n_clicks):
+    print("click")
+    return get_dropdown_options()
+
+
 @app.callback(Output("contract-table", "rows"),
-              [Input("btnSimulationStart", "n_clicks"),
-               Input('datatableDiv', 'children')])
-def update_table(n, children):
-    if n and n > 0:
-        return json.loads(children)
+              [Input("result", "value")])
+def update_contracts(value):
+    contracts = open_file(value)[0]
+    contracts = pd.DataFrame(contracts)
+    rows = []
+    run = 0 #TODO: Exchange with chosen house ID, currently chooses first simulation
+    for e in range(0, len(contracts)):
+        rows.append(contracts[e][run])
+    return rows
+
+
+"""-------------------------HELPING METHODS-------------------------"""
+
+
+def open_file(file_name):
+    with open('./results/{}'.format(str(file_name)), 'rb') as f:
+        res = pickle.load(f)
+        contracts = res[0]
+        profiles = res[1]
+    return contracts, profiles
+
+
+
+
+
