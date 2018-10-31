@@ -9,6 +9,7 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
+from datetime import datetime
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -22,6 +23,7 @@ from util.input_utils import prediction_profile_from_csv
 main_neighbourhood = None
 active_house = None
 active_device = None
+jobs = []
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -45,9 +47,12 @@ def create_house_view(house):
                     html.Span("DeviceID: " + str(device.id) + "\t\t"),
                     html.Span("DeviceName: " + device.name + "\t\t"),
                     html.Span("DeviceTemplate: " + str(device.id) + "\t\t"),
-                    html.Span("DeviceType: " + device.type + "\t\t")
+                    html.Span("DeviceType: " + device.type + "\t\t"),
                 ])
             )
+        content.append(html.Div(children=[
+                        html.H4("Jobs list here")
+                    ]))
     return content
 
 
@@ -83,7 +88,7 @@ def configHouseModal():
                         html.Div(
                             [
                                 html.Span(
-                                    "Configure House",
+                                    "Configure devices",
                                     style={
                                         "color": "#506784",
                                         "fontWeight": "bold",
@@ -128,6 +133,59 @@ def configHouseModal():
             className="modal",
         ),
         id="house_modal",
+        style={"display": "none"},
+    )
+
+def addJobModal():
+    return html.Div(
+        html.Div(
+            [
+                html.Div(
+                    [
+                        # header
+                        html.Div(
+                            [
+                                html.Span(
+                                    "Add Job",
+                                    style={
+                                        "color": "#506784",
+                                        "fontWeight": "bold",
+                                        "fontSize": "20",
+                                    },
+                                ),
+                                html.Span(
+                                    "×",
+                                    id="job_modal_close",
+                                    n_clicks=0,
+                                    style={
+                                        "float": "right",
+                                        "cursor": "pointer",
+                                        "marginTop": "0",
+                                        "marginBottom": "17",
+                                    },
+                                ),
+                            ],
+                            className="popup",
+                            style={"borderBottom": "1px solid #C8D4E3"},
+                        ),
+                        # form
+
+                        html.Div(id='addJobs-content'),
+                        html.Span(
+                            "Save",
+                            id="save_job",
+                            n_clicks_timestamp='0',
+                            className="button button--primary add"
+                        ),
+                        html.Button("Delete")
+                    ],
+                    className="modal-content",
+                    style={"textAlign": "center"},
+                )
+            ],
+            className="modal",
+        ),
+        id="job_modal",
         style={"display": "none"},
     )
 
@@ -177,12 +235,14 @@ layout = html.Div([
         html.Button("Add house", id="btnAddHouse", n_clicks_timestamp='0'),
         html.Button("Delete house", id="btnDeleteHouse",
                     n_clicks_timestamp='0'),
-        html.Button("Configure", id="btnConfigHouse", n_clicks_timestamp='0')
+        html.Button("Configure device", id="btnConfigHouse", n_clicks_timestamp='0'),
+        html.Button("Add jobs", id="btnAddJob", n_clicks_timestamp='0')
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
     html.Button("Save Neighbourhood",id="btnSaveNeighbourhood"),
-    configHouseModal()
+    configHouseModal(),
+    addJobModal()
 ])
 
 # takes in a xmlfile and returns a XML Elementree of the neighborhood.
@@ -373,6 +433,39 @@ def display_leads_modal_callback(n):
     return {"display": "none"}
 # reset to 0 add button n_clicks property
 
+@app.callback(Output('addJobs-content', 'children'), [Input('job_modal', 'style')])
+def renderAddJobContent(style):
+    if style == {"display": "block"}:
+        return html.Div(id='addJob', children=[
+                            html.Div(id='jobs_device_dropdown'),
+                            html.Div(id='addJobContent'),
+                            dcc.Dropdown(placeholder='Choose device', options=[{'label': device.name, 'value': device.id}
+                                                             for user in active_house.users for device in user.devices]),
+                            html.H4("Earliest Start time"),
+                            dcc.DatePickerSingle(
+                                id='estDatePicker',
+                                initial_visible_month=datetime.now()
+                                
+                            ),
+                            html.Br(),
+                            dcc.Input(
+                                id='estTimePicker',
+                                type='time',
+                                placeholder='HH:MM'
+                            ),
+                            html.H4("Latest start time"),
+                            dcc.DatePickerSingle(
+                                id='lstDatePicker',
+                                initial_visible_month=datetime.now()
+                            ),
+                            html.Br(),
+                            dcc.Input(
+                                id='lstTimePicker',
+                                type='time',
+                                placeholder='HH:MM'
+                            )
+                        ]),
+
 
 @app.callback(Output('configHouse-content', 'children'), [Input('configHouseTabs', 'value')])
 def showHouseConfigContent(value):
@@ -512,9 +605,15 @@ def tabChangeOnDelete(a, b):
         print(i)
         return str(main_neighbourhood.houses[i].id)
 
+@app.callback(Output('job_modal', 'style'), [Input('btnAddJob', 'n_clicks')])
+def displayJobModal(n):
+    if n > 0:
+        return {"display": "block"}
+    return {"display": "none"}
+
 
 '''
-TODO: Create csv file for consumer events, producer events and for loads and predictions
+TODO: Create csv file for consumer events, producer events and for loads and predictions in a folder structure
 '''
 @app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks')])
 def save_neighbourhood(n):
@@ -533,4 +632,3 @@ def save_neighbourhood(n):
                 print('event')
             print(str(device.name))
     
-
