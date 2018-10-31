@@ -334,18 +334,20 @@ def showNewNeighbourhoodInput(n):
 # Function to store and update main neighbourhood div / Controller
 
 @app.callback(Output('new_device_div', 'children'),
-              [Input('save_house', 'n_clicks_timestamp')],
+              [Input('save_house', 'n_clicks_timestamp'),],
               [
-    State('newDeviceId', 'value'),
-    State('newDeviceName', 'value'),
-    State('newDeviceTemplate', 'value'),
-    State('newDeviceType', 'value')
+                State('newDeviceId', 'value'),
+                State('newDeviceName', 'value'),
+                State('newDeviceTemplate', 'value'),
+                State('newDeviceType', 'value'),
+                State('loadOrPredictionTable', 'rows')
 ])
-def addDevice(n, dId, dName, dTemp, dType):
+def addDevice(n, dId, dName, dTemp, dType, rows):
     global active_house
     global active_device
-    if (dId or dName or dTemp or dType) is not None:
+    if (dId or dName or dTemp or dType or rows) is not None:
         dev=Device(dId, dName, dTemp, dType)
+        dev.loadProfile = pd.DataFrame(rows)
         if active_device is None:
             active_house.users[0].devices.append(dev)
         elif active_device is not None:
@@ -510,7 +512,22 @@ def showHouseConfigContent(value):
             }),
             html.Br(),
             dcc.Dropdown(id="newDeviceType", placeholder="TemplateType",
-                         options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}])
+                         options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}]),
+            dcc.Upload(id="LoadPredictionUpload",
+            children=html.Div([
+                'Add Load or Prediction CSV file by Drag and Drop or ',
+                html.A('Select Files')
+            ]),
+            style={
+                'width': '100%',
+                'height': '60px',
+            }
+        ),
+            html.Div(id=''),
+            dt.DataTable(
+                id="loadOrPredictionTable",
+                rows=[{}],
+            )
         ])
 
 
