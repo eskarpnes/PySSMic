@@ -2,17 +2,17 @@ import logging
 from backend.manager import Manager
 import simpy.rt
 import simpy
-from backend.producer import Producer
 from util.input_utils import *
 from definitions import ROOT_DIR
 import os.path
+import pickle
 
 
 class Simulator:
-    def __init__(self, config, callback):
+    def __init__(self, config, save_name):
         self.logger = logging.getLogger("src.Simulator")
 
-        self.callback = callback
+        self.save_name = save_name
 
         # Default 1000 simulated seconds per second. 1 day = 86 seconds to run.
         factor = config["timefactor"] if "timefactor" in config else 0.001
@@ -21,7 +21,6 @@ class Simulator:
 
         # Default to one day
         self.end_time = config["length"] if "length" in config else 86400
-
 
         # A dictionary over every timeout event containing a contract and the id to fetch that event
         self.active_contracts = {}
@@ -56,7 +55,6 @@ class Simulator:
 
         simpy.events.Process(self.neighbourhood, self.end_simulation())
 
-
     # Functions that schedule the events. Simpy-specific
     def schedule_load(self, delay, job):
         event = simpy.events.Timeout(self.neighbourhood, delay=delay, value=job)
@@ -90,7 +88,6 @@ class Simulator:
     def register_contract(self, contract):
         self.neighbourhood.process(self.register_new_contract(contract))
 
-
     def register_new_contract(self, contract):
         self.logger.info("Registering contract. Time = " + str(self.neighbourhood.now))
         id = contract["id"]
@@ -113,7 +110,8 @@ class Simulator:
 
     # Call when a contract is fulfilled.
     def fulfill_contract(self, contract):
-        self.logger.info("Contract fulfilled. Contract id: " + str(contract["id"]) + " Time: " + str(self.neighbourhood.now))
+        self.logger.info(
+            "Contract fulfilled. Contract id: " + str(contract["id"]) + " Time: " + str(self.neighbourhood.now))
         if contract['producer_id'] != 'grid':
             producer = self.manager.producers[contract['producer_id']]
             producer._actor.fulfill_contract(contract)
@@ -141,21 +139,25 @@ class Simulator:
         event = simpy.events.Timeout(self.neighbourhood, delay=self.end_time - 1)
         yield event
         self.logger.info("Finishing run")
-        self.send_output()
+        self.save_output()
 
-    def send_output(self):
+    def save_output(self):
         contracts, profiles = self.get_output()
-        self.callback(contracts, profiles)
+        with open(self.save_name + '.pkl', 'wb') as f:
+            pickle.dump((contracts, profiles), f)
         self.stop()
 
 
 if __name__ == "__main__":
     import time
+
+
     # Hardcoded example
 
     def callback(contracts, profiles):
         print(contracts)
         print(profiles)
+
 
     config = {
         "neighbourhood": "test",
@@ -166,6 +168,6 @@ if __name__ == "__main__":
 
     sim = Simulator(config, callback)
     sim.start()
-    time.sleep(config["length"]*config["timefactor"])
+    time.sleep(config["length"] * config["timefactor"])
     print(sim.manager.producer_rankings)
     sim.stop()
