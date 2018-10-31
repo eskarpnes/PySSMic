@@ -38,7 +38,8 @@ class Simulator:
         self.DATA_DIR = os.path.join(ROOT_DIR, "input", config_name)
 
         # The manager that is simulated. Every new load and prediction should be sent to it.
-        self.manager = Manager(self)
+        algo = config["algo"] if "algo" in config else "basinhopping"
+        self.manager = Manager(self, algo)
 
         # Loads in events and normalizes them
         events, predictions = self.load_files_from_csv(config_name)
@@ -159,8 +160,10 @@ if __name__ == "__main__":
     config = {
         "neighbourhood": "test",
         "timefactor": 0.0000001,
-        "length": 86400
+        "length": 86400,
+        "algo": "basinhopping"
     }
+
     sim = Simulator(config, callback)
     sim.start()
     time.sleep(config["length"]*config["timefactor"])
