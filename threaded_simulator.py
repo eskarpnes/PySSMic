@@ -47,13 +47,17 @@ if __name__ == "__main__":
     start_time = time.time()
     # Hardcoded example
     config = {
-        "neighbourhood": "small_test",
+        "neighbourhood": "test",
         "timefactor": 0.0000000000001,
         "length": 86400,
-        "runs": 8
+        "algo": "basinhopping",
+        "runs": 16
     }
 
     sim = ThreadedSimulator(config)
     results = sim.start()
     print(len(results[0]))
     print(len(results[1]))
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("Elapsed time: " + str(elapsed_time))
