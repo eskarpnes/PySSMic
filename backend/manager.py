@@ -5,16 +5,19 @@ from .producer import Producer
 import logging
 from util.message_utils import Action
 
+
 class Manager:
-    def __init__(self, simulator):
+    def __init__(self, simulator, algo="basinhopping"):
         self.logger = logging.getLogger("src.Manager")
         self.simulator = simulator
         self.consumers = []
         self.producers = {}
         self.producer_rankings = self.load_producer_scores()
+        self.algo = algo
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
         # simulator start
         self.clock = simulator.neighbourhood
+
 
     # Send out a new weather prediction
     def send_new_prediction(self, prediction, producer):

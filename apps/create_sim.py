@@ -1,6 +1,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, Event, State
+from dash.dependencies import Input, Output, State
 import os
 import pickle
 
@@ -50,7 +50,7 @@ layout = html.Div(children=[
                     id="algo",
                     options=[
                         {'label': '50/50', 'value': '50/50'},
-                        {'label': 'Powell', 'value': 'powell'},
+                        {'label': 'Basinhopping', 'value': 'basinhopping'},
                     ],
                     value="powell"
                 )
@@ -90,12 +90,13 @@ def on_click(n_clicks, neighbourhood, days, algo, runs):
     print(now_string)
     filename = now_string + "_" + neighbourhood + "_" + algo.replace("/", "") + "_" + str(runs)
 
-    def save_results(contracts, profiles):
-        print("Saving results")
-        pathname = os.path.join("results", filename)
-        with open(pathname + ".pkl", "wb") as f:
-            pickle.dump((contracts, profiles), f)
+    sim = ThreadedSimulator(config)
 
-    sim = ThreadedSimulator(config, save_results)
-    sim.start()
-    return 0
+    # Here you can start a loading screen if you want
+    contracts, profiles = sim.start()
+    # And here you must stop it!
+
+    print("Saving results")
+    pathname = os.path.join("results", filename)
+    with open(pathname + ".pkl", "wb") as f:
+        pickle.dump((contracts, profiles), f)
