@@ -50,7 +50,7 @@ layout = html.Div(children=[
                     id="algo",
                     options=[
                         {'label': '50/50', 'value': '50/50'},
-                        {'label': 'Powell', 'value': 'powell'},
+                        {'label': 'Basinhopping', 'value': 'basinhopping'},
                     ],
                     value="powell"
                 )
