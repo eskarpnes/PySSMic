@@ -345,9 +345,12 @@ def addDevice(n, dId, dName, dTemp, dType):
     global active_house
     global active_device
     if (dId or dName or dTemp or dType) is not None:
-        # Update old one -- can be duplicate deviceIds
         dev=Device(dId, dName, dTemp, dType)
-        active_house.users[0].devices.append(dev)
+        if active_device is None:
+            active_house.users[0].devices.append(dev)
+        elif active_device is not None:
+            active_house.users[0].devices.remove(active_device)
+            active_house.users[0].devices.append(dev)
     return html.Div(str(dev))
 
 
@@ -364,11 +367,11 @@ def addDevice(n, dId, dName, dTemp, dType):
 def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, btnDeleteDevice, value):
     global main_neighbourhood
     global active_house
+    global active_device
+    #finds the button which was pressed last
     btnclicks = [btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, btnDeleteDevice]
     btnclicks.sort(key=int)
-    print(btnclicks[-1])
-    print(btnAddHouse == btnclicks[-1])
-
+    #Actions for the different buttons
     if btnNewNei != '0' and btnNewNei == btnclicks[-1]:
         newHouse=House(1)
         newHouse.users.append(User(1))
@@ -385,8 +388,7 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         if len(main_neighbourhood.houses) > 0:
             active_house=main_neighbourhood.houses[0]
     elif btnSave != '0' and btnSave == btnclicks[-1]:
-        print("hello")
-
+        pass #needed to take this functionality and move it to addDevice function. See line 336.
     elif btnDeleteDevice != '0' and btnDeleteDevice == btnclicks[-1]:
         active_house.users[0].devices.remove(active_device)
 
@@ -445,6 +447,8 @@ def render_content(value):
 @app.callback(Output("house_modal", "style"), [Input("btnConfigHouse", "n_clicks")])
 def display_leads_modal_callback(n):
     if n > 0:
+        global active_device
+        active_device = None
         return {"display": "block"}
     return {"display": "none"}
 # reset to 0 add button n_clicks property
@@ -662,7 +666,6 @@ def saveJobs(n, estDate, estTime, lstDate, lstTime):
         global active_device
         global consumer_jobs 
         global producer_jobs
-        
         if (estDate, estTime, lstDate, lstTime) is not None:
             est = createEpochTime(estDate, estTime)
             lst = createEpochTime(lstDate, lstTime)
