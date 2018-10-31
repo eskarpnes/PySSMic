@@ -23,7 +23,8 @@ from util.input_utils import prediction_profile_from_csv
 main_neighbourhood = None
 active_house = None
 active_device = None
-jobs = []
+consumer_jobs = []
+producer_jobs = []
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -77,6 +78,7 @@ def addHouseToNeighbourhood(houseId):
     # lastId = int(neighbourhood.houses[-1].id)
     house = House(houseId)
     main_neighbourhood.houses.append(house)
+
 
 def configHouseModal():
     return html.Div(
@@ -136,6 +138,7 @@ def configHouseModal():
         style={"display": "none"},
     )
 
+
 def addJobModal():
     return html.Div(
         html.Div(
@@ -193,12 +196,14 @@ def addJobModal():
 layout = html.Div([
     html.Div(id="save_hidden", style={'display': 'none'}),
     # hidden div to save data in
+    html.Div(id='save_jobs', style={'display': 'none'}),
     html.Div(id="new_device_div", style={'display': 'block'}),
     html.Div(id='nInfo', children=[
         html.Div('nabolag: ' + str(main_neighbourhood),
                  id="main_neighbourhood-info"),
         html.Div('hus: ' + str(type(active_house)), id="active_house-info"),
-        html.Div('device: ' + str(active_device), id="active_device-info")
+        html.Div('device: ' + str(active_device), id="active_device-info"),
+        html.Div('device:', id='deviceTwo')
     ]),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
@@ -235,12 +240,13 @@ layout = html.Div([
         html.Button("Add house", id="btnAddHouse", n_clicks_timestamp='0'),
         html.Button("Delete house", id="btnDeleteHouse",
                     n_clicks_timestamp='0'),
-        html.Button("Configure device", id="btnConfigHouse", n_clicks_timestamp='0'),
+        html.Button("Configure device", id="btnConfigHouse",
+                    n_clicks_timestamp='0'),
         html.Button("Add jobs", id="btnAddJob", n_clicks_timestamp='0')
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
-    html.Button("Save Neighbourhood",id="btnSaveNeighbourhood"),
+    html.Button("Save Neighbourhood", id="btnSaveNeighbourhood"),
     configHouseModal(),
     addJobModal()
 ])
@@ -250,21 +256,21 @@ layout = html.Div([
 
 def parse_contents(contents):
     if contents is not None:
-        content_type, content_string = contents.split(',')
+        content_type, content_string=contents.split(',')
         if 'xml' in content_type:
-            decoded = base64.b64decode(content_string)
-            root = ET.fromstring(decoded)
+            decoded=base64.b64decode(content_string)
+            root=ET.fromstring(decoded)
             return root
 
 
 def create_neighborhood_object(treeroot):
-    nabolag = Neighbourhood(int(treeroot.get("id")))
+    nabolag=Neighbourhood(int(treeroot.get("id")))
     for house in treeroot:
-        h = House(int(house.get("id")))
+        h=House(int(house.get("id")))
         for user in house:
-            u = User(int(user.get("id")))
+            u=User(int(user.get("id")))
             for device in user:
-                d = Device(int(device.find("id").text), device.find("name").text, int(
+                d=Device(int(device.find("id").text), device.find("name").text, int(
                     device.find("template").text), device.find("type").text)
                 u.devices.append(d)
             h.users.append(u)
@@ -278,10 +284,10 @@ Callback function to toggle the xml input field
 
 
 def create_neighborhood_html(neighborhood):
-    htmlString = "<div>"
+    htmlString="<div>"
     htmlString += "Nabolag:"
 
-    houses = []
+    houses=[]
     for house in neighborhood:
         htmlString += "<div>"
         htmlString += "Hus id: " + str(house.get("id"))
@@ -339,8 +345,8 @@ def addDevice(n, dId, dName, dTemp, dType):
     global active_house
     global active_device
     if (dId or dName or dTemp or dType) is not None:
-        #Update old one -- can be duplicate deviceIds
-        dev = Device(dId, dName, dTemp, dType)
+        # Update old one -- can be duplicate deviceIds
+        dev=Device(dId, dName, dTemp, dType)
         active_house.users[0].devices.append(dev)
     return html.Div(str(dev))
 
@@ -355,15 +361,16 @@ def addDevice(n, dId, dName, dTemp, dType):
 def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, value):
     global main_neighbourhood
     global active_house
-    print(str(btnNewNei) + str(btnAddHouse) + str(btnRemoveHouse) + str(btnSave))
+    print(str(btnNewNei) + str(btnAddHouse) + \
+          str(btnRemoveHouse) + str(btnSave))
     if int(btnNewNei) > int(btnAddHouse) and int(btnNewNei) > int(btnRemoveHouse) and int(btnNewNei) > int(btnSave):
-        newHouse = House(1)
+        newHouse=House(1)
         newHouse.users.append(User(1))
-        main_neighbourhood = Neighbourhood(90)  # TODO: logic to set id.
+        main_neighbourhood=Neighbourhood(90)  # TODO: logic to set id.
         main_neighbourhood.houses.append(newHouse)
     elif int(btnAddHouse) > int(btnNewNei) and int(btnAddHouse) > int(btnRemoveHouse) and int(btnAddHouse) > int(btnSave):
-        i = main_neighbourhood.nextHouseId()
-        newHouse = House(i)
+        i=main_neighbourhood.nextHouseId()
+        newHouse=House(i)
         newHouse.users.append(User(1))
         main_neighbourhood.houses.append(newHouse)  # TODO: logic to set id.
     elif int(btnRemoveHouse) > int(btnNewNei) and int(btnRemoveHouse) > int(btnAddHouse) and int(btnRemoveHouse) > int(btnSave):
@@ -437,9 +444,8 @@ def display_leads_modal_callback(n):
 def renderAddJobContent(style):
     if style == {"display": "block"}:
         return html.Div(id='addJob', children=[
-                            html.Div(id='jobs_device_dropdown'),
                             html.Div(id='addJobContent'),
-                            dcc.Dropdown(placeholder='Choose device', options=[{'label': device.name, 'value': device.id}
+                            dcc.Dropdown(id='jobs_device_dropdown', placeholder='Choose device', options=[{'label': device.name, 'value': device.id}
                                                              for user in active_house.users for device in user.devices]),
                             html.H4("Earliest Start time"),
                             dcc.DatePickerSingle(
@@ -465,6 +471,7 @@ def renderAddJobContent(style):
                                 placeholder='HH:MM'
                             )
                         ]),
+
 
 
 @app.callback(Output('configHouse-content', 'children'), [Input('configHouseTabs', 'value')])
@@ -560,6 +567,14 @@ def update_table(contents, filename):
 def close_modal_callback(n, n2):
     return 0
 
+@app.callback(
+    Output("btnAddJob", "n_clicks"),
+    [Input("job_modal_close", "n_clicks"),
+     Input("save_job", "n_clicks")],
+)
+def close_jobModal_callback(n,n2):
+    return 0
+
 ''' Functions for developing mode'''
 
 @app.callback(Output('nInfo', 'children'), [Input('neighbourhood_div', 'children')])
@@ -570,7 +585,8 @@ def showNid(children):
         html.Div('nabolag: ' + str(len(main_neighbourhood.houses)),
                  id="main_neighbourhood-info"),
         html.Div('hus: ' + str(type(active_house)), id="active_house-info"),
-        html.Div('device: ' + str(active_device), id="active_device-info")
+        html.Div('device: ' + str(active_device), id="active_device-info"),
+        html.Div('device: ' + str(active_device), id="deviceTwo"),
     ])
 
 # set active house.
@@ -592,8 +608,16 @@ def setActiveDevice(value):
         active_device = active_house.findDeviceById(int(value))
     return html.Div(str(active_device))
 
+@app.callback(Output('deviceTwo', 'children'), [Input('jobs_device_dropdown', 'value')])
+def setADevice(value):
+    global active_house
+    global active_device
+    if value is not None:
+        active_device = active_house.findDeviceById(int(value))
+    return html.Div(str(active_device))
 
-#Change tab on delete. TODO:reset n and send signal instead of timestamp on adding house
+
+# Change tab on delete. TODO:reset n and send signal instead of timestamp on adding house
 @app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp'), Input('btnAddHouse', 'n_clicks_timestamp')])
 def tabChangeOnDelete(a, b):
     if int(a) > int(b):
@@ -612,23 +636,61 @@ def displayJobModal(n):
     return {"display": "none"}
 
 
+@app.callback(Output('save_jobs', 'children'), 
+            [Input('save_job', 'n_clicks')], 
+            [
+                State('estDatePicker', 'date'),
+                State('estTimePicker', 'value'),
+                State('lstDatePicker', 'date'),
+                State('lstTimePicker', 'value')
+            ]
+        )
+
+def saveJobs(n, estDate, estTime, lstDate, lstTime):
+    if n > 0:
+        global active_house
+        global active_device
+        global consumer_jobs 
+        global producer_jobs
+        
+        if (estDate, estTime, lstDate, lstTime) is not None:
+            est = createEpochTime(estDate, estTime)
+            lst = createEpochTime(lstDate, lstTime)
+        if active_device.type == 'consumer':
+            job = str(est) + ';' + str(lst)+ ';[' + str(active_house.id)+'];[' + str(active_device.id)+']'+str(active_device.id) +'.csv'
+            consumer_jobs.append(job)
+
+            print(consumer_jobs)
+        elif active_device.type == 'producer':
+            #Add to producerjobs
+            print('ok')
+
+
+def createEpochTime(date, time):
+    d = date.split('-')
+    t = time.split(':')
+    dateTime = datetime(int(d[0]), int(d[1]), int(d[2]), int(t[0]), int(t[1])).timestamp()
+    return int(dateTime)
+
+
 '''
 TODO: Create csv file for consumer events, producer events and for loads and predictions in a folder structure
 '''
 @app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks')])
 def save_neighbourhood(n):
-    #go through neighbourhood and create files
+    # go through neighbourhood and create files
     for house in main_neighbourhood.houses:
         for device in house.users[0].devices: #only one user in each house
             for event in device.events: #Events are saved as dict. using utilfunction to create csv files for simulator
                 if device.type == "producer":
                     print('producer') 
-                    #TODO: add to producerevents
-                    #TODO: add predictionfile
+                    # TODO: add to producerevents
+                    # TODO: add predictionfile
                 elif device.type == "consumer":
                     print("consumer")
-                    #TODO: add to consumer events
-                    #TODO: add loadfile
+                    # TODO: add to consumer events
+                    # TODO: add loadfile
                 print('event')
             print(str(device.name))
     
+
