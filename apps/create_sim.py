@@ -1,10 +1,13 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, Event
+from dash.dependencies import Input, Output, Event, State
+import os
+import pickle
 
 from app import app
-from simulator import Simulator
-import pandas as pd
+from threaded_simulator import ThreadedSimulator
+import time
+
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
@@ -12,56 +15,54 @@ import pandas as pd
 # TODO: Review the use of green energy
 # TODO: Specify which optimization algorithm to be used in simulation
 
+def get_dropdown_options():
+    options = next(os.walk('input'))[1]
+    dropdown = []
+    for option in options:
+        dropdown.append({
+            'label': option,
+            'value': option
+        })
+    return dropdown
+
+
 layout = html.Div(children=[
     html.Div(className="content", children=[
-
 
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
             html.A(html.Button("Create ESN", className="btnAddEsn"),
                    href='/apps/create_esn'),
             dcc.Dropdown(
-                options=[
-                    {'label': "Flatåsen", "value": "1"},
-                    {'label': "Ila", "value": "2"},
-                    {'label': "Byåsen", "value": "3"}
-                ]
+                id="neighbourhood",
+                options=get_dropdown_options(),
+                value=get_dropdown_options()[0]["value"]
             ),
-
 
             html.Div(className="selectDays", children=[
                 html.Span("Days to simulate: "),
-                html.Span(id="numDays"),
-                dcc.Input(id="inputDays", type="int"),
-                html.Button("Set", className="btnSet")
+                dcc.Input(id="days", type="int", value=1),
             ]),
 
             html.Div(className="selectAlgo", children=[
                 html.Span("Select Optimization Algorithm(s): "),
                 dcc.Dropdown(
+                    id="algo",
                     options=[
-                        {'label': '50/50', 'value': '1'},
-                        {'label': 'Powell', 'value': '2'},
+                        {'label': '50/50', 'value': '50/50'},
+                        {'label': 'Powell', 'value': 'powell'},
                     ],
-                    multi=True,
+                    value="powell"
                 )
             ]),
 
-            html.Div(className="selectWeather", children=[
-                html.Span("Select type of weather: "),
-                dcc.Dropdown(
-                    options=[
-                        {'label': 'Sunny', 'value': 'SUN'},
-                        {'label': 'Cloudy', 'value': 'CLOUD'}
-                    ],
-                    value='SUN'
-                )
+            html.Div(className="selectRuns", children=[
+                html.Span("Select number of runs: "),
+                dcc.Input(id="runs", type="int", value="1")
             ]),
 
             html.A(html.Button('Start simulation',
                                className='btnSimulate', id='btn-simulate'))
-
-
         ])
     ])
 
@@ -69,30 +70,32 @@ layout = html.Div(children=[
 
 
 @app.callback(
-    Output(component_id="numDays", component_property="children"),
-    [Input(component_id="inputDays", component_property="value")],
-)
-def update_weather(input_weather):
-    return input_weather
-
-
-@app.callback(
     Output(component_id="datatableDiv", component_property="children"),
-    events=[Event("btn-simulate", "click")],
+    [Input("btn-simulate", "n_clicks")],
+    [State("neighbourhood", "value"),
+     State("days", "value"),
+     State("algo", "value"),
+     State("runs", "value")]
 )
-def on_click():
-    import time
+def on_click(n_clicks, neighbourhood, days, algo, runs):
     config = {
-        "neighbourhood": "test",
-        "timefactor": 0.000000000001,
-        "length": 86400
+        "neighbourhood": neighbourhood,
+        "length": int(days) * 86400,
+        "timefactor": 0.00001,
+        "algo": algo,
+        "runs": int(runs)
     }
-    sim = Simulator(config)
+    print(config)
+    now_string = time.strftime("%d%b%y-%H%M")
+    print(now_string)
+    filename = now_string + "_" + neighbourhood + "_" + algo.replace("/", "") + "_" + str(runs)
+
+    def save_results(contracts, profiles):
+        print("Saving results")
+        pathname = os.path.join("results", filename)
+        with open(pathname + ".pkl", "wb") as f:
+            pickle.dump((contracts, profiles), f)
+
+    sim = ThreadedSimulator(config, save_results)
     sim.start()
-    time.sleep(5)
-    contracts, profiles = sim.get_output()
-    contracts = pd.DataFrame.from_dict(contracts)
-    contracts = contracts.drop(['load_profile', 'time'], axis=1)
-    contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
-    sim.stop()
-    return contracts.to_json(orient='records')
+    return 0

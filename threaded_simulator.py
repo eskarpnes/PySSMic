@@ -59,7 +59,7 @@ if __name__ == "__main__":
         "neighbourhood": "test",
         "timefactor": 0.0000000000001,
         "length": 86400,
-        "runs": 4
+        "runs": 8
     }
 
 
