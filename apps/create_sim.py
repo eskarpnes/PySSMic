@@ -1,10 +1,12 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, Event
+from dash.dependencies import Input, Output, Event, State
+import os
 
 from app import app
-from simulator import Simulator
+from threaded_simulator import ThreadedSimulator
 import pandas as pd
+
 
 # TODO: Add/remove users from the neighbourhood
 # TODO: Number of days simulated
@@ -12,55 +14,52 @@ import pandas as pd
 # TODO: Review the use of green energy
 # TODO: Specify which optimization algorithm to be used in simulation
 
+def get_dropdown_options():
+    options = next(os.walk('input'))[1]
+    dropdown = []
+    for option in options:
+        dropdown.append({
+            'label': option,
+            'value': option
+        })
+    return dropdown
+
+
 layout = html.Div(children=[
     html.Div(className="content", children=[
-
 
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
             html.A(html.Button("Create ESN", className="btnAddEsn"),
                    href='/apps/create_esn'),
             dcc.Dropdown(
-                options=[
-                    {'label': "Flatåsen", "value": "1"},
-                    {'label': "Ila", "value": "2"},
-                    {'label': "Byåsen", "value": "3"}
-                ]
+                id="neighbourhood",
+                options=get_dropdown_options()
             ),
-
 
             html.Div(className="selectDays", children=[
                 html.Span("Days to simulate: "),
-                html.Span(id="numDays"),
-                dcc.Input(id="inputDays", type="int"),
-                html.Button("Set", className="btnSet")
+                dcc.Input(id="days", type="int"),
             ]),
 
             html.Div(className="selectAlgo", children=[
                 html.Span("Select Optimization Algorithm(s): "),
                 dcc.Dropdown(
+                    id="algo",
                     options=[
                         {'label': '50/50', 'value': '1'},
                         {'label': 'Powell', 'value': '2'},
-                    ],
-                    multi=True,
+                    ]
                 )
             ]),
 
-            html.Div(className="selectWeather", children=[
-                html.Span("Select type of weather: "),
-                dcc.Dropdown(
-                    options=[
-                        {'label': 'Sunny', 'value': 'SUN'},
-                        {'label': 'Cloudy', 'value': 'CLOUD'}
-                    ],
-                    value='SUN'
-                )
+            html.Div(className="selectRuns", children=[
+                html.Span("Select number of runs: "),
+                dcc.Input(id="runs", type="int")
             ]),
 
             html.A(html.Button('Start simulation',
                                className='btnSimulate', id='btn-simulate'))
-
 
         ])
     ])
@@ -69,30 +68,23 @@ layout = html.Div(children=[
 
 
 @app.callback(
-    Output(component_id="numDays", component_property="children"),
-    [Input(component_id="inputDays", component_property="value")],
-)
-def update_weather(input_weather):
-    return input_weather
-
-
-@app.callback(
     Output(component_id="datatableDiv", component_property="children"),
     events=[Event("btn-simulate", "click")],
 )
-def on_click():
-    import time
+def on_click(neighbourhood, days, algo, runs):
     config = {
-        "neighbourhood": "test",
-        "timefactor": 0.000000000001,
-        "length": 86400
+        "neighbourhood": neighbourhood,
+        "length": days*86400,
+        "timefactor": 0.000000001,
+        "algo": algo,
+        "runs": runs
     }
-    sim = Simulator(config)
-    sim.start()
-    time.sleep(5)
-    contracts, profiles = sim.get_output()
-    contracts = pd.DataFrame.from_dict(contracts)
-    contracts = contracts.drop(['load_profile', 'time'], axis=1)
-    contracts = contracts[['id', 'time_of_agreement', 'job_id', 'producer_id']]
-    sim.stop()
-    return contracts.to_json(orient='records')
+
+    print(config)
+
+    def callback(contracts, profiles):
+        print(contracts)
+        print(profiles)
+
+    #sim = ThreadedSimulator(config, callback)
+    #sim.start()
