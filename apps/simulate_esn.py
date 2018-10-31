@@ -17,16 +17,17 @@ def get_energy_df():
     return pd.DataFrame({'c1': [384, 827], 'c2': [848, 874]})
 
 
-def energy_use(df):
-    df_sum = df.sum(axis=1)
-    n = 100 / (df_sum[0] + df_sum[1])
+def energy_use():
+    #df_sum = df.sum(axis=1)
+    #n = 100 / grid + pv
     return (
         dcc.Graph(
             id="energy-use-graph",
             figure=go.Figure(
                 data=[
                     go.Pie(
-                        values=[df_sum[0] * n, df_sum[1] * n],
+                        #values=[df_sum[0] * n, df_sum[1] * n],
+                        values=[50, 50],
                         labels=["Local", "Not local"]
                     )
                 ]
@@ -121,7 +122,7 @@ layout = html.Div(children=[
                 html.H2("Energy use")
             ),
             html.Div([
-                energy_use(get_energy_df())
+                energy_use()
             ], className="pie-chart"),
 
             html.Div(
@@ -173,17 +174,23 @@ def update_contracts(value):
     contracts = open_file(value)[0]
     contracts = pd.DataFrame(contracts)
     rows = []
-    run = 0 #TODO: Exchange with chosen house ID, currently chooses first simulation
+    run = 0 #TODO: Exchange with chosen simulation (currently chooses first simulation)
     for e in range(0, len(contracts)):
         rows.append(contracts[e][run])
     return rows
+
+
+@app.callback(Output("energy-use-graph", "values"),
+              [Input("result", "value")])
+def update_pie_chart(value):
+    return [30, 70]
 
 
 """-------------------------HELPING METHODS-------------------------"""
 
 
 def open_file(file_name):
-    with open('./results/{}'.format(str(file_name)), 'rb') as f:
+    with open('./results/{}'.format(file_name), 'rb') as f:
         res = pickle.load(f)
         contracts = res[0]
         profiles = res[1]
