@@ -209,26 +209,8 @@ layout = html.Div([
     style={'display':'none'}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
-        html.Button("Create from XML", id="btnXmlInput"),
         html.Button("Create new", id="btnNewNeighbourhood"),
-        dcc.Upload(
-            id="upload-data",
-            children=html.Div([
-                'Add neighbourhood XML file by Drag and Drop or ',
-                html.A('Select Files')
-            ]),
-            style={
-                'width': '500px',
-                'height': '60px',
-                'lineHeight': '60px',
-                'borderWidth': '1px',
-                'borderStyle': 'dashed',
-                'borderRadius': '5px',
-                'textAlign': 'center',
-                'margin': '10px',
-                'display': 'none'
-            }
-        ),
+        dcc.Upload(id="upload-data", children=[html.Button("Create new from XML")]),
         html.Div(id="newNeighbourhoodInput", children=[
             dcc.Input(id="newNeighbourhoodId", value=0, type="number", style={
                 'width': '50px'
@@ -315,14 +297,6 @@ def create_neighborhood_html(neighborhood):
     htmlString += "</div>"  # closes neighborhood
     print(houses)
     return htmlString
-
-
-@app.callback(Output("upload-data", "style"), [Input("btnXmlInput", "n_clicks")])
-def showXMLUpload(n):
-    if n % 2 == 0:
-        return {"display": "none"}
-    return {"display": "block"}
-
 
 
 """
@@ -534,16 +508,7 @@ def showHouseConfigContent(value):
             html.Br(),
             dcc.Dropdown(id="newDeviceType", placeholder="TemplateType",
                          options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}]),
-            dcc.Upload(id="LoadPredictionUpload",
-            children=html.Div([
-                'Add Load or Prediction CSV file by Drag and Drop or ',
-                html.A('Select Files')
-            ]),
-            style={
-                'width': '100%',
-                'height': '60px',
-            }
-        ),
+            dcc.Upload(id="LoadPredictionUpload", children=[html.Button('Add load or prediction csv file')]),
             html.Div(id=''),
             dt.DataTable(
                 id="loadOrPredictionTable",
@@ -569,16 +534,7 @@ def renderConfigForm(children):
             html.Br(),
             dcc.Dropdown(id="newDeviceType", value=active_device.type,
                          options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}]),
-            dcc.Upload(id="LoadPredictionUpload",
-            children=html.Div([
-                'Add Load or Prediction CSV file by Drag and Drop or ',
-                html.A('Select Files')
-            ]),
-            style={
-                'width': '100%',
-                'height': '60px',
-            }
-        ),
+            dcc.Upload(id="LoadPredictionUpload", children=[html.Button('Add load or prediction csv file')]),
     ]
     if active_device is not None:
         if active_device.loadProfile is not None:
