@@ -5,6 +5,7 @@ import json
 import xml.etree.ElementTree as ET
 import pandas as pd
 import dash
+import time
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
@@ -19,12 +20,11 @@ from backend.device import Device
 from backend.user import User
 from app import app
 from util.input_utils import prediction_profile_from_csv
+from definitions import ROOT_DIR
 
 main_neighbourhood = None
 active_house = None
 active_device = None
-consumer_jobs = []
-producer_jobs = []
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -246,6 +246,7 @@ layout = html.Div([
     ]),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
+    dcc.Input(id="neighbourhoodName", placeholder="neighbourhoodName"),
     html.Button("Save Neighbourhood", id="btnSaveNeighbourhood"),
     configHouseModal(),
     addJobModal()
@@ -353,7 +354,7 @@ def addDevice(n, dId, dName, dTemp, dType, rows):
         elif active_device is not None:
             active_house.users[0].devices.remove(active_device)
             active_house.users[0].devices.append(dev)
-    return html.Div(str(dev))
+    return html.Div(str(dev.loadProfile))
 
 
 @app.callback(Output('neighbourhood_div', 'children'),
@@ -533,9 +534,8 @@ def showHouseConfigContent(value):
 
 @app.callback(Output('deviceConfigForm', 'children'), [Input('active_device-info', 'children')])
 def renderConfigForm(children):
-    if active_device is not None:
-        return html.Div([
-            dcc.Input(id="newDeviceId", type="number", value=active_device.id, style={
+    output = [
+        dcc.Input(id="newDeviceId", type="number", value=active_device.id, style={
                 'width': '100px'
             }),
             html.Br(),
@@ -559,13 +559,23 @@ def renderConfigForm(children):
                 'height': '60px',
             }
         ),
-            html.Div(id=''),
-            dt.DataTable(
+    ]
+    if active_device is not None:
+        if active_device.loadProfile is not None:
+            print("fill row with  " )
+            print(type(active_device.loadProfile))
+            output.append(
+                dt.DataTable(
                 id="loadOrPredictionTable",
-                rows=[{}],
-            )
-        ])
-
+                rows=active_device.loadProfile.to_dict('records')
+            ))
+        else:
+            output.append(
+                dt.DataTable(
+                id="loadOrPredictionTable",
+                rows=[{}]
+            ))
+        return html.Div(output)
 
 def parse_csv(contents, filename):
     content_type, content_string = contents.split(',')
@@ -580,12 +590,14 @@ def parse_csv(contents, filename):
             values.append(split_line[1].rstrip())
     output = [('Time', timestamps),
               ('Value', values)]
-    df = pd.DataFrame.from_items(output)
+    df = pd.DataFrame.from_dict(dict(output))
     return df
 
 @app.callback(Output('loadOrPredictionTable', 'rows'), [Input('LoadPredictionUpload', 'contents')], [State('LoadPredictionUpload', 'filename')])
 def update_table(contents, filename):
     df = parse_csv(contents, filename)
+    print("update table with " )
+    print(type(df))
     return df.to_dict('records')
 
 
@@ -681,20 +693,16 @@ def saveJobs(n, estDate, estTime, lstDate, lstTime):
     if n > 0:
         global active_house
         global active_device
-        global consumer_jobs 
-        global producer_jobs
         if (estDate, estTime, lstDate, lstTime) is not None:
             est = createEpochTime(estDate, estTime)
             lst = createEpochTime(lstDate, lstTime)
+            timeAdded = int(time.time())
         if active_device.type == 'consumer':
-            job = str(est) + ';' + str(lst)+ ';[' + str(active_house.id)+'];[' + str(active_device.id)+']'+str(active_device.id) +'.csv'
-            consumer_jobs.append(job)
-
-            print(consumer_jobs)
+            job = str(timeAdded)+';'+ str(est) + ';' + str(lst)+ ';[' + str(active_house.id)+'];[' + str(active_device.id)+'];'+str(active_device.id) +'.csv'
+            active_device.events.append(job)
+            print(active_device.events[0])
         elif active_device.type == 'producer':
-            #Add to producerjobs
-            print('ok')
-
+            pass
 
 def createEpochTime(date, time):
     d = date.split('-')
@@ -704,23 +712,28 @@ def createEpochTime(date, time):
 
 
 '''
-TODO: Create csv file for consumer events, producer events and for loads and predictions in a folder structure
+TODO: Create csv file for consumer events, and for loads and predictions in a folder structure
 '''
-@app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks')])
-def save_neighbourhood(n):
-    # go through neighbourhood and create files
-    for house in main_neighbourhood.houses:
-        for device in house.users[0].devices: #only one user in each house
-            for event in device.events: #Events are saved as dict. using utilfunction to create csv files for simulator
-                if device.type == "producer":
-                    print('producer') 
-                    # TODO: add to producerevents
-                    # TODO: add predictionfile
-                elif device.type == "consumer":
-                    print("consumer")
-                    # TODO: add to consumer events
-                    # TODO: add loadfile
-                print('event')
-            print(str(device.name))
-    
+@app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks'), Input('neighbourhoodName', 'value')])
+def save_neighbourhood(n, value):
+    global main_neighbourhood
+    # go through neighbourhood and create files    
+    if n and n > 0 and value is not None:
+        #filepath=ROOT_DIR+"/input/"+value
+        #os.makedirs(filepath)
+        for house in main_neighbourhood.houses:
+            for device in house.users[0].devices: #only one user in each house
+                for event in device.events: #Events are saved as dict. using utilfunction to create csv files for simulator
+                    if device.type == "producer":
+                        pass
+                        # TODO: create predictionfile(pd.Dataframe) from device.loadProfile if not None
+                    elif device.type == "consumer":
+                        print(device.name)
+                        print(device.loadProfile)
+                        # TODO: add to consumer events
+                        # TODO: add loadfile(pd.Dataframe)
+                        for event in device.events:
+                            #add events to consumer_events.csv
+                            print(event)
+        
 
