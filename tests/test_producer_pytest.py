@@ -8,7 +8,7 @@ from simulator import Simulator
 
 
 def test_create_contract():
-    sim = Simulator()
+    sim = Simulator(dict(), None)
     manager = Manager(sim)
     producer = Producer("producer_id", manager)
     job = Job(est=0, lst=0, id="job_id", load_profile=pd.Series())
