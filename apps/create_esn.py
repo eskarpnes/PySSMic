@@ -250,8 +250,11 @@ layout = html.Div([
     ),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
-    dcc.Input(id="neighbourhoodName", placeholder="neighbourhoodName"),
-    html.Button("Save Neighbourhood", id="btnSaveNeighbourhood"),
+    html.Div(id='saveNeighbourhood', children=[
+        dcc.Input(id="neighbourhoodName", placeholder="neighbourhoodName"),
+        html.Button("Save Neighbourhood", id="btnSaveNeighbourhood"),
+    ],
+    style={'display':'none'}),
     configHouseModal(),
     addJobModal()
 ])
@@ -412,6 +415,12 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
 
 @app.callback(Output('newHouseInput', 'style'), [Input('btnCreateNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
 def showMenu(n, contents):
+    if n or contents:
+        return {'display':'block'}
+
+
+@app.callback(Output('saveNeighbourhood', 'style'), [Input('btnCreateNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
+def showSaveButton(n, contents):
     if n or contents:
         return {'display':'block'}
 
@@ -722,14 +731,12 @@ def createEpochTime(date, time):
     return int(dateTime)
 
 
-'''
-TODO: Create csv file for consumer events, and for loads and predictions in a folder structure
-'''
+#autogenerate sunny weatherprediciton
 
 @app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks'), Input('neighbourhoodName', 'value')])
 def save_neighbourhood(n, value):
     global main_neighbourhood   
-    print(n)
+    numOfProducers = 0
     if value and (n and n > 0):
         print("hello")
         filepath=ROOT_DIR+"/input/"+value
@@ -741,12 +748,18 @@ def save_neighbourhood(n, value):
             for device in house.users[0].devices: #only one user in each house
                 print(device.type)
                 if device.type == "producer":
+                    numOfProducers += 1
                     device.loadProfile.to_csv(filepath+"/predictions/"+str(device.id)+".csv", sep=" ", index=False, header=False)
                 elif device.type == "consumer" and device.loadProfile is not None:
                     device.loadProfile.to_csv(filepath+"/loads/"+str(device.id)+".csv", sep=" ", index=False, header=False)
                     with open(filepath+'/consumer_event.csv', 'a+') as consumerJobscsv:
                         wr = csv.writer(consumerJobscsv)
                         wr.writerow(device.events)
+        
+        
+        
+        #pickle neighbourhood object and save it locally?
+        
                     
         
 
