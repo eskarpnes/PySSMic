@@ -205,7 +205,8 @@ layout = html.Div([
         html.Div('hus: ' + str(type(active_house)), id="active_house-info"),
         html.Div('device: ' + str(active_device), id="active_device-info"),
         html.Div('device:', id='deviceTwo')
-    ]),
+    ],
+    style={'display':'none'}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
         html.Button("Create from XML", id="btnXmlInput"),
@@ -244,7 +245,9 @@ layout = html.Div([
         html.Button("Configure device", id="btnConfigHouse",
                     n_clicks_timestamp='0'),
         html.Button("Add jobs", id="btnAddJob", n_clicks_timestamp='0')
-    ]),
+    ],
+    style={'display':'none'}
+    ),
     html.Div(id="neighbourhood-info"),
     html.Div(id="tabs"),
     dcc.Input(id="neighbourhoodName", placeholder="neighbourhoodName"),
@@ -405,6 +408,13 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         return html.Div(nabolag)
     else:
         return html.Div()
+
+
+@app.callback(Output('newHouseInput', 'style'), [Input('btnCreateNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
+def showMenu(n, contents):
+    if n or contents:
+        return {'display':'block'}
+
 
 # Function to update the view based on neighbourhood div
 
