@@ -9,29 +9,16 @@ import json
 import pandas as pd
 from app import app
 import pickle
+import re
 
 """-------------------------ENERGY USE-------------------------"""
 
 
-def get_energy_df():
-    return pd.DataFrame({'c1': [384, 827], 'c2': [848, 874]})
-
-
 def energy_use():
-    #df_sum = df.sum(axis=1)
-    #n = 100 / grid + pv
     return (
         dcc.Graph(
             id="energy-use-graph",
-            figure=go.Figure(
-                data=[
-                    go.Pie(
-                        #values=[df_sum[0] * n, df_sum[1] * n],
-                        values=[50, 50],
-                        labels=["Local", "Not local"]
-                    )
-                ]
-            )
+            figure=go.Figure()
         )
     )
 
@@ -110,40 +97,57 @@ def get_dropdown_options():
 
 
 layout = html.Div(children=[
+    html.Div(html.H3("Simulations to display"), className="header"),
     dcc.Dropdown(
         id="result",
         options=get_dropdown_options(),
         value=get_dropdown_options()[0]["value"]
     ),
     html.Button('Update results', className='btn', id='btn-update'),
+    #TODO: Align dropdown and btn
+    html.Br(),
+    html.Div(id='sim_id', children=[
+        html.Div(html.H3("Simulation to display"), className="header"),
+        html.Div(
+            dcc.Dropdown(
+                id="simulation_choice",
+                options=[],
+                value='1'
+            )
+        ),
+    ]),
+    html.Br(),
     dcc.Tabs(id="tabs", children=[
-        dcc.Tab(label='All households', children=[
+        dcc.Tab(id='tab_all_housholds', label='All households', children=[
+            html.Br(),
             html.Div(
-                html.H2("Energy use")
+                html.H2("Energy use", className="header")
             ),
             html.Div([
                 energy_use()
             ], className="pie-chart"),
+            html.Br(),
 
             html.Div(
-                html.H2("Contracts")
+                html.H2("Contracts", className="header")
             ),
             html.Div([
                 contract_overview()
             ], className="contract-table"),
+            html.Br(),
 
             html.Div(
-                html.H2("Available vs Used energy")
+                html.H2("Available vs Used energy", className="header")
             ),
             html.Div([
                 energy_consumption()
             ], className="consumption-graph"),
-            html.Button("Start simulation", id="btnSimulationStart")
+            html.Br(),
         ]),
-        dcc.Tab(label='One household', children=[
+        dcc.Tab(id='tab_one_household', label='One household', children=[
             # TODO
         ]),
-        dcc.Tab(label='All simulations', children=[
+        dcc.Tab(id='tab_all_sim', label='All simulations', children=[
             # TODO
         ])
     ])
@@ -151,14 +155,6 @@ layout = html.Div(children=[
 
 
 """-------------------------APP CALLBACKS-------------------------"""
-
-
-# @app.callback(Output("contract-table", "rows"),
-#               [Input("btnSimulationStart", "n_clicks"),
-#                Input('datatableDiv', 'children')])
-# def update_table(n, children):
-#     if n and n > 0:
-#         return json.loads(children)
 
 
 @app.callback(Output("result", "options"),
@@ -180,10 +176,41 @@ def update_contracts(value):
     return rows
 
 
-@app.callback(Output("energy-use-graph", "values"),
+@app.callback(Output("simulation_choice", "options"),
               [Input("result", "value")])
+def update_simid_dropdown(value):
+    search = re.search(r'_(\d+?)\.', value)
+    num = search.group(0)[1:-1]
+    sim_options = []
+    for val in range(0, int(num)):
+        sim_options.append({'label': 'Simulation {}'.format(val+1), 'value': '{}'.format(val+1)})
+    #print(sim_options)
+    return sim_options
+
+
+@app.callback(
+    Output("energy-use-graph", "figure"),
+    [Input("simulation_choice", "value")]
+)
 def update_pie_chart(value):
-    return [30, 70]
+    #TODO: Display content for chosen value, i.e. simulation 'value'
+    return go.Figure(
+        data=[
+            go.Pie(
+                values=[50, 50],
+                labels=["Grid", "PV"]
+            )
+        ]
+    )
+
+
+@app.callback(
+    Output('sim_id', 'style'),
+    [Input('tabs', 'value')]
+)
+def display_none(value):
+    if value == 'tab-3':
+        return {'display': 'none'}
 
 
 """-------------------------HELPING METHODS-------------------------"""
