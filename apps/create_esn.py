@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import dash
 import time
+import csv
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
@@ -714,26 +715,28 @@ def createEpochTime(date, time):
 '''
 TODO: Create csv file for consumer events, and for loads and predictions in a folder structure
 '''
+
 @app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks'), Input('neighbourhoodName', 'value')])
 def save_neighbourhood(n, value):
-    global main_neighbourhood
-    # go through neighbourhood and create files    
-    if n and n > 0 and value is not None:
-        #filepath=ROOT_DIR+"/input/"+value
-        #os.makedirs(filepath)
+    global main_neighbourhood   
+    print(n)
+    if value and (n and n > 0):
+        print("hello")
+        filepath=ROOT_DIR+"/input/"+value
+        os.makedirs(filepath)
+        os.makedirs(filepath+"/loads")
+        os.makedirs(filepath+"/predictions")
+        #make dir loads, prediction, consumerevent.csv, produserevent.csv
         for house in main_neighbourhood.houses:
             for device in house.users[0].devices: #only one user in each house
-                for event in device.events: #Events are saved as dict. using utilfunction to create csv files for simulator
-                    if device.type == "producer":
-                        pass
-                        # TODO: create predictionfile(pd.Dataframe) from device.loadProfile if not None
-                    elif device.type == "consumer":
-                        print(device.name)
-                        print(device.loadProfile)
-                        # TODO: add to consumer events
-                        # TODO: add loadfile(pd.Dataframe)
-                        for event in device.events:
-                            #add events to consumer_events.csv
-                            print(event)
+                print(device.type)
+                if device.type == "producer":
+                    device.loadProfile.to_csv(filepath+"/predictions/"+str(device.id)+".csv", sep=" ", index=False, header=False)
+                elif device.type == "consumer" and device.loadProfile is not None:
+                    device.loadProfile.to_csv(filepath+"/loads/"+str(device.id)+".csv", sep=" ", index=False, header=False)
+                    with open(filepath+'/consumer_event.csv', 'a+') as consumerJobscsv:
+                        wr = csv.writer(consumerJobscsv)
+                        wr.writerow(device.events)
+                    
         
 
