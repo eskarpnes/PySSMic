@@ -97,17 +97,17 @@ def get_dropdown_options():
 
 
 layout = html.Div(children=[
-    html.Div(html.H3("Simulations to display"), className="header"),
+    html.Div(html.H3("Simulation to display")),
+    html.Span("Choose simulation "),
     dcc.Dropdown(
         id="result",
         options=get_dropdown_options(),
         value=get_dropdown_options()[0]["value"]
     ),
     html.Button('Update results', className='btn', id='btn-update'),
-    #TODO: Align dropdown and btn
-    html.Br(),
     html.Div(id='sim_id', children=[
-        html.Div(html.H3("Simulation to display"), className="header"),
+        html.Br(),
+        html.Span("Choose individual simulation"),
         html.Div(
             dcc.Dropdown(
                 id="simulation_choice",
@@ -117,6 +117,16 @@ layout = html.Div(children=[
         ),
     ]),
     html.Br(),
+    html.Div(id='household_id', children=[
+        html.Span("Choose household"),
+        html.Div(
+            dcc.Dropdown(
+                id="household_choice",
+                options=[],
+                value='1'
+            )
+        ),
+    ]), html.Br(),
     dcc.Tabs(id="tabs", children=[
         dcc.Tab(id='tab_all_housholds', label='All households', children=[
             html.Br(),
@@ -184,8 +194,21 @@ def update_simid_dropdown(value):
     sim_options = []
     for val in range(0, int(num)):
         sim_options.append({'label': 'Simulation {}'.format(val+1), 'value': '{}'.format(val+1)})
-    #print(sim_options)
     return sim_options
+
+
+@app.callback(Output("household_choice", "options"),
+              [Input("simulation_choice", "value")],
+              [State("result", "value")])
+def update_houseid_dropdown(simulation_choice, result):
+    contracts = open_file(str(result))[0]
+    contracts = pd.DataFrame(contracts)
+    house_options = []
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[e][int(simulation_choice)]
+        house_options.append({'label': 'Consumer ID: {}'.format(contract_e.get("job_id")), 'value': '{}'.format(contract_e.get("job_id"))})
+    #print(house_options)
+    return house_options
 
 
 @app.callback(
@@ -210,6 +233,16 @@ def update_pie_chart(value):
 )
 def display_none(value):
     if value == 'tab-3':
+        return {'display': 'none'}
+
+
+@app.callback(
+    Output('household_id', 'style'),
+    [Input('tabs', 'value')]
+)
+def display_none(value):
+    print(value)
+    if (value == 'tab-1') or (value == 'tab-3'):
         return {'display': 'none'}
 
 
