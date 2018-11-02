@@ -59,6 +59,43 @@
 .simulatorSetup {
     display: flex;
     flex-direction: column;
+    width: 100%;
+}
+
+.selectHorizontal {
+    display: flex;
+    flex-direction: row;
+    align-content: space-between;
+    padding-bottom: 40px;
+}
+
+.selectHorizontal .inputText {
+    display: flex;
+    align-content: space-around;
+}
+
+.selectHorizontal #neighbourhood {
+    width: 100%;
+    padding-right: 10px;
+}
+
+.selectHorizontal .btnContainer .btnAddEsn {
+    height: 36px;
+}
+
+.selectVertical {
+    display: flex;
+    flex-direction: column;
+    align-content: space-between;
+    padding-bottom: 40px;
+}
+
+#days {
+    max-width: 100px;
+}
+
+#runs {
+    max-width: 100px;
 }
 
 body {

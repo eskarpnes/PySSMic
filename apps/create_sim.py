@@ -31,20 +31,26 @@ layout = html.Div(children=[
 
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
-            html.A(html.Button("Create ESN", className="btnAddEsn"),
-                   href='/apps/create_esn'),
-            dcc.Dropdown(
-                id="neighbourhood",
-                options=get_dropdown_options(),
-                value=get_dropdown_options()[0]["value"]
-            ),
+            html.Div(className="selectHorizontal", children=[
+                dcc.Dropdown(
+                    id="neighbourhood",
+                    options=get_dropdown_options(),
+                    value=get_dropdown_options()[0]["value"]
+                ),
+                html.Div(className="btnContainer", children=[
+                    html.A(html.Button("Create ESN", className="btnAddEsn"),
+                           href='/apps/create_esn')
+                ])
+            ]),
 
-            html.Div(className="selectDays", children=[
-                html.Span("Days to simulate: "),
+            html.Div(className="selectVertical", children=[
+                html.Div(className="inputText", children=[
+                    html.Span("Days to simulate: ")
+                ]),
                 dcc.Input(id="days", type="int", value=1),
             ]),
 
-            html.Div(className="selectAlgo", children=[
+            html.Div(className="selectVertical", children=[
                 html.Span("Select Optimization Algorithm(s): "),
                 dcc.Dropdown(
                     id="algo",
@@ -56,8 +62,10 @@ layout = html.Div(children=[
                 )
             ]),
 
-            html.Div(className="selectRuns", children=[
-                html.Span("Select number of runs: "),
+            html.Div(className="selectVertical", children=[
+                html.Div(className="inputText", children=[
+                    html.Span("Number of runs: ")
+                ]),
                 dcc.Input(id="runs", type="int", value="1")
             ]),
 
@@ -86,7 +94,7 @@ def on_click(n_clicks, neighbourhood, days, algo, runs):
         "runs": int(runs)
     }
     print(config)
-    now_string = time.strftime("%d%b%y-%H%M")
+    now_string = time.strftime("%d%b%y_%H%M")
     print(now_string)
     filename = now_string + "_" + neighbourhood + "_" + algo.replace("/", "") + "_" + str(runs)
 
