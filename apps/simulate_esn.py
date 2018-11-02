@@ -44,10 +44,6 @@ def contract_overview():
 """-------------------------AVAILABLE VS USED ENERGY-------------------------"""
 
 
-def get_consumption():
-    return
-
-
 def energy_consumption():
     return (
         dcc.Graph(
@@ -175,14 +171,14 @@ def update_dropdown(n_clicks):
 
 
 @app.callback(Output("contract-table", "rows"),
-              [Input("result", "value")])
-def update_contracts(value):
-    contracts = open_file(value)[0]
+              [Input("simulation_choice", "value")],
+              [State("result", "value")])
+def update_contracts(simulation_choice, result):
+    contracts = open_file(result)[0]
     contracts = pd.DataFrame(contracts)
     rows = []
-    run = 0 #TODO: Exchange with chosen simulation (currently chooses first simulation)
     for e in range(0, len(contracts)):
-        rows.append(contracts[e][run])
+        rows.append(contracts[e][int(simulation_choice)])
     return rows
 
 
@@ -213,14 +209,30 @@ def update_houseid_dropdown(simulation_choice, result):
 
 @app.callback(
     Output("energy-use-graph", "figure"),
-    [Input("simulation_choice", "value")]
-)
-def update_pie_chart(value):
-    #TODO: Display content for chosen value, i.e. simulation 'value'
+    [Input("simulation_choice", "value")],
+    [State("result", "value")])
+def update_pie_chart(simulation_choice, result):
+    contracts = open_file(result)[0]
+    contracts = pd.DataFrame(contracts)
+    print(contracts)
+    grid = 0
+    pv = 0
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[e][int(simulation_choice)]
+        if contract_e.get("producer_id") == 'grid':
+            print('GRID')
+            print(contract_e.get("producer_id"))
+            print(contract_e.get("load_profile"))
+            grid += contract_e.get("load_profile").iat[1]
+        else:
+            pv += contract_e.get("load_profile").iat[1]
+            print('PV')
+            print(contract_e.get("producer_id"))
+            print(contract_e.get("load_profile"))
     return go.Figure(
         data=[
             go.Pie(
-                values=[50, 50],
+                values=[grid, pv],
                 labels=["Grid", "PV"]
             )
         ]
