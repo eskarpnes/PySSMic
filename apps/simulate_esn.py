@@ -113,7 +113,7 @@ layout = html.Div(children=[
         ),
     ]),
     html.Br(),
-    html.Div(id='household_id', children=[
+    html.Div(id='household_id', style={'display': 'none'}, children=[
         html.Span("Choose household"),
         html.Div(
             dcc.Dropdown(
@@ -253,9 +253,12 @@ def display_none(value):
     [Input('tabs', 'value')]
 )
 def display_none(value):
-    print(value)
+    style = ''
+    if value == 'tab-2':
+        style = {'display': 'block'}
     if (value == 'tab-1') or (value == 'tab-3'):
-        return {'display': 'none'}
+        style = {'display': 'none'}
+    return style
 
 
 """-------------------------HELPING METHODS-------------------------"""
