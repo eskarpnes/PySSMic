@@ -39,7 +39,7 @@ def contract_all_households():
         dt.DataTable(
             rows=[{}],
             columns=[
-                "id", "time_of_agreement", "job_id", "producer_id"],
+                "id", "time", "time_of_agreement", "load_profile", "job_id", "producer_id"],
             row_selectable=True,
             filterable=True,
             sortable=True,
@@ -234,6 +234,7 @@ def update_houseid_dropdown(run_choice, simulation_choice):
 """-------------------------CONTRACTS-------------------------"""
 
 
+# All households
 @app.callback(Output("contract-table-all", "rows"),
               [Input("run_choice", "value")],
               [State("simulation_choice", "value")])
@@ -242,10 +243,15 @@ def update_contracts(run_choice, simulation_choice):
     contracts = pd.DataFrame(contracts)
     rows = []
     for e in range(0, len(contracts)):
+        contract_e = contracts[e][int(run_choice) - 1]
+        print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
+        contract_e["load_profile"] = contract_e.get("load_profile").values[-1]
+        print('Load profile after: {}'.format(contract_e["load_profile"]))
         rows.append(contracts[e][int(run_choice)-1])
     return rows
 
 
+# One household
 @app.callback(Output("contract-table-one", "rows"),
               [Input("household_choice", "value")],
               [State("run_choice", "value"),
@@ -256,6 +262,9 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     rows = []
     for e in range(0, len(contracts)):
         contract_e = contracts[e][int(run_choice) - 1]
+        print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
+        contract_e["load_profile"] = contract_e.get("load_profile").values[-1]
+        print('Load profile after filtering: {}'.format(contract_e["load_profile"]))
         if (contract_e.get("job_id")) == household_choice:
             rows.append(contracts[e][int(run_choice) - 1])
     return rows
@@ -272,6 +281,7 @@ def update_contracts(household_choice, run_choice, simulation_choice):
 def update_pie_chart(run_choice, simulation_choice):
     contracts = open_file(simulation_choice)[0]
     contracts = pd.DataFrame(contracts)
+    print('Contracts used in pie chart: {}'.format(contracts))
     grid = 0
     pv = 0
     for e in range(0, len(contracts[0])):
@@ -300,12 +310,12 @@ def update_pie_chart(run_choice, simulation_choice):
 def update_pie_chart(household_choice, simulation_choice, run_choice):
     contracts = open_file(simulation_choice)[0]
     contracts = pd.DataFrame(contracts)
+    print('Contracts used in pie chart: {}'.format(contracts))
     grid = 0
     pv = 0
     for e in range(0, len(contracts[0])):
         contract_e = contracts[e][int(run_choice)-1]
         if (contract_e.get("job_id")) == household_choice:
-            print('Is equal')
             if contract_e.get("producer_id") == 'grid':
                 grid += contract_e.get("load_profile").values[-1]
             else:
