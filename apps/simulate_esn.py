@@ -178,7 +178,7 @@ def update_contracts(simulation_choice, result):
     contracts = pd.DataFrame(contracts)
     rows = []
     for e in range(0, len(contracts)):
-        rows.append(contracts[e][int(simulation_choice)])
+        rows.append(contracts[e][int(simulation_choice)-1])
     return rows
 
 
@@ -201,9 +201,8 @@ def update_houseid_dropdown(simulation_choice, result):
     contracts = pd.DataFrame(contracts)
     house_options = []
     for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(simulation_choice)]
+        contract_e = contracts[e][int(simulation_choice)-1]
         house_options.append({'label': 'Consumer ID: {}'.format(contract_e.get("job_id")), 'value': '{}'.format(contract_e.get("job_id"))})
-    #print(house_options)
     return house_options
 
 
@@ -214,21 +213,14 @@ def update_houseid_dropdown(simulation_choice, result):
 def update_pie_chart(simulation_choice, result):
     contracts = open_file(result)[0]
     contracts = pd.DataFrame(contracts)
-    print(contracts)
     grid = 0
     pv = 0
     for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(simulation_choice)]
+        contract_e = contracts[e][int(simulation_choice)-1]
         if contract_e.get("producer_id") == 'grid':
-            print('GRID')
-            print(contract_e.get("producer_id"))
-            print(contract_e.get("load_profile"))
-            grid += contract_e.get("load_profile").iat[1]
+            grid += contract_e.get("load_profile").values[-1]
         else:
-            pv += contract_e.get("load_profile").iat[1]
-            print('PV')
-            print(contract_e.get("producer_id"))
-            print(contract_e.get("load_profile"))
+            pv += contract_e.get("load_profile").values[-1]
     return go.Figure(
         data=[
             go.Pie(
