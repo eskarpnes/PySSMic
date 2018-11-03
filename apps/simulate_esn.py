@@ -284,7 +284,8 @@ def update_pie_chart(run_choice, simulation_choice):
         data=[
             go.Pie(
                 values=[grid, pv],
-                labels=["Grid", "PV"]
+                labels=["Grid", "PV"],
+                marker=dict(colors=['#008000', '#FF0000'])
             )
         ]
     )
@@ -313,7 +314,8 @@ def update_pie_chart(household_choice, simulation_choice, run_choice):
         data=[
             go.Pie(
                 values=[grid, pv],
-                labels=["Grid", "PV"]
+                labels=["Grid", "PV"],
+                marker=dict(colors=['#008000', '#FF0000'])
             )
         ]
     )
