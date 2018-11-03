@@ -39,7 +39,7 @@ def contract_all_households():
         dt.DataTable(
             rows=[{}],
             columns=[
-                'Contract ID', 'Contract start time', 'Contract agreement time', 'Energy use', 'Consumer ID',
+                'Contract ID', 'Contract start time', 'Contract agreement time', 'Energy used (Wh)', 'Consumer ID',
                 'Producer ID'],
             row_selectable=True,
             filterable=True,
@@ -55,7 +55,7 @@ def contract_one_household():
         dt.DataTable(
             rows=[{}],
             columns=[
-                'Contract ID', 'Contract start time', 'Contract agreement time', 'Energy use', 'Consumer ID',
+                'Contract ID', 'Contract start time', 'Contract agreement time', 'Energy used (Wh)', 'Consumer ID',
                 'Producer ID'],
             row_selectable=True,
             filterable=True,
@@ -151,7 +151,7 @@ layout = html.Div(children=[
         dcc.Tab(id='tab_all_housholds', label='All households', children=[
             html.Br(),
             html.Div(
-                html.H2("Energy use", className="header")
+                html.H2("Energy distribution", className="header")
             ),
             html.Div([
                 energy_use_all_households()
@@ -177,7 +177,7 @@ layout = html.Div(children=[
         dcc.Tab(id='tab_one_household', label='One household', children=[
             html.Br(),
             html.Div(
-                html.H2("Energy use", className="header")
+                html.H2("Energy distribution", className="header")
             ),
             html.Div([
                 energy_use_one_household()
@@ -375,7 +375,7 @@ def open_file(file_name):
 
 def rename_columns(contract):
     old_keys = ["id", "time", "time_of_agreement", "load_profile", "job_id", "producer_id"]
-    new_keys = ['Contract ID', 'Contract start time', 'Contract agreement time', 'Energy use', 'Consumer ID',
+    new_keys = ['Contract ID', 'Contract start time', 'Contract agreement time', 'Energy used (Wh)', 'Consumer ID',
                 'Producer ID']
     for i in range(0, len(old_keys)):
         contract[new_keys[i]] = contract.pop(old_keys[i])
