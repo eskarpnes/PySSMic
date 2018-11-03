@@ -353,20 +353,20 @@ def configProducer(n, dId, dName, dTemp, dType, w1, w2, w3, w4):
     global active_device
     if (dId or dName or dTemp or dType) is not None:
         dev=Device(dId, dName, dTemp, dType)
-        if w1 is not None:
+        if bool(w1[0]):
             dev.weatherPredictions1 = pd.DataFrame(w1)
             event = w1[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_1.csv'
             dev.events.append(event)
-        if w2 is not None:
+        if bool(w2[0]):
             dev.weatherPredictions2 = pd.DataFrame(w2)
             event = w2[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_2.csv'
             dev.events.append(event)
-        if len(w3) > 0:
+        if bool(w3[0]):
             print(len(w3))
             dev.weatherPredictions3 = pd.DataFrame(w3)
             event = w3[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_3.csv'
             dev.events.append(event)
-        if w4 is not None:
+        if bool(w4[0]):
             dev.weatherPredictions4 = pd.DataFrame(w4)
             event = w4[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_4.csv'
             dev.events.append(event)
