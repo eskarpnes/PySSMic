@@ -13,6 +13,10 @@ class Device():
         self.type = devType
         self.loadProfile = None
         self.events = []
+        self.weatherPredictions1 = None
+        self.weatherPredictions2 = None
+        self.weatherPredictions3 = None
+        self.weatherPredictions4 = None
 
     def add_event(self, event):
         if (isinstance(event, ConsumerEvent) and self.type == "consumer") or (isinstance(event, ProducerEvent) and self.type == "producer"):

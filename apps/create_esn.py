@@ -26,6 +26,7 @@ from definitions import ROOT_DIR
 main_neighbourhood = None
 active_house = None
 active_device = None
+weatherPredicitons = []
 # TODO: modal for adding house. modal with input field to set houseID
 
 
@@ -209,7 +210,7 @@ layout = html.Div([
     style={'display':'none'}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
-        html.Button("Create new", id="btnNewNeighbourhood"),
+        html.Button("Create new from scratch", id="btnNewNeighbourhood", n_clicks_timestamp='0'),
         dcc.Upload(id="upload-data", children=[html.Button("Create new from XML")]),
         html.Div(id="newNeighbourhoodInput", children=[
             dcc.Input(id="newNeighbourhoodId", value=0, type="number", style={
@@ -299,19 +300,6 @@ def create_neighborhood_html(neighborhood):
     return htmlString
 
 
-"""
-Callback to render id inputfield for a new Neighbourhood
-"""
-
-
-@app.callback(Output('newNeighbourhoodInput', 'style'),
-              [Input("btnNewNeighbourhood", "n_clicks")])
-def showNewNeighbourhoodInput(n):
-    if n == 1:
-        return {'display': 'block'}
-    return {"display": "none"}
-
-
 # Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
 # Function to store and update main neighbourhood div / Controller
 
@@ -322,7 +310,7 @@ def showNewNeighbourhoodInput(n):
                 State('newDeviceName', 'value'),
                 State('newDeviceTemplate', 'value'),
                 State('newDeviceType', 'value'),
-                State('loadOrPredictionTable', 'rows')
+                State('loadOrPredictionTable', 'rows'),
 ])
 def addDevice(n, dId, dName, dTemp, dType, rows):
     global active_house
@@ -335,20 +323,20 @@ def addDevice(n, dId, dName, dTemp, dType, rows):
         elif active_device is not None:
             active_house.users[0].devices.remove(active_device)
             active_house.users[0].devices.append(dev)
+
     return html.Div(str(dev.loadProfile))
 
 
 @app.callback(Output('neighbourhood_div', 'children'),
               [
                 Input('upload-data', 'contents'),
-                Input('btnCreateNewNeighbourhood', 'n_clicks_timestamp'),
+                Input('btnNewNeighbourhood', 'n_clicks_timestamp'),
                 Input('btnAddHouse', 'n_clicks_timestamp'),
                 Input('btnDeleteHouse', 'n_clicks_timestamp'),
                 Input('save_house', 'n_clicks_timestamp'),
                 Input('btnDeleteDevice', 'n_clicks_timestamp')
-                ],
-               [State('newNeighbourhoodId', 'value')])
-def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, btnDeleteDevice, value):
+                ])
+def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSave, btnDeleteDevice):
     global main_neighbourhood
     global active_house
     global active_device
@@ -387,13 +375,13 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         return html.Div()
 
 
-@app.callback(Output('newHouseInput', 'style'), [Input('btnCreateNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
+@app.callback(Output('newHouseInput', 'style'), [Input('btnNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
 def showMenu(n, contents):
     if n or contents:
         return {'display':'block'}
 
 
-@app.callback(Output('saveNeighbourhood', 'style'), [Input('btnCreateNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
+@app.callback(Output('saveNeighbourhood', 'style'), [Input('btnNewNeighbourhood', 'n_clicks'), Input('upload-data','contents')])
 def showSaveButton(n, contents):
     if n or contents:
         return {'display':'block'}
@@ -486,6 +474,7 @@ def renderAddJobContent(style):
 
 @app.callback(Output('configHouse-content', 'children'), [Input('configHouseTabs', 'value')])
 def showHouseConfigContent(value):
+    global active_house
     if value == 'configHouseDevice':
         return html.Div([
             dcc.Dropdown(id='user-device-dropdown', options=[{'label': device.name, 'value': device.id}
@@ -519,38 +508,42 @@ def showHouseConfigContent(value):
 
 @app.callback(Output('deviceConfigForm', 'children'), [Input('active_device-info', 'children')])
 def renderConfigForm(children):
-    output = [
-        dcc.Input(id="newDeviceId", type="number", value=active_device.id, style={
-                'width': '100px'
-            }),
-            html.Br(),
-            dcc.Input(id="newDeviceName", type="text", value=active_device.name, style={
-                'width': '100px'
-            }),
-            html.Br(),
-            dcc.Input(id="newDeviceTemplate", type="number", value=active_device.template, style={
-                'width': '100px'
-            }),
-            html.Br(),
-            dcc.Dropdown(id="newDeviceType", value=active_device.type,
-                         options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}]),
-            dcc.Upload(id="LoadPredictionUpload", children=[html.Button('Add load or prediction csv file')]),
-    ]
     if active_device is not None:
-        if active_device.loadProfile is not None:
-            print("fill row with  " )
-            print(type(active_device.loadProfile))
-            output.append(
-                dt.DataTable(
-                id="loadOrPredictionTable",
-                rows=active_device.loadProfile.to_dict('records')
-            ))
-        else:
-            output.append(
-                dt.DataTable(
-                id="loadOrPredictionTable",
-                rows=[{}]
-            ))
+        output = [
+            dcc.Input(id="newDeviceId", type="number", value=active_device.id, style={
+                    'width': '100px'
+                }),
+                html.Br(),
+                dcc.Input(id="newDeviceName", type="text", value=active_device.name, style={
+                    'width': '100px'
+                }),
+                html.Br(),
+                dcc.Input(id="newDeviceTemplate", type="number", value=active_device.template, style={
+                    'width': '100px'
+                }),
+                html.Br(),
+    
+                dcc.Dropdown(id="newDeviceType", value=active_device.type,
+                            options=[{'label': "Consumer", 'value': "consumer"}, {'label': "Producer", 'value': "producer"}]),
+        ]
+        if active_device.type == 'consumer':
+            output.extend([
+                dcc.Upload(id="LoadPredictionUpload", children=[html.Button('Add load or prediction csv file')]),
+                dt.DataTable(id="loadOrPredictionTable", rows=[{}]) if active_device.loadProfile is None else dt.DataTable(id="w1dt", rows=active_device.loadProfile.to_dict('records')),
+            ])
+            
+
+        if active_device.type == 'producer':
+            output.extend([
+                dcc.Upload(id="weather1", children=[html.Button('Add first weather predition')]),
+                dt.DataTable(id="w1dt", rows=[{}]) if active_device.weatherPredictions1 is None else dt.DataTable(id="w1dt", rows=active_device.weatherPredictions1.to_dict('records')),
+                dcc.Upload(id="weather2", children=[html.Button('Add second weather predition')]),
+                dt.DataTable(id="w2dt", rows=[{}]) if active_device.weatherPredictions2 is None else dt.DataTable(id="w2dt", rows=active_device.weatherPredictions2.to_dict('records')),
+                dcc.Upload(id="weather3", children=[html.Button('Add third weather predition')]),
+                dt.DataTable(id="w3dt", rows=[{}]) if active_device.weatherPredictions3 is None else dt.DataTable(id="w3dt", rows=active_device.weatherPredictions3.to_dict('records')),
+                dcc.Upload(id="weather4", children=[html.Button('Add fourth weather predition')]),
+                dt.DataTable(id="w4dt", rows=[{}]) if active_device.weatherPredictions4 is None else dt.DataTable(id="w4dt", rows=active_device.weatherPredictions4.to_dict('records')),
+            ])
         return html.Div(output)
 
 def parse_csv(contents, filename):
@@ -572,10 +565,27 @@ def parse_csv(contents, filename):
 @app.callback(Output('loadOrPredictionTable', 'rows'), [Input('LoadPredictionUpload', 'contents')], [State('LoadPredictionUpload', 'filename')])
 def update_table(contents, filename):
     df = parse_csv(contents, filename)
-    print("update table with " )
-    print(type(df))
     return df.to_dict('records')
 
+@app.callback(Output('w1dt', 'rows'), [Input('weather1', 'contents')], [State('weather1', 'filename')])
+def update_w1(contents, filename):
+    df = parse_csv(contents, filename)
+    return df.to_dict('records')
+
+@app.callback(Output('w2dt', 'rows'), [Input('weather2', 'contents')], [State('weather2', 'filename')])
+def update_w1(contents, filename):
+    df = parse_csv(contents, filename)
+    return df.to_dict('records')
+
+@app.callback(Output('w3dt', 'rows'), [Input('weather3', 'contents')], [State('weather3', 'filename')])
+def update_w1(contents, filename):
+    df = parse_csv(contents, filename)
+    return df.to_dict('records')
+
+@app.callback(Output('w4dt', 'rows'), [Input('weather4', 'contents')], [State('weather4', 'filename')])
+def update_w1(contents, filename):
+    df = parse_csv(contents, filename)
+    return df.to_dict('records')
 
 @app.callback(
     Output("btnConfigHouse", "n_clicks"),
@@ -692,7 +702,6 @@ def createEpochTime(date, time):
 @app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks'), Input('neighbourhoodName', 'value')])
 def save_neighbourhood(n, value):
     global main_neighbourhood   
-    numOfProducers = 0
     if value and (n and n > 0):
         print("hello")
         filepath=ROOT_DIR+"/input/"+value
@@ -704,16 +713,15 @@ def save_neighbourhood(n, value):
             for device in house.users[0].devices: #only one user in each house
                 print(device.type)
                 if device.type == "producer":
-                    numOfProducers += 1
-                    device.loadProfile.to_csv(filepath+"/predictions/"+str(device.id)+".csv", sep=" ", index=False, header=False)
+                    device.loadProfile.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+".csv", sep=" ", index=False, header=False)
+
                 elif device.type == "consumer" and device.loadProfile is not None:
                     device.loadProfile.to_csv(filepath+"/loads/"+str(device.id)+".csv", sep=" ", index=False, header=False)
                     with open(filepath+'/consumer_event.csv', 'a+') as consumerJobscsv:
                         wr = csv.writer(consumerJobscsv)
                         wr.writerow(device.events)
         
-        
-        
+
         #pickle neighbourhood object and save it locally?
         
                     
