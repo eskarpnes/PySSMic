@@ -1,5 +1,4 @@
 import os
-
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, Event, State
@@ -14,10 +13,19 @@ import re
 """-------------------------ENERGY USE-------------------------"""
 
 
-def energy_use():
+def energy_use_all_households():
     return (
         dcc.Graph(
-            id="energy-use-graph",
+            id="energy-use-all-chart",
+            figure=go.Figure()
+        )
+    )
+
+
+def energy_use_one_household():
+    return (
+        dcc.Graph(
+            id="energy-use-one-chart",
             figure=go.Figure()
         )
     )
@@ -50,7 +58,7 @@ def energy_consumption():
             id="energy-consumption-graph",
             figure=go.Figure(
                 data=[
-                    # TODO: Update to input values from simulator in 'get_consumption()'
+                    # TODO: Update to input values from simulator
                     go.Scatter(
                         x=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
                         y=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
@@ -96,17 +104,17 @@ layout = html.Div(children=[
     html.Div(html.H3("Simulation to display")),
     html.Span("Choose simulation "),
     dcc.Dropdown(
-        id="result",
+        id="simulation_choice",
         options=get_dropdown_options(),
         value=get_dropdown_options()[0]["value"]
     ),
     html.Button('Update results', className='btn', id='btn-update'),
     html.Div(id='sim_id', children=[
         html.Br(),
-        html.Span("Choose individual simulation"),
+        html.Span("Choose run"),
         html.Div(
             dcc.Dropdown(
-                id="simulation_choice",
+                id="run_choice",
                 options=[],
                 value='1'
             )
@@ -118,8 +126,7 @@ layout = html.Div(children=[
         html.Div(
             dcc.Dropdown(
                 id="household_choice",
-                options=[],
-                value='1'
+                options=[]
             )
         ),
     ]), html.Br(),
@@ -130,7 +137,7 @@ layout = html.Div(children=[
                 html.H2("Energy use", className="header")
             ),
             html.Div([
-                energy_use()
+                energy_use_all_households()
             ], className="pie-chart"),
             html.Br(),
 
@@ -151,7 +158,14 @@ layout = html.Div(children=[
             html.Br(),
         ]),
         dcc.Tab(id='tab_one_household', label='One household', children=[
-            # TODO
+            html.Br(),
+            html.Div(
+                html.H2("Energy use", className="header")
+            ),
+            html.Div([
+                energy_use_one_household()
+            ], className="pie-chart"),
+            html.Br(),
         ]),
         dcc.Tab(id='tab_all_sim', label='All simulations', children=[
             # TODO
@@ -160,63 +174,70 @@ layout = html.Div(children=[
 ])
 
 
-"""-------------------------APP CALLBACKS-------------------------"""
+"""-------------------------DROPDOWNS-------------------------"""
 
 
-@app.callback(Output("result", "options"),
+@app.callback(Output("simulation_choice", "options"),
               [Input("btn-update", "n_clicks")])
 def update_dropdown(n_clicks):
     print("click")
     return get_dropdown_options()
 
 
-@app.callback(Output("contract-table", "rows"),
-              [Input("simulation_choice", "value")],
-              [State("result", "value")])
-def update_contracts(simulation_choice, result):
-    contracts = open_file(result)[0]
-    contracts = pd.DataFrame(contracts)
-    rows = []
-    for e in range(0, len(contracts)):
-        rows.append(contracts[e][int(simulation_choice)-1])
-    return rows
-
-
-@app.callback(Output("simulation_choice", "options"),
-              [Input("result", "value")])
+@app.callback(Output("run_choice", "options"),
+              [Input("simulation_choice", "value")])
 def update_simid_dropdown(value):
     search = re.search(r'_(\d+?)\.', value)
     num = search.group(0)[1:-1]
     sim_options = []
     for val in range(0, int(num)):
-        sim_options.append({'label': 'Simulation {}'.format(val+1), 'value': '{}'.format(val+1)})
+        sim_options.append({'label': 'Run {}'.format(val+1), 'value': '{}'.format(val+1)})
     return sim_options
 
 
 @app.callback(Output("household_choice", "options"),
-              [Input("simulation_choice", "value")],
-              [State("result", "value")])
-def update_houseid_dropdown(simulation_choice, result):
-    contracts = open_file(str(result))[0]
+              [Input("run_choice", "value")],
+              [State("simulation_choice", "value")])
+def update_houseid_dropdown(run_choice, simulation_choice):
+    contracts = open_file(str(simulation_choice))[0]
     contracts = pd.DataFrame(contracts)
     house_options = []
     for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(simulation_choice)-1]
+        contract_e = contracts[e][int(run_choice)-1]
         house_options.append({'label': 'Consumer ID: {}'.format(contract_e.get("job_id")), 'value': '{}'.format(contract_e.get("job_id"))})
     return house_options
 
 
+"""-------------------------CONTRACTS-------------------------"""
+
+
+@app.callback(Output("contract-table", "rows"),
+              [Input("run_choice", "value")],
+              [State("simulation_choice", "value")])
+def update_contracts(run_choice, simulation_choice):
+    contracts = open_file(simulation_choice)[0]
+    contracts = pd.DataFrame(contracts)
+    rows = []
+    for e in range(0, len(contracts)):
+        rows.append(contracts[e][int(run_choice)-1])
+    return rows
+
+
+"""-------------------------PIE CHARTS-------------------------"""
+
+
+#All households
 @app.callback(
-    Output("energy-use-graph", "figure"),
-    [Input("simulation_choice", "value")],
-    [State("result", "value")])
-def update_pie_chart(simulation_choice, result):
-    contracts = open_file(result)[0]
+    Output("energy-use-all-chart", "figure"),
+    [Input("run_choice", "value")],
+    [State("simulation_choice", "value")])
+def update_pie_chart(run_choice, simulation_choice):
+    contracts = open_file(simulation_choice)[0]
     contracts = pd.DataFrame(contracts)
     grid = 0
     pv = 0
     for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(simulation_choice)-1]
+        contract_e = contracts[e][int(run_choice)-1]
         if contract_e.get("producer_id") == 'grid':
             grid += contract_e.get("load_profile").values[-1]
         else:
@@ -229,6 +250,38 @@ def update_pie_chart(simulation_choice, result):
             )
         ]
     )
+
+
+#One household
+@app.callback(
+    Output("energy-use-one-chart", "figure"),
+    [Input("household_choice", "value")],
+    [State("simulation_choice", "value"),
+     State("run_choice", "value")])
+def update_pie_chart(household_choice, simulation_choice, run_choice):
+    contracts = open_file(simulation_choice)[0]
+    contracts = pd.DataFrame(contracts)
+    grid = 0
+    pv = 0
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[e][int(run_choice)-1]
+        if (contract_e.get("job_id")) == household_choice:
+            print('Is equal')
+            if contract_e.get("producer_id") == 'grid':
+                grid += contract_e.get("load_profile").values[-1]
+            else:
+                pv += contract_e.get("load_profile").values[-1]
+    return go.Figure(
+        data=[
+            go.Pie(
+                values=[grid, pv],
+                labels=["Grid", "PV"]
+            )
+        ]
+    )
+
+
+"""-------------------------DISPLAY'S IN TABS-------------------------"""
 
 
 @app.callback(
