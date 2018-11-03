@@ -39,7 +39,8 @@ def contract_all_households():
         dt.DataTable(
             rows=[{}],
             columns=[
-                "id", "time", "time_of_agreement", "load_profile", "job_id", "producer_id"],
+                'Contract ID', 'Contract start time', 'Contract agreement time', 'Energy use', 'Consumer ID',
+                'Producer ID'],
             row_selectable=True,
             filterable=True,
             sortable=True,
@@ -54,7 +55,8 @@ def contract_one_household():
         dt.DataTable(
             rows=[{}],
             columns=[
-                "id", "time_of_agreement", "job_id", "producer_id"],
+                'Contract ID', 'Contract start time', 'Contract agreement time', 'Energy use', 'Consumer ID',
+                'Producer ID'],
             row_selectable=True,
             filterable=True,
             sortable=True,
@@ -244,10 +246,13 @@ def update_contracts(run_choice, simulation_choice):
     rows = []
     for e in range(0, len(contracts)):
         contract_e = contracts[e][int(run_choice) - 1]
+        print('CONTRACT: {}'.format(contract_e))
+        print(type(contract_e))
         print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
-        contract_e["load_profile"] = contract_e.get("load_profile").values[-1]
+        contract_e["load_profile"] = round(contract_e.get("load_profile").values[-1], 2)
         print('Load profile after: {}'.format(contract_e["load_profile"]))
-        rows.append(contracts[e][int(run_choice)-1])
+        contract_e = rename_columns(contract_e)
+        rows.append(contract_e)
     return rows
 
 
@@ -263,9 +268,10 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     for e in range(0, len(contracts)):
         contract_e = contracts[e][int(run_choice) - 1]
         print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
-        contract_e["load_profile"] = contract_e.get("load_profile").values[-1]
+        contract_e["load_profile"] = round(contract_e.get("load_profile").values[-1], 2)
         print('Load profile after filtering: {}'.format(contract_e["load_profile"]))
-        if (contract_e.get("job_id")) == household_choice:
+        contract_e = rename_columns(contract_e)
+        if (contract_e.get("Consumer ID")) == household_choice:
             rows.append(contracts[e][int(run_choice) - 1])
     return rows
 
@@ -273,7 +279,7 @@ def update_contracts(household_choice, run_choice, simulation_choice):
 """-------------------------PIE CHARTS-------------------------"""
 
 
-#All households
+# All households
 @app.callback(
     Output("energy-use-all-chart", "figure"),
     [Input("run_choice", "value")],
@@ -301,7 +307,7 @@ def update_pie_chart(run_choice, simulation_choice):
     )
 
 
-#One household
+# One household
 @app.callback(
     Output("energy-use-one-chart", "figure"),
     [Input("household_choice", "value")],
@@ -365,6 +371,15 @@ def open_file(file_name):
         contracts = res[0]
         profiles = res[1]
     return contracts, profiles
+
+
+def rename_columns(contract):
+    old_keys = ["id", "time", "time_of_agreement", "load_profile", "job_id", "producer_id"]
+    new_keys = ['Contract ID', 'Contract start time', 'Contract agreement time', 'Energy use', 'Consumer ID',
+                'Producer ID']
+    for i in range(0, len(old_keys)):
+        contract[new_keys[i]] = contract.pop(old_keys[i])
+    return contract
 
 
 
