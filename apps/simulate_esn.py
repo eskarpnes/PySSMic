@@ -34,7 +34,7 @@ def energy_use_one_household():
 """"-------------------------CONTRACT OVERVIEW-------------------------"""
 
 
-def contract_overview():
+def contract_all_households():
     return (
         dt.DataTable(
             rows=[{}],
@@ -44,7 +44,22 @@ def contract_overview():
             filterable=True,
             sortable=True,
             selected_row_indices=[],
-            id="contract-table"
+            id="contract-table-all"
+        )
+    )
+
+
+def contract_one_household():
+    return (
+        dt.DataTable(
+            rows=[{}],
+            columns=[
+                "id", "time_of_agreement", "job_id", "producer_id"],
+            row_selectable=True,
+            filterable=True,
+            sortable=True,
+            selected_row_indices=[],
+            id="contract-table-one"
         )
     )
 
@@ -145,8 +160,8 @@ layout = html.Div(children=[
                 html.H2("Contracts", className="header")
             ),
             html.Div([
-                contract_overview()
-            ], className="contract-table"),
+                contract_all_households()
+            ], className="contract-table-all"),
             html.Br(),
 
             html.Div(
@@ -165,6 +180,14 @@ layout = html.Div(children=[
             html.Div([
                 energy_use_one_household()
             ], className="pie-chart"),
+            html.Br(),
+
+            html.Div(
+                html.H2("Contracts", className="header")
+            ),
+            html.Div([
+                contract_one_household()
+            ]),
             html.Br(),
         ]),
         dcc.Tab(id='tab_all_sim', label='All simulations', children=[
@@ -211,7 +234,7 @@ def update_houseid_dropdown(run_choice, simulation_choice):
 """-------------------------CONTRACTS-------------------------"""
 
 
-@app.callback(Output("contract-table", "rows"),
+@app.callback(Output("contract-table-all", "rows"),
               [Input("run_choice", "value")],
               [State("simulation_choice", "value")])
 def update_contracts(run_choice, simulation_choice):
@@ -220,6 +243,21 @@ def update_contracts(run_choice, simulation_choice):
     rows = []
     for e in range(0, len(contracts)):
         rows.append(contracts[e][int(run_choice)-1])
+    return rows
+
+
+@app.callback(Output("contract-table-one", "rows"),
+              [Input("household_choice", "value")],
+              [State("run_choice", "value"),
+              State("simulation_choice", "value")])
+def update_contracts(household_choice, run_choice, simulation_choice):
+    contracts = open_file(simulation_choice)[0]
+    contracts = pd.DataFrame(contracts)
+    rows = []
+    for e in range(0, len(contracts)):
+        contract_e = contracts[e][int(run_choice) - 1]
+        if (contract_e.get("job_id")) == household_choice:
+            rows.append(contracts[e][int(run_choice) - 1])
     return rows
 
 
