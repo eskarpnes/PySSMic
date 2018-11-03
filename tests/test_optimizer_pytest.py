@@ -1,5 +1,3 @@
-import time
-
 from backend.manager import Manager
 from backend.optimizer import Optimizer
 
@@ -13,7 +11,7 @@ def test_optimize_basinhopping():
     sim = Simulator(dict(), None)
     man = Manager(sim)
     producer = Producer("id", man)
-    producer.optimizer = Optimizer(producer, options=dict(algo="basinhopping", tol=0.5, eps=0.5))
+    producer.optimizer = Optimizer(producer, options=dict(algo="basinhopping", tol=2.5, eps=0.1))
     job0 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
     job1 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
     job2 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
@@ -27,17 +25,37 @@ def test_optimize_basinhopping():
     assert {0, 2, 4, 6, 8} == set([int(round(x)) for x in schedule_time])
 
 
-def test_optimize_fiftyfifty():
+def test_optimize_fifty_fifty():
     sim = Simulator(dict(), None)
     man = Manager(sim)
     producer = Producer("id", man)
     producer.optimizer = Optimizer(producer, options=dict(algo="50/50"))
-    for i in range(1000):
-        job = dict(consumer=None, job=Job("id"+str(i), 0, 0, pd.Series(index=[0], data=[0.0])), status=JobStatus.active)
+    producer.prediction = pd.Series(index=[0, 1], data=[0.0, 1.0])
+    for i in range(250):
+        job = dict(consumer=None, job=Job("id" + str(i), 0, 0, pd.Series(index=[0, 1], data=[0.0, 0.0])),
+                   status=JobStatus.active)
         producer.schedule.append(job)
         schedule_time, should_keep = producer.optimizer.optimize()
         if not should_keep[-1]:
             producer.schedule.pop()
 
     num_accepted = len(producer.schedule)
-    assert 400 < num_accepted < 600
+    assert 100 < num_accepted < 150
+
+
+def test_optimize_fifty_fifty_negative():
+    sim = Simulator(dict(), None)
+    man = Manager(sim)
+    producer = Producer("id", man)
+    producer.optimizer = Optimizer(producer, options=dict(algo="50/50"))
+    producer.prediction = pd.Series(index=[0, 1], data=[0.0, 0.0])
+    for i in range(10):
+        job = dict(consumer=None, job=Job("id" + str(i), 0, 0, pd.Series(index=[0, 1], data=[0.0, 1.0])),
+                   status=JobStatus.active)
+        producer.schedule.append(job)
+        schedule_time, should_keep = producer.optimizer.optimize()
+        if not should_keep[-1]:
+            producer.schedule.pop()
+
+    num_accepted = len(producer.schedule)
+    assert num_accepted == 0
