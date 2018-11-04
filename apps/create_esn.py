@@ -27,8 +27,6 @@ main_neighbourhood = None
 active_house = None
 active_device = None
 weatherPredicitons = []
-# TODO: modal for adding house. modal with input field to set houseID
-
 
 def create_house_tab(house):
     return(dcc.Tab(label='House Id: ' + str(house.id), value=str(house.id)))
@@ -207,8 +205,8 @@ layout = html.Div([
     html.Div(id="save_hidden", style={'display': 'none'}),
     # hidden div to save data in
     html.Div(id='save_jobs', style={'display': 'none'}),
-    html.Div(id="consumer_div", style={'display': 'block'}),
-    html.Div(id="producer_div", children=["helo"], style={'display': 'block'}),
+    html.Div(id="consumer_div", style={'display': 'none'}),
+    html.Div(id="producer_div", style={'display': 'none'}),
     html.Div(id='nInfo', children=[
         html.Div('nabolag: ' + str(main_neighbourhood),
                  id="main_neighbourhood-info"),
@@ -216,7 +214,7 @@ layout = html.Div([
         html.Div('device: ' + str(active_device), id="active_device-info"),
         html.Div('device:', id='deviceTwo')
     ],
-    style={'display':'block'}),
+    style={'display':'none'}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
         html.Button("Create new from scratch", id="btnNewNeighbourhood", n_clicks_timestamp='0'),
@@ -234,7 +232,7 @@ layout = html.Div([
         html.Button("Add house", id="btnAddHouse", n_clicks_timestamp='0'),
         html.Button("Delete house", id="btnDeleteHouse",
                     n_clicks_timestamp='0'),
-        html.Button("Configure device", id="btnConfigHouse",
+        html.Button("Configure house", id="btnConfigHouse",
                     n_clicks_timestamp='0'),
         html.Button("Add jobs", id="btnAddJob", n_clicks_timestamp='0')
     ],
@@ -353,30 +351,35 @@ def configProducer(n, dId, dName, dTemp, dType, w1, w2, w3, w4):
     global active_device
     if (dId or dName or dTemp or dType) is not None:
         dev=Device(dId, dName, dTemp, dType)
-        if bool(w1[0]):
+        print(type(w1[0]['Time']))
+        if w1 and bool(w1[0]):
             dev.weatherPredictions1 = pd.DataFrame(w1)
             event = w1[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_1.csv'
             dev.events.append(event)
-        if bool(w2[0]):
+        if w2 and bool(w2[0]):
             dev.weatherPredictions2 = pd.DataFrame(w2)
             event = w2[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_2.csv'
             dev.events.append(event)
-        if bool(w3[0]):
-            print(len(w3))
+        if w3 and bool(w3[0]):
             dev.weatherPredictions3 = pd.DataFrame(w3)
             event = w3[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_3.csv'
             dev.events.append(event)
-        if bool(w4[0]):
+        if w4 and bool(w4[0]):
             dev.weatherPredictions4 = pd.DataFrame(w4)
             event = w4[0]['Time'] + ';pv_producer[' + str(active_house.id) +']:['+str(dev.id)+'];'+str(active_house.id)+"_"+str(dev.id)+'_4.csv'
             dev.events.append(event)
         if active_device is None:
             active_house.users[0].devices.append(dev)
+    
         elif active_device is not None:
             active_house.users[0].devices.remove(active_device)
             active_house.users[0].devices.append(dev)
+    print(dev.weatherPredictions1)
     return html.Div(str(dev.weatherPredictions1))
 
+'''
+
+'''
 
 @app.callback(Output('neighbourhood_div', 'children'),
               [
@@ -399,18 +402,16 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
     if btnNewNei != '0' and btnNewNei == btnclicks[-1]:
         newHouse=House(1)
         newHouse.users.append(User(1))
-        main_neighbourhood=Neighbourhood(90)  # TODO: logic to set id.
+        main_neighbourhood=Neighbourhood(1)
         main_neighbourhood.houses.append(newHouse)
     elif btnAddHouse != '0' and btnAddHouse == btnclicks[-1]:
         i=main_neighbourhood.nextHouseId()
         newHouse=House(i)
         newHouse.users.append(User(1))
-        main_neighbourhood.houses.append(newHouse)  # TODO: logic to set id.
+        main_neighbourhood.houses.append(newHouse)
     elif btnRemoveHouse != '0' and btnRemoveHouse == btnclicks[-1]:
-        main_neighbourhood.houses.remove(
-            active_house)
-        if len(main_neighbourhood.houses) > 0:
-            active_house=main_neighbourhood.houses[0]
+        i = main_neighbourhood.houses.index(active_house)
+        main_neighbourhood.houses.remove(active_house)
     elif (btnSaveCons != '0' or btnSaveProd != '0') and (btnSaveCons or btnSaveProd) == btnclicks[-1]:
         pass #needed to take this functionality and move it to addDevice function. See line 336.
     elif btnDeleteDevice != '0' and btnDeleteDevice == btnclicks[-1]:
@@ -448,9 +449,9 @@ def neighbourhood_tab_view(dictionary):
     if main_neighbourhood is not None:
         tabs = create_house_tabs(main_neighbourhood)
         return html.Div(children=[
-            dcc.Tabs(id='neighbourhoodTabs', children=tabs),
-            html.Div(id='tabs-content', children=["some cool content"])
-        ])
+            dcc.Tabs(id='neighbourhoodTabs',
+            children=tabs,),
+            html.Div(id='tabs-content')])
 
 
 @app.callback(Output('initChoices', 'style'), [Input('tabs', 'children')])
@@ -606,19 +607,19 @@ def renderConfigForm(children):
         ]
         if active_device.type == 'consumer':
             output.extend([
-                dcc.Upload(id="LoadPredictionUpload", children=[html.Button('Add load or prediction csv file')]),
-                dt.DataTable(id="loadOrPredictionTable", rows=[{}]) if active_device.loadProfile is None else dt.DataTable(id="loadOrPredictionTable", rows=active_device.loadProfile.to_dict('records')),
+                dcc.Upload(id="LoadPredictionUpload", children=[html.Button('Add load csv file')]),
+                dt.DataTable(id="loadOrPredictionTable", rows=[{'Time':[], 'Value':[]}]) if active_device.loadProfile is None else dt.DataTable(id="loadOrPredictionTable", rows=active_device.loadProfile.to_dict('records')),
             ])
         if active_device.type == 'producer':
             output.extend([
                 dcc.Upload(id="weather1", children=[html.Button('Add first weather predition')]),
-                dt.DataTable(id="w1dt", rows=[{}]) if active_device.weatherPredictions1 is None else dt.DataTable(id="w1dt", rows=active_device.weatherPredictions1.to_dict('records')),
+                dt.DataTable(id="w1dt", rows=[{'Time':[], 'Value':[]}]) if active_device.weatherPredictions1 is None else dt.DataTable(id="w1dt", rows=active_device.weatherPredictions1.to_dict('records')),
                 dcc.Upload(id="weather2", children=[html.Button('Add second weather predition')]),
-                dt.DataTable(id="w2dt", rows=[{}]) if active_device.weatherPredictions2 is None else dt.DataTable(id="w2dt", rows=active_device.weatherPredictions2.to_dict('records')),
+                dt.DataTable(id="w2dt", rows=[{'Time':[], 'Value':[]}]) if active_device.weatherPredictions2 is None else dt.DataTable(id="w2dt", rows=active_device.weatherPredictions2.to_dict('records')),
                 dcc.Upload(id="weather3", children=[html.Button('Add third weather predition')]),
-                dt.DataTable(id="w3dt", rows=[{}]) if active_device.weatherPredictions3 is None else dt.DataTable(id="w3dt", rows=active_device.weatherPredictions3.to_dict('records')),
+                dt.DataTable(id="w3dt", rows=[{'Time':[], 'Value':[]}]) if active_device.weatherPredictions3 is None else dt.DataTable(id="w3dt", rows=active_device.weatherPredictions3.to_dict('records')),
                 dcc.Upload(id="weather4", children=[html.Button('Add fourth weather predition')]),
-                dt.DataTable(id="w4dt", rows=[{}]) if active_device.weatherPredictions4 is None else dt.DataTable(id="w4dt", rows=active_device.weatherPredictions4.to_dict('records')),
+                dt.DataTable(id="w4dt", rows=[{'Time':[], 'Value':[]}]) if active_device.weatherPredictions4 is None else dt.DataTable(id="w4dt", rows=active_device.weatherPredictions4.to_dict('records')),
             ])
         return html.Div(output)
 
@@ -698,8 +699,8 @@ def showNid(children):
 
 # set active house.
 
-@app.callback(Output('active_house-info', 'children'), [Input('neighbourhoodTabs', 'value'), Input('btnDeleteHouse', 'n_clicks')])
-def setActiveHouse(value, n):
+@app.callback(Output('active_house-info', 'children'), [Input('neighbourhoodTabs', 'value')])
+def setActiveHouse(value):
     global active_house
     global main_neighbourhood
     if value is not None:
@@ -725,13 +726,11 @@ def setADevice(value):
 
 
 # Change tab on delete. TODO:reset n and send signal instead of timestamp on adding house
-@app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp'), Input('btnAddHouse', 'n_clicks_timestamp')])
+@app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp')])
 def tabChangeOnDelete(a, b):
     if int(a) > int(b):
         return str(main_neighbourhood.houses[0].id)
-    elif int(b) > int(a):
-        i = len(main_neighbourhood.houses) - 1
-        return str(main_neighbourhood.houses[i].id)
+
 
 @app.callback(Output('job_modal', 'style'), [Input('btnAddJob', 'n_clicks')])
 def displayJobModal(n):
@@ -760,16 +759,12 @@ def saveJobs(n, estDate, estTime, lstDate, lstTime):
         if active_device.type == 'consumer':
             job = str(timeAdded)+';'+ str(est) + ';' + str(lst)+ ';[' + str(active_house.id)+'];[' + str(active_device.id)+'];'+str(active_device.id) +'.csv'
             active_device.events.append(job)
-            print(active_device.events[0])
-        elif active_device.type == 'producer':
-            pass
-
+ 
 def createEpochTime(date, time):
     d = date.split('-')
     t = time.split(':')
     dateTime = datetime(int(d[0]), int(d[1]), int(d[2]), int(t[0]), int(t[1])).timestamp()
     return int(dateTime)
-
 
 #autogenerate sunny weatherprediciton
 
@@ -777,29 +772,37 @@ def createEpochTime(date, time):
 def save_neighbourhood(n, value):
     global main_neighbourhood   
     if value and (n and n > 0):
-        print("hello")
         filepath=ROOT_DIR+"/input/"+value
         os.makedirs(filepath)
         os.makedirs(filepath+"/loads")
         os.makedirs(filepath+"/predictions")
+        producerEvents = []
         #make dir loads, prediction, consumerevent.csv, produserevent.csv
         for house in main_neighbourhood.houses:
             for device in house.users[0].devices: #only one user in each house
-                print(device.type)
                 if device.type == "producer":
-                    device.weatherPredictions1.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_1.csv", sep=" ", index=False, header=False)
-                    device.weatherPredictions2.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_2.csv", sep=" ", index=False, header=False)
-                    device.weatherPredictions3.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_3.csv", sep=" ", index=False, header=False)
-                    device.weatherPredictions4.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_4.csv", sep=" ", index=False, header=False)
-                    with open(filepath+'/producer_event.csv', 'a+') as producerJobscsv:
-                        wr = csv.writer(producerJobscsv)
-                        wr.writerow(device.events)
-                elif device.type == "consumer" and device.loadProfile is not None:
-                    device.loadProfile.to_csv(filepath+"/loads/"+str(device.id)+".csv", sep=" ", index=False, header=False)
+                    if device.weatherPredictions1 is not None:
+                        device.weatherPredictions1.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_1.csv", sep=" ", index=False, header=False)
+                        producerEvents.append(str(device.weatherPredictions1['Time'].iloc[0] + ';pv_producer[' + str(house.id) +']:['+str(device.id)+'];'+str(house.id)+"_"+str(device.id)+'_1.csv'))
+                    if device.weatherPredictions2 is not None:
+                        device.weatherPredictions2.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_2.csv", sep=" ", index=False, header=False)
+                        producerEvents.append(str(device.weatherPredictions2['Time'].iloc[0] + ';pv_producer[' + str(house.id) +']:['+str(device.id)+'];'+str(house.id)+"_"+str(device.id)+'_2.csv'))
+                    if device.weatherPredictions3 is not None:
+                        device.weatherPredictions3.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_3.csv", sep=" ", index=False, header=False)
+                        producerEvents.append(str(device.weatherPredictions3['Time'].iloc[0] + ';pv_producer[' + str(house.id) +']:['+str(device.id)+'];'+str(house.id)+"_"+str(device.id)+'_3.csv'))
+                    if device.weatherPredictions4 is not None:
+                        device.weatherPredictions4.to_csv(filepath+"/predictions/"+str(house.id)+"_"+str(device.id)+"_4.csv", sep=" ", index=False, header=False)
+                        producerEvents.append(str(device.weatherPredictions4['Time'].iloc[0] + ';pv_producer[' + str(house.id) +']:['+str(device.id)+'];'+str(house.id)+"_"+str(device.id)+'_4.csv'))
+                elif device.type == "consumer":
+                    if device.loadProfile is not None:
+                        device.loadProfile.to_csv(filepath+"/loads/"+str(device.id)+".csv", sep=" ", index=False, header=False)
                     with open(filepath+'/consumer_event.csv', 'a+') as consumerJobscsv:
-                        wr = csv.writer(consumerJobscsv)
+                        wr = csv.writer(consumerJobscsv, delimiter='\n')
                         wr.writerow(device.events)
-        
+
+        with open(filepath+'/producer_event.csv', 'a+') as producerJobscsv:
+            wr = csv.writer(producerJobscsv, delimiter='\n')
+            wr.writerow(producerEvents)
 
         #pickle neighbourhood object and save it locally?
         
