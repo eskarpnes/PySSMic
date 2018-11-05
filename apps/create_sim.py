@@ -28,23 +28,28 @@ def get_dropdown_options():
 
 layout = html.Div(children=[
     html.Div(className="content", children=[
-
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
-            html.A(html.Button("Create ESN", className="btnAddEsn"),
-                   href='/apps/create_esn'),
-            dcc.Dropdown(
-                id="neighbourhood",
-                options=get_dropdown_options(),
-                value=get_dropdown_options()[0]["value"]
-            ),
+            html.Div(className="selectHorizontal", children=[
+                dcc.Dropdown(
+                    id="neighbourhood",
+                    options=get_dropdown_options(),
+                    value=get_dropdown_options()[0]["value"]
+                ),
+                html.Div(className="btnContainer", children=[
+                    html.A(html.Button("Create ESN", className="btnAddEsn"),
+                           href='/apps/create_esn')
+                ])
+            ]),
 
-            html.Div(className="selectDays", children=[
-                html.Span("Days to simulate: "),
+            html.Div(className="selectVertical", children=[
+                html.Div(className="inputText", children=[
+                    html.Span("Days to simulate: ")
+                ]),
                 dcc.Input(id="days", type="int", value=1),
             ]),
 
-            html.Div(className="selectAlgo", children=[
+            html.Div(className="selectVertical", children=[
                 html.Span("Select Optimization Algorithm(s): "),
                 dcc.Dropdown(
                     id="algo",
@@ -52,17 +57,21 @@ layout = html.Div(children=[
                         {'label': '50/50', 'value': '50/50'},
                         {'label': 'Basinhopping', 'value': 'basinhopping'},
                     ],
-                    value="powell"
                 )
             ]),
 
-            html.Div(className="selectRuns", children=[
-                html.Span("Select number of runs: "),
+            html.Div(className="selectVertical", children=[
+                html.Div(className="inputText", children=[
+                    html.Span("Number of runs: ")
+                ]),
                 dcc.Input(id="runs", type="int", value="1")
             ]),
 
-            html.A(html.Button('Start simulation',
-                               className='btnSimulate', id='btn-simulate'))
+            html.Div(className="startContainer", children=[
+                html.A(html.Button('Start simulation',
+                                   className='btnSimulate', id='btn-simulate')),
+                html.Div(id="simulatorRunning", style={"display": "none"})
+            ])
         ])
     ])
 
@@ -70,7 +79,25 @@ layout = html.Div(children=[
 
 
 @app.callback(
-    Output(component_id="datatableDiv", component_property="children"),
+    Output(component_id='btn-simulate', component_property='disabled'),
+    [Input('neighbourhood', 'value'),
+     Input('days', 'value'),
+     Input('algo', 'value'),
+     Input('runs', 'value')]
+)
+def check_button_disable(neighbourhood, days, algo, runs):
+    if days in ["", "0"]:
+        days = None
+    if runs in ["", "0"]:
+        runs = None
+    if None in [neighbourhood, days, algo, runs]:
+        return True
+    else:
+        return False
+
+
+@app.callback(
+    Output(component_id="simulatorRunning", component_property="children"),
     [Input("btn-simulate", "n_clicks")],
     [State("neighbourhood", "value"),
      State("days", "value"),
@@ -86,7 +113,7 @@ def on_click(n_clicks, neighbourhood, days, algo, runs):
         "runs": int(runs)
     }
     print(config)
-    now_string = time.strftime("%d%b%y-%H%M")
+    now_string = time.strftime("%d%b%y_%H%M")
     print(now_string)
     filename = now_string + "_" + neighbourhood + "_" + algo.replace("/", "") + "_" + str(runs)
 
@@ -100,3 +127,4 @@ def on_click(n_clicks, neighbourhood, days, algo, runs):
     pathname = os.path.join("results", filename)
     with open(pathname + ".pkl", "wb") as f:
         pickle.dump((contracts, profiles), f)
+    return 0
