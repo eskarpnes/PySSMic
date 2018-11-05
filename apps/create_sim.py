@@ -28,7 +28,6 @@ def get_dropdown_options():
 
 layout = html.Div(children=[
     html.Div(className="content", children=[
-
         html.Div(className="simulatorSetup", children=[
             html.Span("Select ESN:"),
             html.Div(className="selectHorizontal", children=[
@@ -58,7 +57,6 @@ layout = html.Div(children=[
                         {'label': '50/50', 'value': '50/50'},
                         {'label': 'Basinhopping', 'value': 'basinhopping'},
                     ],
-                    value="powell"
                 )
             ]),
 
@@ -69,8 +67,11 @@ layout = html.Div(children=[
                 dcc.Input(id="runs", type="int", value="1")
             ]),
 
-            html.A(html.Button('Start simulation',
-                               className='btnSimulate', id='btn-simulate'))
+            html.Div(className="startContainer", children=[
+                html.A(html.Button('Start simulation',
+                                   className='btnSimulate', id='btn-simulate')),
+                html.Div(id="simulatorRunning", style={"display": "none"})
+            ])
         ])
     ])
 
@@ -78,7 +79,25 @@ layout = html.Div(children=[
 
 
 @app.callback(
-    Output(component_id="datatableDiv", component_property="children"),
+    Output(component_id='btn-simulate', component_property='disabled'),
+    [Input('neighbourhood', 'value'),
+     Input('days', 'value'),
+     Input('algo', 'value'),
+     Input('runs', 'value')]
+)
+def check_button_disable(neighbourhood, days, algo, runs):
+    if days in ["", "0"]:
+        days = None
+    if runs in ["", "0"]:
+        runs = None
+    if None in [neighbourhood, days, algo, runs]:
+        return True
+    else:
+        return False
+
+
+@app.callback(
+    Output(component_id="simulatorRunning", component_property="children"),
     [Input("btn-simulate", "n_clicks")],
     [State("neighbourhood", "value"),
      State("days", "value"),
@@ -108,3 +127,4 @@ def on_click(n_clicks, neighbourhood, days, algo, runs):
     pathname = os.path.join("results", filename)
     with open(pathname + ".pkl", "wb") as f:
         pickle.dump((contracts, profiles), f)
+    return 0
