@@ -11,6 +11,7 @@ import pickle
 import re
 import data_processing as dataprocess
 
+
 """-------------------------ENERGY USE-------------------------"""
 
 
@@ -78,10 +79,18 @@ def contract_one_household():
 """-------------------------AVAILABLE VS USED ENERGY-------------------------"""
 
 
-def energy_consumption():
+def energy_consumption_one_run():
     return (
         dcc.Graph(
             id="energy-consumption-graph",
+            figure=go.Figure()
+        )
+    )
+
+def energy_consumption_all_runs():
+    return (
+        dcc.Graph(
+            id="energy-consumption-graph-all-runs",
             figure=go.Figure()
         )
     )
@@ -138,8 +147,9 @@ layout = html.Div(children=[
         dcc.Tab(id='tab_all_households', label='All households', children=[
             html.Br(),
             html.Div(
-                html.H2("Energy distribution", className="header")
+                html.H2("Energy used distribution", className="header")
             ),
+            html.Div(id="self-consumption-all", className="paragraph"),
             html.Div([
                 energy_use_all_households()
             ], className="pie-chart"),
@@ -156,17 +166,18 @@ layout = html.Div(children=[
             html.Div(
                 html.H2("Production and consumption profiles", className="header")
             ),
-            html.Div(id='peak-average-ratio-all'),
+            html.Div(id='peak-average-ratio-all', className="paragraph"),
             html.Div([
-                energy_consumption()
+                energy_consumption_one_run()
             ], className="consumption-graph"),
             html.Br(),
         ]),
         dcc.Tab(id='tab_one_household', label='One household', children=[
             html.Br(),
             html.Div(
-                html.H2("Energy distribution", className="header")
+                html.H2("Energy used distribution", className="header")
             ),
+            html.Div(id="self-consumption-one", className="paragraph"),
             html.Div([
                 energy_use_one_household()
             ], className="pie-chart"),
@@ -178,14 +189,21 @@ layout = html.Div(children=[
             html.Div([
                 contract_one_household()
             ]),
+            html.Br(),
+            html.Div(
+                html.H3("Peak to average ratio", className="header")
+            ),
+            html.Div(id='peak-average-ratio-one', className="paragraph"),
+            html.Br(),
+        ]),
+        dcc.Tab(id='tab_all_runs', label='All runs', children=[
             html.Div(
                 html.H2("Production and consumption profiles", className="header")
             ),
-            html.Div(id='peak-average-ratio-one'),
-            html.Br(),
-        ]),
-        dcc.Tab(id='tab_all_sim', label='All simulations', children=[
-            # TODO
+            html.Div(id='peak-average-ratio-sum'),
+            html.Div(
+                energy_consumption_all_runs()
+            )
         ])
     ])
 ])
@@ -334,6 +352,49 @@ def update_pie_chart(household_choice, simulation_choice, run_choice):
     )
 
 
+"""-------------------------SELF CONSUMPTION-------------------------"""
+
+
+# All households
+@app.callback(
+    Output("self-consumption-all", "children"),
+    [Input("run_choice", "value")],
+    [State("simulation_choice", "value")])
+def self_consumption_all(run_choice, simulation_choice):
+    contracts = dataprocess.open_file(simulation_choice)[0]
+    contracts = pd.DataFrame(contracts)
+    grid = 0
+    pv = 0
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[e][int(run_choice) - 1]
+        if contract_e.get("producer_id") == 'grid':
+            grid += contract_e.get("load_profile").values[-1]
+        else:
+            pv += contract_e.get("load_profile").values[-1]
+    return html.P('Self-consumption for whole neighbourhood: {}'.format(round(grid + pv, 2)))
+
+
+# One household
+@app.callback(
+    Output("self-consumption-one", "children"),
+    [Input("household_choice", "value")],
+    [State("simulation_choice", "value"),
+     State("run_choice", "value")])
+def update_pie_chart(household_choice, simulation_choice, run_choice):
+    contracts = dataprocess.open_file(simulation_choice)[0]
+    contracts = pd.DataFrame(contracts)
+    grid = 0
+    pv = 0
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[e][int(run_choice)-1]
+        if contract_e.get("job_id").startswith('[{}]'.format(household_choice)):
+            if contract_e.get("producer_id") == 'grid':
+                grid += contract_e.get("load_profile").values[-1]
+            else:
+                pv += contract_e.get("load_profile").values[-1]
+    return html.P('Self-consumption for whole neighbourhood: {}'.format(round(grid + pv, 2)))
+
+
 """-----------------PRODUCTION, CONSUMPTION PROFILES-----------------"""
 
 
@@ -349,6 +410,7 @@ def update_consumption(run_choice, simulation_choice):
     #households = dataprocess.neigbourhood_to_household(contracts, profiles)
     profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
     #TODO: Profiles_combined = average
+    print(profiles_combined)
     return go.Figure(
                 data=[
                     go.Scatter(
@@ -360,6 +422,39 @@ def update_consumption(run_choice, simulation_choice):
                     go.Scatter(
                         x=profiles[int(run_choice)-1][2],
                         y=profiles[int(run_choice)-1][3],
+                        name="Energy produced",
+                        marker=dict(color='#008000')
+                    ),
+                ],
+                layout=go.Layout(
+                    xaxis={
+                        'title': 'Time [Minutes]'
+                    },
+                    yaxis={
+                        'title': 'Energy [Wh]'
+                    }
+                )
+            )
+
+
+# All runs
+@app.callback(
+    Output("energy-consumption-graph-all-runs", "figure"),
+    [Input("simulation_choice", "value")])
+def update_consumption(simulation_choice):
+    contracts, profiles = dataprocess.open_file(simulation_choice)
+    profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
+    return go.Figure(
+                data=[
+                    go.Scatter(
+                        x=profiles_combined[0],
+                        y=profiles_combined[1],
+                        name="Energy consumed",
+                        marker=dict(color='#00A6FC')
+                    ),
+                    go.Scatter(
+                        x=profiles_combined[2],
+                        y=profiles_combined[3],
                         name="Energy produced",
                         marker=dict(color='#008000')
                     ),
