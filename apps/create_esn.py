@@ -217,7 +217,7 @@ layout = html.Div([
         html.Div('device: ' + str(active_device), id="active_device-info"),
         html.Div('device:', id='deviceTwo')
     ],
-             style={'display': 'none'}),
+             style={'display': 'block'}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="initChoices", children=[
         html.Button("Create new from scratch", id="btnNewNeighbourhood", n_clicks_timestamp='0'),
@@ -297,8 +297,6 @@ def createJobList(contents):
     root = parse_contents(contents)
     create_loads_list(root)
 
-
-
 # Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
 # Function to store and update main neighbourhood div / Controller
 
@@ -339,24 +337,19 @@ def addConsumer(n, dId, dName, dTemp, dType, rows):
                   State('w4dt', 'rows'),
               ])
 def configProducer(n, dId, dName, dTemp, dType, w1, w2, w3, w4):
+    global main_neighbourhood
     global active_house
     global active_device
     if (dId or dName or dTemp or dType) is not None:
         dev = Device(dId, dName, dTemp, dType)
-        
         dev.weatherPredictions1 = pd.DataFrame(w1) if w1 is not None else None
-        print(dev.weatherPredictions1)
         dev.weatherPredictions2 = pd.DataFrame(w2) if w2 is not None else None
-        print(dev.weatherPredictions2)
         dev.weatherPredictions3 = pd.DataFrame(w3) if w3 is not None else None
         dev.weatherPredictions4 = pd.DataFrame(w4) if w4 is not None else None
         if active_device is None:
             active_house.users[0].devices.append(dev)
         elif active_device is not None:
-            print('active')
-            print(active_house.users[0].devices)
-            print(active_device)
-            print(active_device in active_house.users[0].devices)
+            main_neighbourhood.findHouseById(active_house.id)
             active_house.users[0].devices.remove(active_device)
             active_house.users[0].devices.append(dev)
     return html.Div(str(dev.weatherPredictions1))
@@ -404,7 +397,7 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         pass  # needed to take this functionality and move it to addDevice function. See line 336.
     elif btnDeleteDevice != '0' and btnDeleteDevice == btnclicks[-1]:
         active_house.users[0].devices.remove(active_device)
-    elif contents is not None:
+    elif main_neighbourhood is None: #This will only fire the first time xml contens are loaded
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
         active_house = main_neighbourhood.houses[0]
@@ -709,8 +702,8 @@ def showNid(children):
         html.Div('nabolag: ' + str(len(main_neighbourhood.houses)),
                  id="main_neighbourhood-info"),
         html.Div('hus: ' + str(type(active_house)), id="active_house-info"),
-        html.Div('device: ' + str(active_device), id="active_device-info"),
-        html.Div('device: ' + str(active_device), id="deviceTwo"),
+        html.Div('device: ' + str(type(active_device)), id="active_device-info"),
+        html.Div('device: ' + str(type(active_device)), id="deviceTwo"),
     ])
 
 
@@ -731,7 +724,7 @@ def setActiveDevice(value):
     global active_device
     if value is not None:
         active_device = active_house.findDeviceById(int(value))
-    return html.Div(str(active_device))
+    return html.Div(str(type(active_device)))
 
 
 @app.callback(Output('deviceTwo', 'children'), [Input('jobs_device_dropdown', 'value')])
@@ -740,13 +733,13 @@ def setADevice(value):
     global active_device
     if value is not None:
         active_device = active_house.findDeviceById(int(value))
-    return html.Div(str(active_device))
+    return html.Div(str(type(active_device)))
 
 
 # Change tab on delete. TODO:reset n and send signal instead of timestamp on adding house
 @app.callback(Output('neighbourhoodTabs', 'value'), [Input('btnDeleteHouse', 'n_clicks_timestamp')])
-def tabChangeOnDelete(a, b):
-    if int(a) > int(b):
+def tabChangeOnDelete(a):
+    if int(a) > 0:
         return str(main_neighbourhood.houses[0].id)
 
 
