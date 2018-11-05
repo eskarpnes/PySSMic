@@ -19,7 +19,6 @@ class Optimizer:
         self.algorithm = options["algo"]
         self.logger = logging.getLogger("src.Optimizer")
         self.differentiated_loads = []
-        self.differentiated_production = None
         self.penalty_factor = 1.0
         self.min_objective_value = float('inf')
 
@@ -38,17 +37,7 @@ class Optimizer:
         return schedule_times, should_keep
 
     def basinhopping(self):
-        indices = list(set(chain.from_iterable(
-            map(lambda x: self.producer.schedule[x]['job'].load_profile.index.values.tolist(),
-                range(0, len(self.producer.schedule))))))
-        indices.sort()
-
-        # Interpolate and differentiate load profiles before optimization.
-        self.differentiated_production = utils.differentiate_and_interpolate(self.producer.prediction, indices)
-        self.differentiated_loads = []
-        for s in self.producer.schedule:
-            self.differentiated_loads.append(utils.differentiate(s['job'].load_profile))
-
+        self.reset_and_differentiate_loads()
         tol = self.options["tol"] if "tol" in self.options else 1000.0
         eps = self.options["eps"] if "eps" in self.options else 0.001
         now = self.producer.manager.clock.now
@@ -72,7 +61,8 @@ class Optimizer:
 
     def fifty_fifty(self):
         should_keep = [True for x in range(len(self.producer.schedule))]
-        if random() < 0.5:
+        need_grid_power = not self.strictly_positive([s['job'].scheduled_time for s in self.producer.schedule])
+        if random() < 0.5 or need_grid_power:
             should_keep[-1] = False
         schedule_times = [s['job'].scheduled_time for s in self.producer.schedule]
         return schedule_times, should_keep
@@ -105,4 +95,34 @@ class Optimizer:
                 penalty += diff_t
 
         return diff + penalty
+
+    def strictly_positive(self, schedule):
+        self.reset_and_differentiate_loads()
+        consumed = defaultdict(float)
+        for i, load in enumerate(self.differentiated_loads):
+            for t, p in load.items():
+                offset = schedule[i]
+                consumed[int(round(t + offset))] += p
+
+        ts = list(consumed.keys())
+        produced = utils.differentiate_and_interpolate(self.producer.prediction, ts)
+        ts.extend(list(produced.index.values))
+        ts = sorted(ts)
+        for i, t in enumerate(ts):
+            c = consumed[t]
+            p = produced[t]
+            if c > p:
+                return False
+        return True
+
+    def reset_and_differentiate_loads(self):
+        indices = list(set(chain.from_iterable(
+            map(lambda x: self.producer.schedule[x]['job'].load_profile.index.values.tolist(),
+                range(0, len(self.producer.schedule))))))
+        indices.sort()
+
+        # Interpolate and differentiate load profiles before optimization.
+        self.differentiated_loads = []
+        for s in self.producer.schedule:
+            self.differentiated_loads.append(utils.differentiate(s['job'].load_profile))
 

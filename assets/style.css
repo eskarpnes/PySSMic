@@ -36,7 +36,7 @@
     flex-direction: column;
 }
 
-.header h1 {
+.header h1, h2, h3 {
     text-align: center;
 }
 
@@ -59,6 +59,43 @@
 .simulatorSetup {
     display: flex;
     flex-direction: column;
+    width: 100%;
+}
+
+.selectHorizontal {
+    display: flex;
+    flex-direction: row;
+    align-content: space-between;
+    padding-bottom: 40px;
+}
+
+.selectHorizontal .inputText {
+    display: flex;
+    align-content: space-around;
+}
+
+.selectHorizontal #neighbourhood {
+    width: 100%;
+    padding-right: 10px;
+}
+
+.selectHorizontal .btnContainer .btnAddEsn {
+    height: 36px;
+}
+
+.selectVertical {
+    display: flex;
+    flex-direction: column;
+    align-content: space-between;
+    padding-bottom: 40px;
+}
+
+#days {
+    max-width: 100px;
+}
+
+#runs {
+    max-width: 100px;
 }
 
 body {
@@ -69,4 +106,11 @@ body {
 #react-entry-point {
     min-width: 50%;
     max-width: 90%;
+}
+
+#btn-simulate:disabled,
+#btn-simulate:disabled:hover{
+    color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.1);
+    cursor: auto;
 }

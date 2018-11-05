@@ -39,15 +39,12 @@ class Consumer(ThreadingActor):
         action = message['action']
         if action == Action.broadcast:
             self.producers.append(message['producer'])
-        elif action == Action.decline:
-            # TODO Implement renegotiation when a contract is cancelled
-            pass
 
     # Function for selecting a producer for a job
     def request_producer(self):
         if self.producers.empty():
             self.logger.info("No producer remaining. Buying power from the grid.")
-            self.manager.register_contract(self.create_grid_contract(self.job))
+            self.manager.register_contract(self.create_grid_contract())
             self.stop()
             return
         # The producer is the third object in the tuple. The first two are for priorities.
@@ -62,13 +59,13 @@ class Consumer(ThreadingActor):
         self.send(message, producer)
 
     # If the consumer buys power from the grid, they make a grid-contract
-    def create_grid_contract(self, job):
+    def create_grid_contract(self):
         current_time = self.clock.now
-        id = "grid" + ";" + job.id + ";" + str(current_time)
-        time = job.scheduled_time
+        id = "grid" + ";" + self.job.id + ";" + str(current_time)
+        time = self.job.scheduled_time
         time_of_agreement = current_time
-        load_profile = job.load_profile
-        job_id = job.id
+        load_profile = self.job.load_profile
+        job_id = self.job.id
         producer_id = "grid"
         return dict(id=id, time=time, time_of_agreement=time_of_agreement, load_profile=load_profile,
                     job_id=job_id, producer_id=producer_id)

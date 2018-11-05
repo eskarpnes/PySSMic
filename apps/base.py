@@ -13,9 +13,9 @@ header = html.Div([
     html.H1(children="CoSSMic Simulator"),
     html.Div([
         dcc.Link('Home', href='/'),
-        dcc.Link('Go to Create Simulation', href='/apps/create_sim'),
+        dcc.Link('Create Simulation', href='/apps/create_sim'),
         dcc.Link("Create neighbourhood", href='/apps/create_esn'),
-        dcc.Link('Simulation', href='/apps/simulate_esn')
+        dcc.Link('Results', href='/apps/simulate_esn')
     ], className="links")
 ], className="header")
 
