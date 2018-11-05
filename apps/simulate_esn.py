@@ -390,7 +390,7 @@ def update_pie_chart(household_choice, simulation_choice, run_choice):
                 grid += contract_e.get("load_profile").values[-1]
             else:
                 pv += contract_e.get("load_profile").values[-1]
-    return html.P('Self-consumption for whole neighbourhood: {}'.format(round(grid + pv, 2)))
+    return html.P('Self-consumption for household: {}'.format(round(grid + pv, 2)))
 
 
 """-----------------PRODUCTION, CONSUMPTION PROFILES-----------------"""
