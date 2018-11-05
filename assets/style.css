@@ -107,3 +107,10 @@ body {
     min-width: 50%;
     max-width: 90%;
 }
+
+#btn-simulate:disabled,
+#btn-simulate:disabled:hover{
+    color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.1);
+    cursor: auto;
+}
