@@ -479,8 +479,6 @@ def update_consumption(simulation_choice):
 def update_peak_av_ratio(run_choice, simulation_choice):
     contracts, profiles = dataprocess.open_file(simulation_choice)
     out, out_comb = dataprocess.neigbourhood_execution_peak_to_average(contracts, profiles)
-    #print(out)
-    #print(out_comb)
     return html.P('Peak to average ratio: {}'.format(round(out[int(run_choice)-1], 2)))
 
 
