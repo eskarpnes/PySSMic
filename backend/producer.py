@@ -69,10 +69,7 @@ class Producer(ThreadingActor):
     def cancel(self, schedule_object):
         message = dict(action=Action.decline)
         self.schedule.remove(schedule_object)
-        self.send(message, schedule_object[0])
-
-    def filter_schedule(self, status):
-        return filter(lambda x: x[2] == status, self.schedule)
+        self.send(message, schedule_object['consumer'])
 
     # Function for updating the power profile of a producer when it has received
     # a PREDICTION and been optimized based on this
