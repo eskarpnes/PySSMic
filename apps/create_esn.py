@@ -415,6 +415,7 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         newHouse.users.append(User(1))
         main_neighbourhood=Neighbourhood(1)
         main_neighbourhood.houses.append(newHouse)
+        active_house = main_neighbourhood.houses[0]
     elif btnAddHouse != '0' and btnAddHouse == btnclicks[-1]:
         i=main_neighbourhood.nextHouseId()
         newHouse=House(i)
