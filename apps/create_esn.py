@@ -24,7 +24,7 @@ from app import app
 from util.input_utils import prediction_profile_from_csv
 from definitions import ROOT_DIR
 
-#Global variables. This makes the app works in a localhost only
+#Global variables. This makes the app works in a localhost environment only
 main_neighbourhood = None
 active_house = None
 active_device = None
@@ -108,7 +108,6 @@ def render_content(value):
 
 def addHouseToNeighbourhood(houseId):
     global main_neighbourhood
-    # lastId = int(neighbourhood.houses[-1].id)
     house = House(houseId)
     main_neighbourhood.houses.append(house)
 
