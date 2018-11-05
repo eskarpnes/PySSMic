@@ -26,7 +26,7 @@ from definitions import ROOT_DIR
 main_neighbourhood = None
 active_house = None
 active_device = None
-weatherPredicitons = []
+addedLoads = []
 
 def create_house_tab(house):
     return(dcc.Tab(label='House Id: ' + str(house.id), value=str(house.id)))
@@ -205,6 +205,7 @@ layout = html.Div([
     html.Div(id="save_hidden", style={'display': 'none'}),
     # hidden div to save data in
     html.Div(id='save_jobs', style={'display': 'none'}),
+    html.Div(id='save_jobs_fromxml', style={'display': 'none'}),
     html.Div(id="consumer_div", style={'display': 'none'}),
     html.Div(id="producer_div", style={'display': 'none'}),
     html.Div(id='nInfo', children=[
@@ -234,7 +235,8 @@ layout = html.Div([
                     n_clicks_timestamp='0'),
         html.Button("Configure house", id="btnConfigHouse",
                     n_clicks_timestamp='0'),
-        html.Button("Add jobs", id="btnAddJob", n_clicks_timestamp='0')
+        html.Button("Add job", id="btnAddJob", n_clicks_timestamp='0'),
+        dcc.Upload(id='jobsXML', children=[html.Button("Add jobs from XML")])
     ],
     style={'display':'none'}
     ),
@@ -275,16 +277,26 @@ def create_neighborhood_object(treeroot):
         nabolag.houses.append(h)
     return nabolag
 
+def create_loads_list(jobsroot):
+    global addedLoads
+    for house in jobsroot:
+        for user in house:
+            for device in user:
+                jobString = str(device.find('creation_time').text)+';'+ str(device.find('est').text) + ';' + str(device.find('lst').text)+ ';[' + str(house.get('id'))+'];[' + str(device.find('id').text)+'];'+str(device.find('profile').text) +'.csv'
+                addedLoads.append(jobString)
+                
+@app.callback(Output('save_jobs_fromxml', 'children'), [Input('jobsXML', 'contents')])
+def createJobList(contents):
+    root = parse_contents(contents)
+    create_loads_list(root)
 
 """
 Callback function to toggle the xml input field
 """
 
-
 def create_neighborhood_html(neighborhood):
     htmlString="<div>"
     htmlString += "Nabolag:"
-
     houses=[]
     for house in neighborhood:
         htmlString += "<div>"
@@ -380,7 +392,6 @@ def configProducer(n, dId, dName, dTemp, dType, w1, w2, w3, w4):
 '''
 
 '''
-
 @app.callback(Output('neighbourhood_div', 'children'),
               [
                 Input('upload-data', 'contents'),
@@ -770,7 +781,8 @@ def createEpochTime(date, time):
 
 @app.callback(Output('save_hidden', 'children'), [Input('btnSaveNeighbourhood', 'n_clicks'), Input('neighbourhoodName', 'value')])
 def save_neighbourhood(n, value):
-    global main_neighbourhood   
+    global main_neighbourhood
+    global addedLoads
     if value and (n and n > 0):
         filepath=ROOT_DIR+"/input/"+value
         os.makedirs(filepath)
@@ -799,6 +811,9 @@ def save_neighbourhood(n, value):
                     with open(filepath+'/consumer_event.csv', 'a+') as consumerJobscsv:
                         wr = csv.writer(consumerJobscsv, delimiter='\n')
                         wr.writerow(device.events)
+        with open(filepath+'/consumer_event.csv', 'a+') as jobscsv:
+            wr = csv.writer(jobscsv, delimiter='\n')
+            wr.writerow(addedLoads)
 
         with open(filepath+'/producer_event.csv', 'a+') as producerJobscsv:
             wr = csv.writer(producerJobscsv, delimiter='\n')
