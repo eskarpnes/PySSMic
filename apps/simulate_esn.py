@@ -1,13 +1,11 @@
 import os
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, Event, State
+from dash.dependencies import Input, Output, State
 import dash_table_experiments as dt
 import plotly.graph_objs as go
-import json
 import pandas as pd
 from app import app
-import pickle
 import re
 import data_processing as dataprocess
 
