@@ -298,35 +298,6 @@ def createJobList(contents):
     create_loads_list(root)
 
 
-"""
-Callback function to toggle the xml input field
-"""
-
-
-def create_neighborhood_html(neighborhood):
-    htmlString = "<div>"
-    htmlString += "Nabolag:"
-    houses = []
-    for house in neighborhood:
-        htmlString += "<div>"
-        htmlString += "Hus id: " + str(house.get("id"))
-        houses.append(house)
-        for user in house:
-            htmlString += "<div>"
-            htmlString += "user id: " + str(user.get("id")) + "<ul>"
-            for device in user:
-                htmlString += "<li> device id: " + \
-                              str(device.find("id").text) + \
-                              " Name: " + str(device.find("name").text) + \
-                              " Template: " + str(device.find("template").text) + \
-                              " Type: " + str(device.find("type").text) + \
-                              "</li>"  # closes device listelement
-            htmlString += "</ul> </div> <br />"  # closes list and user element
-        htmlString += "</div>  <br />"  # closes house div
-    htmlString += "</div>"  # closes neighborhood
-    print(houses)
-    return htmlString
-
 
 # Saves neighbourhood in hidden div on main page, so the output div can update on multiple other events
 # Function to store and update main neighbourhood div / Controller
@@ -372,16 +343,22 @@ def configProducer(n, dId, dName, dTemp, dType, w1, w2, w3, w4):
     global active_device
     if (dId or dName or dTemp or dType) is not None:
         dev = Device(dId, dName, dTemp, dType)
+        
         dev.weatherPredictions1 = pd.DataFrame(w1) if w1 is not None else None
+        print(dev.weatherPredictions1)
         dev.weatherPredictions2 = pd.DataFrame(w2) if w2 is not None else None
+        print(dev.weatherPredictions2)
         dev.weatherPredictions3 = pd.DataFrame(w3) if w3 is not None else None
         dev.weatherPredictions4 = pd.DataFrame(w4) if w4 is not None else None
         if active_device is None:
             active_house.users[0].devices.append(dev)
         elif active_device is not None:
+            print('active')
+            print(active_house.users[0].devices)
+            print(active_device)
+            print(active_device in active_house.users[0].devices)
             active_house.users[0].devices.remove(active_device)
             active_house.users[0].devices.append(dev)
-    print(dev.weatherPredictions1)
     return html.Div(str(dev.weatherPredictions1))
 
 
@@ -576,15 +553,15 @@ def showHouseConfigContent(value):
     elif value == 'addNewProducer':
         active_device = None
         return html.Div([
-            dcc.Input(id="newDeviceId", type="number", value=0, placeholder="DeviceID", style={
+            dcc.Input(id="newDeviceId", type="number", placeholder="DeviceID", style={
                 'width': '100px'
             }),
             html.Br(),
-            dcc.Input(id="newDeviceName", type="text", value='noName', placeholder="DeviceName", style={
+            dcc.Input(id="newDeviceName", type="text", placeholder="DeviceName", style={
                 'width': '100px'
             }),
             html.Br(),
-            dcc.Input(id="newDeviceTemplate", type="number", value=0, placeholder="TemplateName", style={
+            dcc.Input(id="newDeviceTemplate", type="number", placeholder="TemplateName", style={
                 'width': '100px'
             }),
             html.Br(),
