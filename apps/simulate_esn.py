@@ -9,9 +9,9 @@ import pandas as pd
 from app import app
 import pickle
 import re
+import data_processing_2 as dataprocess
 
 """-------------------------ENERGY USE-------------------------"""
-
 
 def energy_use_all_households():
     return (
@@ -26,7 +26,15 @@ def energy_use_one_household():
     return (
         dcc.Graph(
             id="energy-use-one-chart",
-            figure=go.Figure()
+            figure=go.Figure(
+                data=[
+                    go.Pie(
+                        values=[0, 0],
+                        labels=["Grid", "PV"],
+                        marker=dict(colors=['#008000', '#FF0000'])
+                    )
+                ]
+            )
         )
     )
 
@@ -73,29 +81,7 @@ def energy_consumption():
     return (
         dcc.Graph(
             id="energy-consumption-graph",
-            figure=go.Figure(
-                data=[
-                    # TODO: Update to input values from simulator
-                    go.Scatter(
-                        x=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-                        y=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-                        name="Energy used"
-                    ),
-                    go.Scatter(
-                        x=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-                        y=[6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
-                        name="Energy available"
-                    )
-                ],
-                layout=go.Layout(
-                    xaxis={
-                        'title': 'Time'
-                    },
-                    yaxis={
-                        'title': 'Energy'
-                    }
-                )
-            )
+            figure=go.Figure()
         )
     )
 
@@ -167,7 +153,7 @@ layout = html.Div(children=[
             html.Br(),
 
             html.Div(
-                html.H2("Available vs Used energy", className="header")
+                html.H2("Production and consumption profiles", className="header")
             ),
             html.Div([
                 energy_consumption()
@@ -335,6 +321,51 @@ def update_pie_chart(household_choice, simulation_choice, run_choice):
             )
         ]
     )
+
+
+"""-----------------PRODUCTION, CONSUMPTION PROFILES-----------------"""
+
+
+# All households
+@app.callback(
+    Output("energy-consumption-graph", "figure"),
+    [Input("run_choice", "value")],
+    [State("simulation_choice", "value")])
+def update_consumption(run_choice, simulation_choice):
+    print('Run choice: {}'.format(run_choice))
+    print('Simulation choice: {}'.format(simulation_choice))
+    contracts, profiles = open_file(simulation_choice)
+    #energy = dataprocess.energy_over_time(contracts, profiles)
+    #print('DATA PROCESSING')
+    #print(energy[0])
+    #print(energy[1])
+    #print(energy[2])
+    #print(energy[3])
+    #print('END')
+    return go.Figure(
+                data=[
+                    go.Scatter(
+                        x=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                        y=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+                        name="Energy consumed",
+                        marker=dict(color='#00A6FC')
+                    ),
+                    go.Scatter(
+                        x=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                        y=[6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
+                        name="Energy produced",
+                        marker=dict(color='#008000')
+                    ),
+                ],
+                layout=go.Layout(
+                    xaxis={
+                        'title': 'Time (?)'
+                    },
+                    yaxis={
+                        'title': 'Energy (Wh)'
+                    }
+                )
+            )
 
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
