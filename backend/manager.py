@@ -7,7 +7,7 @@ from util.message_utils import Action
 
 
 class Manager:
-    def __init__(self, simulator, algo="basinhopping"):
+    def __init__(self, simulator, algo="SLSQP"):
         self.logger = logging.getLogger("src.Manager")
         self.simulator = simulator
         self.consumers = []

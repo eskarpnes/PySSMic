@@ -37,7 +37,7 @@ class Simulator:
         self.DATA_DIR = os.path.join(ROOT_DIR, "input", config_name)
 
         # The manager that is simulated. Every new load and prediction should be sent to it.
-        algo = config["algo"] if "algo" in config else "basinhopping"
+        algo = config["algo"] if "algo" in config else "L_BFGS_B"
         self.manager = Manager(self, algo)
 
         # Loads in events and normalizes them
