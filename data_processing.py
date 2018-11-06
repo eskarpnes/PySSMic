@@ -105,15 +105,18 @@ def change_index_time(df_energy_list, start_times, cumulative=True):
     energy_dict = dict()
     for df_energy in df_energy_list:
         index_list = df_energy.index.tolist()
-        step_size = int((index_list[1] - index_list[0])/60)
+        step_size = int((index_list[1] - index_list[0]) / 60)
+
         if step_size == 0:
             new_indeces = index_list
         elif step_size == 1:
-            new_indeces = list(range(start_times[i], len(df_energy.index)+start_times[i]))
+            new_indeces = list(range(start_times[i], len(df_energy.index) + start_times[i]))
         else:
-            new_indeces = list(range(start_times[i],(len(index_list)*step_size)+start_times[i], step_size))
+            new_indeces = list(range(start_times[i], (len(index_list) * step_size) + start_times[i], step_size))
+
         i += 1
         df_energy.index = new_indeces
+
         # Remove cumulation per load
         load_profile_list = df_energy.tolist()
         load_profile_flat = []
@@ -122,14 +125,40 @@ def change_index_time(df_energy_list, start_times, cumulative=True):
             if j == 0:
                 load_profile_flat.append(lp)
             else:
-                load_profile_flat.append(lp-load_profile_list[j-1])
+                load_profile_flat.append(lp - load_profile_list[j - 1])
             j += 1
 
-        # Replace the new none cumulative load profiles by the old ones
-        df_energy = pd.DataFrame(data=load_profile_flat, index=new_indeces)
+        # Make dictionary of indices that actually exist and their value
+        existing_indices_dict = dict()
+        for k in range(len(new_indeces)):
+            existing_indices_dict[new_indeces[k]] = load_profile_flat[k]
+
+        # Make an index list with all minutes in there
+        all_indeces = list(range(0, new_indeces[-1] + 1))
+        load_profile_per_minute = []
+        for index in all_indeces:
+            if index in existing_indices_dict:
+                load_profile_per_minute.append(existing_indices_dict[index])
+            else:
+                load_profile_per_minute.append(np.nan)
+
+        # Make zero from all nan values before load profile began
+        count = 0
+        for lp in load_profile_per_minute:
+            if np.isnan(lp) == False:
+                break
+            else:
+                load_profile_per_minute[count] = 0.0
+                count += 1
+
+        # Write the output to a dataframe
+        df_energy = pd.DataFrame(data=load_profile_per_minute, index=all_indeces)
+        # Interpolate the missing values (linear)
+        df_energy = df_energy.interpolate()
+
         # the new index is the time the simulator is running
         # use this index/time to save the energy consumed in that minute
-        for index in new_indeces:
+        for index in all_indeces:
             if index in energy_dict:
                 energy_dict[index] += df_energy.ix[index].values[0]
             else:
@@ -137,8 +166,7 @@ def change_index_time(df_energy_list, start_times, cumulative=True):
 
     # Make an time and cumulative energy
     energy_tuples = list(energy_dict.items())
-    energy_tuples = sorted(energy_tuples, key=lambda x:x[0])
-
+    energy_tuples = sorted(energy_tuples, key=lambda x: x[0])
 
     x_energy = []
     y_temp = []
