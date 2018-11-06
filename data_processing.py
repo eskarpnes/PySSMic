@@ -244,15 +244,6 @@ def energy_over_time(contracts, producer_profiles):
         x_production = [0]
         y_production = [0]
 
-    # FOR MYSELF!
-    # plt.plot(x_consumption, y_consumption, label='consumption')
-    # plt.plot(x_production, y_production, label='production')
-    # plt.xlabel('Time (minutes simulation is running)')
-    # plt.ylabel('Amount of energy')
-    # plt.title('Energy production and usage over time')
-    # plt.legend()
-    # plt.show()
-
     return [x_consumption, y_consumption, x_production, y_production]
 
 # Peak to average ratio
@@ -291,8 +282,6 @@ def peak_to_average_ratio(contracts, producer_profiles):
     return max_consumption/average_consumption
 
 ###################################
-
-
 ########## NEIGHBOURHOOD ##########
 ###################################
 ########### EXECUTION 1 ###########
