@@ -483,17 +483,22 @@ def update_peak_av_ratio(run_choice, simulation_choice):
 
 
 # One household
-# @app.callback(
-#     Output('peak-average-ratio-one', 'children'),
-#     [Input("household_choice", "value")],
-#     [State("simulation_choice", "value"),
-#      State("run_choice", "value")])
-# def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
-#     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     #households = dataprocess.neigbourhood_to_household(contracts, profiles)
-#     #out, out2 = dataprocess.household_execution_peak_to_average_ratio(contracts, profiles, households)
-#     #print(out)
-#     return html.P('Peak to average ratio: {}'.format(404))
+@app.callback(
+    Output('peak-average-ratio-one', 'children'),
+    [Input("household_choice", "value")],
+    [State("simulation_choice", "value"),
+     State("run_choice", "value")])
+def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
+    contracts, profiles = dataprocess.open_file(simulation_choice)
+    households = dataprocess.neigbourhood_to_household(contracts, profiles)
+    out_data, out_house = dataprocess.household_execution_peak_to_average_ratio(contracts, profiles, households)
+    peak_av_ratio = 0
+    print(out_data)
+    print(out_house)
+    for i in range(0, len(out_house[int(run_choice)-1])):
+        if out_house[int(run_choice)-1][i] == household_choice:
+            peak_av_ratio += out_data[int(run_choice) - 1][i]
+    return html.P('Peak to average ratio: {}'.format(round(peak_av_ratio, 2)))
 
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
