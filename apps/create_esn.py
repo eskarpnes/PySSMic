@@ -55,9 +55,8 @@ def create_house_view(house):
                     html.Span("DeviceType: " + device.type + "\t\t"),
                 ])
             )
-        content.append(html.Div(children=[
-            html.H4("Jobs list here")
-        ]))
+        #content.append(html.Div(children=[
+         #   html.H4("Jobs list here")]))
     return content
 
 
@@ -858,11 +857,14 @@ def createEpochTime(date, time):
 
 #Function to create files for simulation.
 @app.callback(Output('save_hidden', 'children'),
-              [Input('btnSaveNeighbourhood', 'n_clicks'), Input('neighbourhoodName', 'value')])
+              [Input('btnSaveNeighbourhood', 'n_clicks')],
+              [State('neighbourhoodName', 'value')])
 def save_neighbourhood(n, value):
     global main_neighbourhood
     global addedLoads
-    if value and (n and n > 0):
+    if n and n > 0:
+        if value is None:
+            value = 'no_name'
         filepath = ROOT_DIR + "/input/" + value
         os.makedirs(filepath)
         os.makedirs(filepath + "/loads")
