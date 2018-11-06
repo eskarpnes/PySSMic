@@ -40,6 +40,10 @@
     text-align: center;
 }
 
+.paragraph p {
+    text-align: center;
+}
+
 .links {
     display: flex;
     flex-direction: row;
