@@ -16,6 +16,8 @@ class Neighbourhood():
                 return house
         return None
 
+    def nextHouseId(self):
+        return self.houses[-1].id + 1
     # delete
 
     def to_json(self):
