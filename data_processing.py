@@ -1,5 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 
@@ -293,28 +292,6 @@ def peak_to_average_ratio(contracts, producer_profiles):
 
 ###################################
 
-############# OUTPUT ##############
-def attempt_print(output_all, output_average):
-
-    #Making labels for the output
-    number_of_simulations = len(output_all)
-    labels = list(range(1, number_of_simulations+1))
-
-    #Plots all simulations
-    i = 0
-    for xc,yc,xp,yp in output_all:
-        plt.plot(xc,yc,label='consumption [' + str(labels[i]) +']')
-        plt.plot(xp,yp,label='production [' + str(labels[i]) +']')
-        i += 1
-
-    #Plots 'average' simulation
-    plt.plot(output_average[0],output_average[1],label='consumption [average]',color='green')
-    plt.plot(output_average[2],output_average[3],label='production [average]',color='green')
-
-    plt.legend()
-
-    return plt.show()
-###################################
 
 ########## NEIGHBOURHOOD ##########
 ###################################

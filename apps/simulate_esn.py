@@ -258,8 +258,8 @@ def update_contracts(run_choice, simulation_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = pd.DataFrame(contracts)
     rows = []
-    for e in range(0, len(contracts)):
-        contract_e = contracts[e][int(run_choice) - 1]
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[int(run_choice) - 1][e]
         #print('CONTRACT: {}'.format(contract_e))
         print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
         contract_e["load_profile"] = round(contract_e.get("load_profile").values[-1], 2)
@@ -278,14 +278,14 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = pd.DataFrame(contracts)
     rows = []
-    for e in range(0, len(contracts)):
-        contract_e = contracts[e][int(run_choice) - 1]
+    for e in range(0, len(contracts[0])):
+        contract_e = contracts[int(run_choice) - 1][e]
         print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
         contract_e["load_profile"] = round(contract_e.get("load_profile").values[-1], 2)
         print('Load profile after filtering: {}'.format(contract_e["load_profile"]))
         contract_e = dataprocess.rename_columns(contract_e)
         if contract_e.get("Consumer ID").startswith('[{}]'.format(household_choice)):
-            rows.append(contracts[e][int(run_choice) - 1])
+            rows.append(contracts[int(run_choice) - 1][e])
     return rows
 
 
@@ -364,7 +364,7 @@ def self_consumption_all(run_choice, simulation_choice):
     grid = 0
     pv = 0
     for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(run_choice) - 1]
+        contract_e = contracts[int(run_choice) - 1][e]
         if contract_e.get("producer_id") == 'grid':
             grid += contract_e.get("load_profile").values[-1]
         else:
