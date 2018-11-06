@@ -21,5 +21,5 @@ header = html.Div([
 
 
 footer = html.Div([
-    "This is an awesome footer for the PySSMiC simulator"
+    "© Customer Driven Project for SINTEF Digital"
 ], className="footer")
