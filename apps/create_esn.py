@@ -644,13 +644,13 @@ def showHouseConfigContent(value):
                          options=[{'label': "Producer", 'value': "producer"}],
                          value='producer'),
 
-            dcc.Upload(id="weather1", children=[html.Button('Add first weather predition')]),
+            dcc.Upload(id="weather1", children=[html.Button('Add first PV predition')]),
             dt.DataTable(id="w1dt", rows=[{'Time': [], 'Value': []}]),
-            dcc.Upload(id="weather2", children=[html.Button('Add second weather predition')]),
+            dcc.Upload(id="weather2", children=[html.Button('Add second PV predition')]),
             dt.DataTable(id="w2dt", rows=[{'Time': [], 'Value': []}]),
-            dcc.Upload(id="weather3", children=[html.Button('Add third weather predition')]),
+            dcc.Upload(id="weather3", children=[html.Button('Add third PV predition')]),
             dt.DataTable(id="w3dt", rows=[{'Time': [], 'Value': []}]),
-            dcc.Upload(id="weather4", children=[html.Button('Add fourth weather predition')]),
+            dcc.Upload(id="weather4", children=[html.Button('Add fourth PV predition')]),
             dt.DataTable(id="w4dt", rows=[{'Time': [], 'Value': []}])
         ])
 
@@ -684,19 +684,19 @@ def renderConfigForm(children):
             ])
         if active_device.type == 'producer':
             output.extend([
-                dcc.Upload(id="weather1", children=[html.Button('Add first weather predition')]),
+                dcc.Upload(id="weather1", children=[html.Button('Add first PV predition')]),
                 dt.DataTable(id="w1dt", rows=[
                     {'Time': [], 'Value': []}]) if active_device.weatherPredictions1 is None else dt.DataTable(
                     id="w1dt", rows=active_device.weatherPredictions1.to_dict('records')),
-                dcc.Upload(id="weather2", children=[html.Button('Add second weather predition')]),
+                dcc.Upload(id="weather2", children=[html.Button('Add second PV predition')]),
                 dt.DataTable(id="w2dt", rows=[
                     {'Time': [], 'Value': []}]) if active_device.weatherPredictions2 is None else dt.DataTable(
                     id="w2dt", rows=active_device.weatherPredictions2.to_dict('records')),
-                dcc.Upload(id="weather3", children=[html.Button('Add third weather predition')]),
+                dcc.Upload(id="weather3", children=[html.Button('Add third PV predition')]),
                 dt.DataTable(id="w3dt", rows=[
                     {'Time': [], 'Value': []}]) if active_device.weatherPredictions3 is None else dt.DataTable(
                     id="w3dt", rows=active_device.weatherPredictions3.to_dict('records')),
-                dcc.Upload(id="weather4", children=[html.Button('Add fourth weather predition')]),
+                dcc.Upload(id="weather4", children=[html.Button('Add fourth PV predition')]),
                 dt.DataTable(id="w4dt", rows=[
                     {'Time': [], 'Value': []}]) if active_device.weatherPredictions4 is None else dt.DataTable(
                     id="w4dt", rows=active_device.weatherPredictions4.to_dict('records')),
