@@ -314,7 +314,7 @@ def update_pie_chart(run_choice, simulation_choice):
             go.Pie(
                 values=[grid, pv],
                 labels=["Grid", "PV"],
-                marker=dict(colors=['#008000', '#FF0000'])
+                marker=dict(colors=['#FF0000', '#008000'])
             )
         ]
     )
