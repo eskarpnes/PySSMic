@@ -1,15 +1,28 @@
 import pandas as pd
 import numpy as np
 import pickle
-
+import os.path
+from definitions import ROOT_DIR
 
 def open_file(file_name):
-    with open('./results/{}'.format(file_name), 'rb') as f:
+    path = os.path.join(ROOT_DIR, "results", file_name)
+    print("opening " + path)
+    with open(path, 'rb') as f:
         res = pickle.load(f)
         contracts = res[0]
         profiles = res[1]
     return contracts, profiles
 
+def get_contracts(file_name):
+    contracts, profiles = open_file(file_name)
+    print("CONTRACTS")
+    print(len(contracts))
+    print(len(contracts[0]))
+    return contracts
+
+def get_profiles(file_name):
+    contracts, profiles = open_file(file_name)
+    return profiles
 
 def rename_columns(contract):
     old_keys = ["id", "time", "time_of_agreement", "load_profile", "job_id", "producer_id"]
