@@ -18,7 +18,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.neighbourhood import Neighbourhood
 from backend.house import House
-from backend.device import Device
+from backend.device import Device, Event
 from backend.user import User
 from app import app
 from util.input_utils import prediction_profile_from_csv
@@ -55,10 +55,15 @@ def create_house_view(house):
                     html.Span("DeviceType: " + device.type + "\t\t"),
                 ])
             )
-        #content.append(html.Div(children=[
-         #   html.H4("Jobs list here")]))
+
     return content
 
+def create_jobs_list(house):
+    jobs=[]
+    for device in house.users[0].devices:
+        for event in device.events:
+            jobs.append(html.Div(className="jobs_in_house", children=[html.Span(str(event))]))
+    return jobs
 
 def displayHouse(house):
     numOfUsers = 0
@@ -73,6 +78,8 @@ def displayHouse(house):
                      html.Br(),
                      html.Span("Number of devices: " + str(numOfDevices)),
                      html.Div(children=create_house_view(house)),
+                     html.H4("Jobs in house:"),
+                     html.Div(children=create_jobs_list(house))
                      ])
 
 
@@ -84,15 +91,19 @@ def neighbourhood_tab_view(dictionary):
         tabs = create_house_tabs(main_neighbourhood)
         return html.Div(children=[
             dcc.Tabs(id='neighbourhoodTabs',
-                     children=tabs, ),
-            html.Div(id='tabs-content')])
+                     children=tabs),
+            html.Div(id='tabs_content'),
+            html.Div(id='jobs_list')])
 
 
-@app.callback(Output('tabs-content', 'children'),
-              [Input('neighbourhoodTabs', 'value')])
-def render_content(value):
+@app.callback(Output('tabs_content', 'children'),
+              [Input('neighbourhoodTabs', 'value'),
+              Input('save_job', 'n_clicks')])
+def render_content(value, n):
     global main_neighbourhood
     global active_house
+    if n and n>0:
+        tabId = int(active_house.id)
     if value is not None:
         tabId = int(value)
     elif main_neighbourhood is not None:  # get the id of first house in houselist
@@ -102,6 +113,8 @@ def render_content(value):
         if house is not None:
             dis = displayHouse(house)
             return html.Div([dis])
+
+
 
 """--- END Functions to render a view for the Neighbourhood ---"""
 
@@ -234,7 +247,7 @@ def addJobModal():
                             dcc.DatePickerSingle(id='lstDatePicker'),
                             dcc.Input(id='lstTimePicker')
                         ]),
-                        html.Span(
+                        html.Button(
                             "Save",
                             id="save_job",
                             n_clicks_timestamp='0',
@@ -297,7 +310,8 @@ layout = html.Div([
     html.Div(id="tabs", children=[
         dcc.Tabs(id='neighbourhoodTabs',
                      children=[dcc.Tab()]),
-            html.Div(id='tabs-content')
+            html.Div(id='tabs_content'),
+            html.Div(id='jobs_list')
     ]),
     html.Div(id='saveNeighbourhood', children=[
         dcc.Input(id="neighbourhoodName", placeholder="neighbourhoodName"),
@@ -843,9 +857,10 @@ def saveJobs(n, estDate, estTime, lstDate, lstTime):
             lst = createEpochTime(lstDate, lstTime)
             timeAdded = int(time.time())
         if active_device.type == 'consumer':
+            active_device.events.append(Event(active_device, timeAdded, est, lst))
             job = str(timeAdded) + ';' + str(est) + ';' + str(lst) + ';[' + str(active_house.id) + ']:[' + str(
                 active_device.id) + '];' + str(active_device.id) + '.csv'
-            active_device.events.append(job)
+            #active_device.events.append(job)
 
 
 def createEpochTime(date, time):
@@ -854,6 +869,9 @@ def createEpochTime(date, time):
     dateTime = datetime(int(d[0]), int(d[1]), int(d[2]), int(t[0]), int(t[1])).timestamp()
     return int(dateTime)
 
+def create_pv_csv_files(filepath, prediction, house, device, n):
+    prediction.to_csv(filepath + "/predictions/" + str(house.id) + "_" + str(device.id) + "_"+str(n)+".csv", sep=" ", index=False, header=False)
+    return '{};pv_producer[{}]:[{}];{}_{}_{}.csv'.format(prediction['Time'].iloc[0], house.id, device.id, house.id, device.id, n)
 
 #Function to create files for simulation.
 @app.callback(Output('save_hidden', 'children'),
@@ -875,25 +893,13 @@ def save_neighbourhood(n, value):
             for device in house.users[0].devices:  # only one user in each house
                 if device.type == "producer":
                     if device.weatherPredictions1 is not None and len(device.weatherPredictions1['Time'].iloc[0]) > 0:
-                        device.weatherPredictions1.to_csv(
-                            filepath + "/predictions/" + str(house.id) + "_" + str(device.id) + "_1.csv", sep=" ",
-                            index=False, header=False)
-                        producerEvents.append('{};pv_producer[{}]:[{}];{}_{}_1.csv'.format(device.weatherPredictions1['Time'].iloc[0], house.id, device.id, house.id, device.id))
+                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 1))
                     if device.weatherPredictions2 is not None and len(device.weatherPredictions2['Time'].iloc[0]) > 0:
-                        device.weatherPredictions2.to_csv(
-                            filepath + "/predictions/" + str(house.id) + "_" + str(device.id) + "_2.csv", sep=" ",
-                            index=False, header=False)
-                        producerEvents.append('{};pv_producer[{}]:[{}];{}_{}_2.csv'.format(device.weatherPredictions2['Time'].iloc[0], house.id, device.id, house.id, device.id))
+                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 2))
                     if device.weatherPredictions3 is not None and len(device.weatherPredictions3['Time'].iloc[0]) > 0:
-                        device.weatherPredictions3.to_csv(
-                            filepath + "/predictions/" + str(house.id) + "_" + str(device.id) + "_3.csv", sep=" ",
-                            index=False, header=False)
-                        producerEvents.append('{};pv_producer[{}]:[{}];{}_{}_3.csv'.format(device.weatherPredictions3['Time'].iloc[0], house.id, device.id, house.id, device.id))
+                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 3))
                     if device.weatherPredictions4 is not None and len(device.weatherPredictions4['Time'].iloc[0]) > 0:
-                        device.weatherPredictions4.to_csv(
-                            filepath + "/predictions/" + str(house.id) + "_" + str(device.id) + "_4.csv", sep=" ",
-                            index=False, header=False)
-                        producerEvents.append('{};pv_producer[{}]:[{}];{}_{}_4.csv'.format(device.weatherPredictions4['Time'].iloc[0], house.id, device.id, house.id, device.id))
+                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 4))
                 elif device.type == "consumer":
                     if device.loadProfile is not None:
                         device.loadProfile.to_csv(filepath + "/loads/" + str(device.id) + ".csv", sep=" ", index=False,
