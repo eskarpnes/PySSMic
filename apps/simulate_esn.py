@@ -9,7 +9,6 @@ from app import app
 import re
 import data_processing as dataprocess
 
-
 """-------------------------ENERGY USE-------------------------"""
 
 
@@ -85,6 +84,7 @@ def energy_consumption_one_run():
         )
     )
 
+
 def energy_consumption_all_runs():
     return (
         dcc.Graph(
@@ -110,7 +110,6 @@ def get_dropdown_options():
 
 """-------------------------LAYOUT-------------------------"""
 
-
 layout = html.Div(children=[
     html.Div(html.H3("Simulation to display")),
     html.Span("Choose simulation "),
@@ -126,8 +125,7 @@ layout = html.Div(children=[
         html.Div(
             dcc.Dropdown(
                 id="run_choice",
-                options=[],
-                value='1'
+                options=[]
             )
         ),
     ]),
@@ -141,70 +139,78 @@ layout = html.Div(children=[
             )
         ),
     ]), html.Br(),
-    dcc.Tabs(id="tabs", children=[
-        dcc.Tab(id='tab_all_households', label='All households', children=[
-            html.Br(),
-            html.Div(
-                html.H2("Energy used distribution", className="header")
-            ),
-            html.Div(id="self-consumption-all", className="paragraph"),
-            html.Div([
-                energy_use_all_households()
-            ], className="pie-chart"),
-            html.Br(),
+    html.Div(id="graph-content", children=[
+        dcc.Tabs(id="tabs", children=[
+            dcc.Tab(id='tab_all_households', label='All households', children=[
+                html.Br(),
+                html.Div(
+                    html.H2("Energy used distribution", className="header")
+                ),
+                html.Div(id="self-consumption-all", className="paragraph"),
+                html.Div([
+                    energy_use_all_households()
+                ], className="pie-chart"),
+                html.Br(),
 
-            html.Div(
-                html.H2("Contracts", className="header")
-            ),
-            html.Div([
-                contract_all_households()
-            ], className="contract-table-all"),
-            html.Br(),
+                html.Div(
+                    html.H2("Contracts", className="header")
+                ),
+                html.Div([
+                    contract_all_households()
+                ], className="contract-table-all"),
+                html.Br(),
 
-            html.Div(
-                html.H2("Production and consumption profiles", className="header")
-            ),
-            html.Div(id='peak-average-ratio-all', className="paragraph"),
-            html.Div([
-                energy_consumption_one_run()
-            ], className="consumption-graph"),
-            html.Br(),
-        ]),
-        dcc.Tab(id='tab_one_household', label='One household', children=[
-            html.Br(),
-            html.Div(
-                html.H2("Energy used distribution", className="header")
-            ),
-            html.Div(id="self-consumption-one", className="paragraph"),
-            html.Div([
-                energy_use_one_household()
-            ], className="pie-chart"),
-            html.Br(),
-
-            html.Div(
-                html.H2("Contracts", className="header")
-            ),
-            html.Div([
-                contract_one_household()
+                html.Div(
+                    html.H2("Production and consumption profiles", className="header")
+                ),
+                html.Div(id='peak-average-ratio-all', className="paragraph"),
+                html.Div([
+                    energy_consumption_one_run()
+                ], className="consumption-graph"),
+                html.Br(),
             ]),
-            html.Br(),
-            html.Div(
-                html.H3("Peak to average ratio", className="header")
-            ),
-            html.Div(id='peak-average-ratio-one', className="paragraph"),
-            html.Br(),
-        ]),
-        dcc.Tab(id='tab_all_runs', label='All runs', children=[
-            html.Div(
-                html.H2("Production and consumption profiles", className="header")
-            ),
-            html.Div(id='peak-average-ratio-sum'),
-            html.Div(
-                energy_consumption_all_runs()
-            )
+            dcc.Tab(id='tab_one_household', label='One household', children=[
+                html.Br(),
+                html.Div(
+                    html.H2("Energy used distribution", className="header")
+                ),
+                html.Div(id="self-consumption-one", className="paragraph"),
+                html.Div([
+                    energy_use_one_household()
+                ], className="pie-chart"),
+                html.Br(),
+
+                html.Div(
+                    html.H2("Contracts", className="header")
+                ),
+                html.Div([
+                    contract_one_household()
+                ]),
+                html.Br(),
+                html.Div(
+                    html.H3("Peak to average ratio", className="header")
+                ),
+                html.Div(id='peak-average-ratio-one', className="paragraph"),
+                html.Br(),
+            ]),
+            dcc.Tab(id='tab_all_runs', label='All runs', children=[
+                html.Div(
+                    html.H2("Production and consumption profiles", className="header")
+                ),
+                html.Div(id='peak-average-ratio-sum'),
+                html.Div(
+                    energy_consumption_all_runs()
+                )
+            ])
         ])
-    ])
+    ], style={"display": "none"})
 ])
+
+
+def print_contracts(contracts):
+    print("Length: " + str(len(contracts)))
+    for contract in contracts:
+        print(contract["id"])
 
 
 """-------------------------DROPDOWNS-------------------------"""
@@ -224,23 +230,31 @@ def update_simid_dropdown(value):
     num = search.group(0)[1:-1]
     sim_options = []
     for val in range(0, int(num)):
-        sim_options.append({'label': 'Run {}'.format(val+1), 'value': '{}'.format(val+1)})
+        sim_options.append({'label': 'Run {}'.format(val + 1), 'value': '{}'.format(val + 1)})
     return sim_options
+
+
+@app.callback(Output("graph-content", "style"),
+              [Input("run_choice", "value")])
+def check_valid_run(run):
+    if run is None:
+        return {"display": "none"}
+    return {"display": "block"}
 
 
 @app.callback(Output("household_choice", "options"),
               [Input("run_choice", "value")],
               [State("simulation_choice", "value")])
 def update_houseid_dropdown(run_choice, simulation_choice):
-    contracts = dataprocess.open_file(str(simulation_choice))[0]
-    contracts = pd.DataFrame(contracts)
+    contracts = dataprocess.get_contracts(str(simulation_choice))
+    contracts = contracts[int(run_choice) - 1]
     house_options = []
     house_id = []
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(run_choice)-1]
-        before = contract_e.get('job_id').index('[') + 1
-        after = contract_e.get('job_id').index(']')
-        household_id = contract_e.get('job_id')[before:after]
+    for contract in contracts:
+        contract_e = contract
+        before = contract_e['job_id'].index('[') + 1
+        after = contract_e['job_id'].index(']')
+        household_id = contract_e['job_id'][before:after]
         if household_id not in house_id:
             house_id.append(household_id)
             house_options.append({'label': 'Consumer ID: {}'.format(household_id), 'value': '{}'.format(household_id)})
@@ -256,16 +270,14 @@ def update_houseid_dropdown(run_choice, simulation_choice):
               [State("simulation_choice", "value")])
 def update_contracts(run_choice, simulation_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
-    contracts = pd.DataFrame(contracts)
+    contracts = contracts[int(run_choice) - 1]
     rows = []
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[int(run_choice) - 1][e]
-        #print('CONTRACT: {}'.format(contract_e))
-        print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
-        contract_e["load_profile"] = round(contract_e.get("load_profile").values[-1], 2)
-        print('Load profile after: {}'.format(contract_e["load_profile"]))
-        contract_e = dataprocess.rename_columns(contract_e)
-        rows.append(contract_e)
+    for contract in contracts:
+        # print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
+        contract["load_profile"] = round(contract["load_profile"].values[-1], 2)
+        # print('Load profile after: {}'.format(contract_e["load_profile"]))
+        contract = dataprocess.rename_columns(contract)
+        rows.append(contract)
     return rows
 
 
@@ -273,19 +285,19 @@ def update_contracts(run_choice, simulation_choice):
 @app.callback(Output("contract-table-one", "rows"),
               [Input("household_choice", "value")],
               [State("run_choice", "value"),
-              State("simulation_choice", "value")])
+               State("simulation_choice", "value")])
 def update_contracts(household_choice, run_choice, simulation_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
-    contracts = pd.DataFrame(contracts)
+    contracts = contracts[int(run_choice) - 1]
     rows = []
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[int(run_choice) - 1][e]
-        print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
-        contract_e["load_profile"] = round(contract_e.get("load_profile").values[-1], 2)
-        print('Load profile after filtering: {}'.format(contract_e["load_profile"]))
-        contract_e = dataprocess.rename_columns(contract_e)
-        if contract_e.get("Consumer ID").startswith('[{}]'.format(household_choice)):
-            rows.append(contracts[int(run_choice) - 1][e])
+    for contract in contracts:
+        contract_e = contract
+        # print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
+        contract["load_profile"] = round(contract.get("load_profile").values[-1], 2)
+        # print('Load profile after filtering: {}'.format(contract_e["load_profile"]))
+        contract = dataprocess.rename_columns(contract)
+        if contract.get("Consumer ID").startswith('[{}]'.format(household_choice)):
+            rows.append(contract)
     return rows
 
 
@@ -299,16 +311,15 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     [State("simulation_choice", "value")])
 def update_pie_chart(run_choice, simulation_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
-    contracts = pd.DataFrame(contracts)
-    print('Contracts used in pie chart: {}'.format(contracts))
+    contracts = contracts[int(run_choice) - 1]
+    # print('Contracts used in pie chart: {}'.format(contracts))
     grid = 0
     pv = 0
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(run_choice)-1]
-        if contract_e.get("producer_id") == 'grid':
-            grid += contract_e.get("load_profile").values[-1]
+    for contract in contracts:
+        if contract["producer_id"] == 'grid':
+            grid += contract["load_profile"].values[-1]
         else:
-            pv += contract_e.get("load_profile").values[-1]
+            pv += contract["load_profile"].values[-1]
     return go.Figure(
         data=[
             go.Pie(
@@ -326,25 +337,24 @@ def update_pie_chart(run_choice, simulation_choice):
     [Input("household_choice", "value")],
     [State("simulation_choice", "value"),
      State("run_choice", "value")])
-def update_pie_chart(household_choice, simulation_choice, run_choice):
+def update_pie_chart_single_house(household_choice, simulation_choice, run_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
-    contracts = pd.DataFrame(contracts)
-    print('Contracts used in pie chart: {}'.format(contracts))
+    contracts = contracts[int(run_choice) - 1]
+    # print('Contracts used in pie chart: {}'.format(contracts))
     grid = 0
     pv = 0
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(run_choice)-1]
-        if contract_e.get("job_id").startswith('[{}]'.format(household_choice)):
-            if contract_e.get("producer_id") == 'grid':
-                grid += contract_e.get("load_profile").values[-1]
+    for contract in contracts:
+        if contract["job_id"].startswith('[{}]'.format(household_choice)):
+            if contract["producer_id"] == 'grid':
+                grid += contract["load_profile"].values[-1]
             else:
-                pv += contract_e.get("load_profile").values[-1]
+                pv += contract["load_profile"].values[-1]
     return go.Figure(
         data=[
             go.Pie(
                 values=[grid, pv],
                 labels=["Grid", "PV"],
-                marker=dict(colors=['#008000', '#FF0000'])
+                marker=dict(colors=['#FF0000', '#008000'])
             )
         ]
     )
@@ -360,16 +370,15 @@ def update_pie_chart(household_choice, simulation_choice, run_choice):
     [State("simulation_choice", "value")])
 def self_consumption_all(run_choice, simulation_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
-    contracts = pd.DataFrame(contracts)
+    contracts = contracts[int(run_choice) - 1]
     grid = 0
     pv = 0
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[int(run_choice) - 1][e]
-        if contract_e.get("producer_id") == 'grid':
-            grid += contract_e.get("load_profile").values[-1]
+    for contract in contracts:
+        if contract.get("producer_id") == 'grid':
+            grid += contract.get("load_profile").values[-1]
         else:
-            pv += contract_e.get("load_profile").values[-1]
-    return html.P('Self-consumption for whole neighbourhood: {}'.format(round(grid + pv, 2)))
+            pv += contract.get("load_profile").values[-1]
+    return html.P('Total consumption for whole neighbourhood: {}'.format(round(grid + pv, 2)))
 
 
 # One household
@@ -378,127 +387,124 @@ def self_consumption_all(run_choice, simulation_choice):
     [Input("household_choice", "value")],
     [State("simulation_choice", "value"),
      State("run_choice", "value")])
-def update_pie_chart(household_choice, simulation_choice, run_choice):
+def update_pie_chart_header(household_choice, simulation_choice, run_choice):
     contracts = dataprocess.open_file(simulation_choice)[0]
-    contracts = pd.DataFrame(contracts)
+    contracts = contracts[int(run_choice) - 1]
     grid = 0
     pv = 0
-    for e in range(0, len(contracts[0])):
-        contract_e = contracts[e][int(run_choice)-1]
-        if contract_e.get("job_id").startswith('[{}]'.format(household_choice)):
-            if contract_e.get("producer_id") == 'grid':
-                grid += contract_e.get("load_profile").values[-1]
+    for contract in contracts:
+        if contract.get("job_id").startswith('[{}]'.format(household_choice)):
+            if contract.get("producer_id") == 'grid':
+                grid += contract.get("load_profile").values[-1]
             else:
-                pv += contract_e.get("load_profile").values[-1]
-    return html.P('Self-consumption for household: {}'.format(round(grid + pv, 2)))
+                pv += contract.get("load_profile").values[-1]
+    return html.P('Total consumption for household: {}'.format(round(grid + pv, 2)))
 
 
 """-----------------PRODUCTION, CONSUMPTION PROFILES-----------------"""
 
 
-# All households
-@app.callback(
-    Output("energy-consumption-graph", "figure"),
-    [Input("run_choice", "value")],
-    [State("simulation_choice", "value")])
-def update_consumption(run_choice, simulation_choice):
-    print('Run choice: {}'.format(run_choice))
-    print('Simulation choice: {}'.format(simulation_choice))
-    contracts, profiles = dataprocess.open_file(simulation_choice)
-    #households = dataprocess.neigbourhood_to_household(contracts, profiles)
-    profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
-    #TODO: Profiles_combined = average
-    print(profiles_combined)
-    return go.Figure(
-                data=[
-                    go.Scatter(
-                        x=profiles[int(run_choice)-1][0],
-                        y=profiles[int(run_choice)-1][1],
-                        name="Energy consumed",
-                        marker=dict(color='#00A6FC')
-                    ),
-                    go.Scatter(
-                        x=profiles[int(run_choice)-1][2],
-                        y=profiles[int(run_choice)-1][3],
-                        name="Energy produced",
-                        marker=dict(color='#008000')
-                    ),
-                ],
-                layout=go.Layout(
-                    xaxis={
-                        'title': 'Time [Minutes]'
-                    },
-                    yaxis={
-                        'title': 'Energy [Wh]'
-                    }
-                )
-            )
-
-
-# All runs
-@app.callback(
-    Output("energy-consumption-graph-all-runs", "figure"),
-    [Input("simulation_choice", "value")])
-def update_consumption(simulation_choice):
-    contracts, profiles = dataprocess.open_file(simulation_choice)
-    profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
-    return go.Figure(
-                data=[
-                    go.Scatter(
-                        x=profiles_combined[0],
-                        y=profiles_combined[1],
-                        name="Energy consumed",
-                        marker=dict(color='#00A6FC')
-                    ),
-                    go.Scatter(
-                        x=profiles_combined[2],
-                        y=profiles_combined[3],
-                        name="Energy produced",
-                        marker=dict(color='#008000')
-                    ),
-                ],
-                layout=go.Layout(
-                    xaxis={
-                        'title': 'Time [Minutes]'
-                    },
-                    yaxis={
-                        'title': 'Energy [Wh]'
-                    }
-                )
-            )
+# # All households
+# @app.callback(
+#     Output("energy-consumption-graph", "figure"),
+#     [Input("run_choice", "value")],
+#     [State("simulation_choice", "value")])
+# def update_consumption(run_choice, simulation_choice):
+#     print('Run choice: {}'.format(run_choice))
+#     print('Simulation choice: {}'.format(simulation_choice))
+#     contracts, profiles = dataprocess.open_file(simulation_choice)
+#     # households = dataprocess.neigbourhood_to_household(contracts, profiles)
+#     profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
+#     # TODO: Profiles_combined = average
+#     return go.Figure(
+#         data=[
+#             go.Scatter(
+#                 x=profiles[int(run_choice) - 1][0],
+#                 y=profiles[int(run_choice) - 1][1],
+#                 name="Energy consumed",
+#                 marker=dict(color='#00A6FC')
+#             ),
+#             go.Scatter(
+#                 x=profiles[int(run_choice) - 1][2],
+#                 y=profiles[int(run_choice) - 1][3],
+#                 name="Energy produced",
+#                 marker=dict(color='#008000')
+#             ),
+#         ],
+#         layout=go.Layout(
+#             xaxis={
+#                 'title': 'Time [Minutes]'
+#             },
+#             yaxis={
+#                 'title': 'Energy [Wh]'
+#             }
+#         )
+#     )
+#
+#
+# # All runs
+# @app.callback(
+#     Output("energy-consumption-graph-all-runs", "figure"),
+#     [Input("simulation_choice", "value")])
+# def update_consumption(simulation_choice):
+#     contracts, profiles = dataprocess.open_file(simulation_choice)
+#     profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
+#     return go.Figure(
+#         data=[
+#             go.Scatter(
+#                 x=profiles_combined[0],
+#                 y=profiles_combined[1],
+#                 name="Energy consumed",
+#                 marker=dict(color='#00A6FC')
+#             ),
+#             go.Scatter(
+#                 x=profiles_combined[2],
+#                 y=profiles_combined[3],
+#                 name="Energy produced",
+#                 marker=dict(color='#008000')
+#             ),
+#         ],
+#         layout=go.Layout(
+#             xaxis={
+#                 'title': 'Time [Minutes]'
+#             },
+#             yaxis={
+#                 'title': 'Energy [Wh]'
+#             }
+#         )
+#     )
 
 
 """-------------------------PEAK TO AV. RATIO-------------------------"""
 
-
-# All households
-@app.callback(
-    Output('peak-average-ratio-all', 'children'),
-    [Input("run_choice", "value")],
-    [State("simulation_choice", "value")])
-def update_peak_av_ratio(run_choice, simulation_choice):
-    contracts, profiles = dataprocess.open_file(simulation_choice)
-    out, out_comb = dataprocess.neigbourhood_execution_peak_to_average(contracts, profiles)
-    return html.P('Peak to average ratio: {}'.format(round(out[int(run_choice)-1], 2)))
-
-
-# One household
-@app.callback(
-    Output('peak-average-ratio-one', 'children'),
-    [Input("household_choice", "value")],
-    [State("simulation_choice", "value"),
-     State("run_choice", "value")])
-def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
-    contracts, profiles = dataprocess.open_file(simulation_choice)
-    households = dataprocess.neigbourhood_to_household(contracts, profiles)
-    out_data, out_house = dataprocess.household_execution_peak_to_average_ratio(contracts, profiles, households)
-    peak_av_ratio = 0
-    print(out_data)
-    print(out_house)
-    for i in range(0, len(out_house[int(run_choice)-1])):
-        if out_house[int(run_choice)-1][i] == household_choice:
-            peak_av_ratio += out_data[int(run_choice) - 1][i]
-    return html.P('Peak to average ratio: {}'.format(round(peak_av_ratio, 2)))
+# # All households
+# @app.callback(
+#     Output('peak-average-ratio-all', 'children'),
+#     [Input("run_choice", "value")],
+#     [State("simulation_choice", "value")])
+# def update_peak_av_ratio(run_choice, simulation_choice):
+#     contracts, profiles = dataprocess.open_file(simulation_choice)
+#     out, out_comb = dataprocess.neigbourhood_execution_peak_to_average(contracts, profiles)
+#     return html.P('Peak to average ratio: {}'.format(round(out[int(run_choice)-1], 2)))
+#
+#
+# # One household
+# @app.callback(
+#     Output('peak-average-ratio-one', 'children'),
+#     [Input("household_choice", "value")],
+#     [State("simulation_choice", "value"),
+#      State("run_choice", "value")])
+# def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
+#     contracts, profiles = dataprocess.open_file(simulation_choice)
+#     households = dataprocess.neigbourhood_to_household(contracts, profiles)
+#     out_data, out_house = dataprocess.household_execution_peak_to_average_ratio(contracts, profiles, households)
+#     peak_av_ratio = 0
+#     print(out_data)
+#     print(out_house)
+#     for i in range(0, len(out_house[int(run_choice)-1])):
+#         if out_house[int(run_choice)-1][i] == household_choice:
+#             peak_av_ratio += out_data[int(run_choice) - 1][i]
+#     return html.P('Peak to average ratio: {}'.format(round(peak_av_ratio, 2)))
 
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
@@ -524,9 +530,3 @@ def display_none(value):
     if (value == 'tab-1') or (value == 'tab-3'):
         style = {'display': 'none'}
     return style
-
-
-
-
-
-
