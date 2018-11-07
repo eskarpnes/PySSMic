@@ -10,11 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 What things you need to install the software and how to install them
 
-- [Python 3.x](https://www.python.org/downloads/)
-
-```
-Give examples
-```
+- [Python 3.x](https://www.python.org/downloads/) Follow the instructions
 
 ### Installing
 
@@ -117,7 +113,7 @@ We use [GIT](https://git-scm.com/) for versioning.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
 
