@@ -207,11 +207,6 @@ layout = html.Div(children=[
 ])
 
 
-def print_contracts(contracts):
-    print("Length: " + str(len(contracts)))
-    for contract in contracts:
-        print(contract["id"])
-
 
 """-------------------------DROPDOWNS-------------------------"""
 
@@ -251,10 +246,9 @@ def update_houseid_dropdown(run_choice, simulation_choice):
     house_options = []
     house_id = []
     for contract in contracts:
-        contract_e = contract
-        before = contract_e['job_id'].index('[') + 1
-        after = contract_e['job_id'].index(']')
-        household_id = contract_e['job_id'][before:after]
+        before = contract['job_id'].index('[') + 1
+        after = contract['job_id'].index(']')
+        household_id = contract['job_id'][before:after]
         if household_id not in house_id:
             house_id.append(household_id)
             house_options.append({'label': 'Consumer ID: {}'.format(household_id), 'value': '{}'.format(household_id)})
@@ -273,9 +267,7 @@ def update_contracts(run_choice, simulation_choice):
     contracts = contracts[int(run_choice) - 1]
     rows = []
     for contract in contracts:
-        # print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
         contract["load_profile"] = round(contract["load_profile"].values[-1], 2)
-        # print('Load profile after: {}'.format(contract_e["load_profile"]))
         contract = dataprocess.rename_columns(contract)
         rows.append(contract)
     return rows
@@ -291,10 +283,7 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     contracts = contracts[int(run_choice) - 1]
     rows = []
     for contract in contracts:
-        contract_e = contract
-        # print('Load profile before filtering: {}'.format(contract_e["load_profile"]))
         contract["load_profile"] = round(contract.get("load_profile").values[-1], 2)
-        # print('Load profile after filtering: {}'.format(contract_e["load_profile"]))
         contract = dataprocess.rename_columns(contract)
         if contract.get("Consumer ID").startswith('[{}]'.format(household_choice)):
             rows.append(contract)
