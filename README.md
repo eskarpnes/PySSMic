@@ -73,24 +73,20 @@ When your configuration is done, type in the name of the neighbourhood and press
 To review the simualtion results, go to http://127.0.0.1:8050/apps/simulate_esn. You can see the total results for the whole neighbourhood in the "All households" tab. Here you can specify which run to review by the 'Choose run' dropdown menu. To get specific results for one household go to 'One houshold' tab and choose your house from the dropdown list. To see total results for all runs, go to the 'All runs' tab.
 You can send results to your colleagues by sending the pkl file in the resultfolder. In the same way you can see results other have created by adding result files to the result folder.
 
-## Running the tests
+## Testing with pytest
 
-Explain how to run the automated tests for this system
+In order to test our system, we have used pytest - An alternative to Pythons standard unit test module. More documentation about pytest can be found [here](pytest.org).
 
-### Break down into end to end tests
-
-Explain what these tests test and why
+### Install pytest
 
 ```
-Give an example
+pip install pytest==version (TODO)
 ```
 
-### And coding style tests
-
-Explain what these tests test and why
+### Run all tests
 
 ```
-Give an example
+python tests/test_*.py
 ```
 
 ## Built With
