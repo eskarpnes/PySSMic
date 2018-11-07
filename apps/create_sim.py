@@ -37,8 +37,7 @@ layout = html.Div(children=[
                     value=get_dropdown_options()[0]["value"]
                 ),
                 html.Div(className="btnContainer", children=[
-                    html.A(html.Button("Create ESN", className="btnAddEsn"),
-                           href='/apps/create_esn')
+                    html.A(html.Button("Update", id="btn-update"))
                 ])
             ]),
 
@@ -97,6 +96,12 @@ layout = html.Div(children=[
 
 ])
 
+@app.callback(
+    Output("neighbourhood", "options"),
+    [Input("btn-update", "n_clicks")]
+)
+def update_dropdown(n_clicks):
+    return get_dropdown_options()
 
 @app.callback(
     Output("algo-inputs", "style"),
