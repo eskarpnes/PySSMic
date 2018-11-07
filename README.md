@@ -75,7 +75,7 @@ You can send results to your colleagues by sending the pkl file in the resultfol
 
 ## Testing with pytest
 
-In order to test our system, we have used pytest - An alternative to Pythons standard unit test module. More documentation about pytest can be found [here](pytest.org).
+In order to test our system, we have used pytest - An alternative to Pythons standard unit test module. More documentation about pytest can be found [here](https://docs.pytest.org/en/latest/).
 
 ### Install pytest
 
