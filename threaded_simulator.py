@@ -1,4 +1,6 @@
 from multiprocessing import Process, cpu_count, Value
+
+from backend.optimizer import Algorithm
 from simulator import Simulator
 import pickle
 import os
@@ -50,7 +52,7 @@ if __name__ == "__main__":
         "neighbourhood": "test",
         "timefactor": 0.0000000000001,
         "length": 86400,
-        "algo": "basinhopping",
+        "algo": Algorithm.SLSQP.value,
         "runs": 16
     }
 

@@ -2,6 +2,7 @@ import itertools
 import logging
 import math
 from collections import defaultdict
+from enum import Enum
 from itertools import chain
 from random import randint, random
 from typing import List
@@ -12,26 +13,34 @@ from scipy import optimize
 import util.optimizer_utils as utils
 
 
+class Algorithm(Enum):
+    fifty_fifty = 'fifty_fifty'
+    L_BFGS_B = 'L-BFGS-B'
+    SLSQP = 'SLSQP'
+    TNC = 'TNC'
+
+
 class Optimizer:
     def __init__(self, producer, options):
         self.producer = producer
         self.options = options
-        self.algorithm = options["algo"]
         self.logger = logging.getLogger("src.Optimizer")
         self.differentiated_loads = []
         self.penalty_factor = 1.0
         self.min_objective_value = float('inf')
+        self.algorithm = Algorithm[options["algo"]]
+
 
     # The main function that optimizes the schedule. How the schedule and job should be implemented is up for discussion
     def optimize(self):
-        if self.algorithm == 'basinhopping':
+        if self.algorithm in [Algorithm.L_BFGS_B, Algorithm.SLSQP, Algorithm.TNC]:
             schedule_times, should_keep = self.basinhopping()
 
-        elif self.algorithm == '50/50':
+        elif self.algorithm == Algorithm.fifty_fifty:
             schedule_times, should_keep = self.fifty_fifty()
 
         else:
-            should_keep = [True for x in range(len(self.producer.schedule))]
+            should_keep = [True] * len(self.producer.schedule)
             schedule_times = [s['job'].scheduled_time for s in self.producer.schedule]
 
         return schedule_times, should_keep
@@ -43,7 +52,7 @@ class Optimizer:
         now = self.producer.manager.clock.now
         bounds = [(max(s['job'].est, now), s['job'].lst) for s in self.producer.schedule]
         x0 = np.array([randint(b[0], b[1]) for b in bounds])
-        kwargs = dict(method="L-BFGS-B", bounds=bounds, options=dict(eps=eps), tol=tol)
+        kwargs = dict(method=self.algorithm.value, bounds=bounds, options=dict(eps=eps), tol=tol)
 
         # The Basin-hopping algorithm is good at finding global minimums.
         result = optimize.basinhopping(func=self.objective_function, x0=x0, minimizer_kwargs=kwargs)
@@ -109,9 +118,7 @@ class Optimizer:
         ts.extend(list(produced.index.values))
         ts = sorted(ts)
         for i, t in enumerate(ts):
-            c = consumed[t]
-            p = produced[t]
-            if c > p:
+            if consumed[t] > produced[t]:
                 return False
         return True
 
@@ -125,4 +132,3 @@ class Optimizer:
         self.differentiated_loads = []
         for s in self.producer.schedule:
             self.differentiated_loads.append(utils.differentiate(s['job'].load_profile))
-
