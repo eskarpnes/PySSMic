@@ -62,17 +62,7 @@ def create_jobs_list(house):
     return jobs
 
 def displayHouse(house):
-    numOfUsers = 0
-    numOfDevices = 0
-    for user in house.users:
-        numOfUsers += 1
-        for device in user.devices:
-            numOfDevices += 1
-
-    return html.Div(["House",
-                     html.Span(str(house.id)),
-                     html.Br(),
-                     html.Span("Number of devices: " + str(numOfDevices)),
+    return html.Div([html.H4("Devices in House " + str(house.id) + ":"),
                      html.Div(children=create_house_view(house)),
                      html.H4("Jobs in house:"),
                      html.Div(children=create_jobs_list(house))
@@ -88,17 +78,17 @@ def neighbourhood_tab_view(dictionary):
         return html.Div(children=[
             dcc.Tabs(id='neighbourhoodTabs',
                      children=tabs),
-            html.Div(id='tabs_content'),
-            html.Div(id='jobs_list')])
+            html.Div(id='tabs_content')])
 
 
 @app.callback(Output('tabs_content', 'children'),
               [Input('neighbourhoodTabs', 'value'),
-              Input('save_job', 'n_clicks')])
-def render_content(value, n):
+              Input('save_job', 'n_clicks'),
+              Input('jobsXML', 'contents')])
+def render_content(value, n, contents):
     global main_neighbourhood
     global active_house
-    if n and n>0:
+    if n and n>0 or contents is not None:
         tabId = int(active_house.id)
     if value is not None:
         tabId = int(value)
@@ -306,8 +296,7 @@ layout = html.Div([
     html.Div(id="tabs", children=[
         dcc.Tabs(id='neighbourhoodTabs',
                      children=[dcc.Tab()]),
-            html.Div(id='tabs_content'),
-            html.Div(id='jobs_list')
+            html.Div(id='tabs_content')
     ]),
     html.Div(id='saveNeighbourhood', children=[
         dcc.Input(id="neighbourhoodName", placeholder="neighbourhoodName"),
@@ -504,21 +493,21 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
 
 
 """ --- Start functions to show change the style to different divs and modals ---"""
+def show(n, contents):
+    if (n and n > 0) or contents:
+        return {'display': 'block'}
+    return {'display':'none'}
 
 @app.callback(Output('newHouseInput', 'style'),
               [Input('btnNewNeighbourhood', 'n_clicks'), Input('upload-data', 'contents')])
 def showMenu(n, contents):
-    if (n and n > 0) or contents:
-        return {'display': 'block'}
-    return {'display':'none'}
+    return show(n, contents)
 
 
 @app.callback(Output('saveNeighbourhood', 'style'),
               [Input('btnNewNeighbourhood', 'n_clicks'), Input('upload-data', 'contents')])
 def showSaveButton(n, contents):
-    if n or contents:
-        return {'display': 'block'}
-    return {'display':'none'}
+    return show(n, contents)
 
 
 @app.callback(Output('initChoices', 'style'), [Input('tabs', 'children')])
@@ -526,17 +515,13 @@ def hideButton(children):
     if children and len(children) > 1:
         return {'display': 'none'}
 
-
-
 @app.callback(Output("house_modal", "style"), [Input("btnConfigHouse", "n_clicks")])
 def display_leads_modal_callback(n):
     if n and n > 0:
-        print(n)
         global active_device
         active_device = None
         return {"display": "block"}
     return {"display": "none"}
-
 
 @app.callback(
     Output("btnConfigHouse", "n_clicks"),
@@ -560,9 +545,7 @@ def close_jobModal_callback(n, n2):
 
 @app.callback(Output('job_modal', 'style'), [Input('btnAddJob', 'n_clicks')])
 def displayJobModal(n):
-    if n > 0:
-        return {"display": "block"}
-    return {"display": "none"}
+    return show(n, None)
 
 """ --- END functions to show change the style to different divs and modals ---"""
 # Function to update the view based on neighbourhood div
@@ -573,6 +556,7 @@ def displayJobModal(n):
 
 @app.callback(Output('addJobs-content', 'children'), [Input('job_modal', 'style')])
 def renderAddJobContent(style):
+    global active_house
     if style == {"display": "block"}:
         return html.Div(id='addJob', children=[
             html.Div(id='addJobContent'),
@@ -603,7 +587,6 @@ def renderAddJobContent(style):
                 placeholder='HH:MM'
             )
         ]),
-
 
 @app.callback(Output('configHouse-content', 'children'), [Input('configHouseTabs', 'value')])
 def showHouseConfigContent(value):
@@ -720,6 +703,7 @@ def renderConfigForm(children):
 
 """---START functions to update dash DataTable based on inputs from user ---"""
 
+
 @app.callback(Output('loadOrPredictionTable', 'rows'), [Input('LoadPredictionUpload', 'contents')],
               [State('LoadPredictionUpload', 'filename')])
 def update_table(contents, filename):
@@ -737,7 +721,7 @@ def update_w1(contents, filename):
     if contents is not None:
         df = parse_csv(contents, filename)
         return df.to_dict('records')
-    elif active_device and active_device.weatherPredictions1 is  not None:
+    elif active_device and active_device.weatherPredictions1 is not None:
         if len(active_device.weatherPredictions1['Time'].iloc[0]) > 0:
             return active_device.weatherPredictions1.to_dict('records')
     else:
