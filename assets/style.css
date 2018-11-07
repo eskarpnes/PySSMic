@@ -92,6 +92,11 @@
     flex-direction: column;
     align-content: space-between;
     padding-bottom: 40px;
+    padding-right: 40px;
+}
+
+.no-padding {
+    padding-bottom: 0;
 }
 
 #days {
