@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
 import pickle
-
+import os.path
+from definitions import ROOT_DIR
 
 def open_file(file_name):
-    with open('./results/{}'.format(file_name), 'rb') as f:
+    path = os.path.join(ROOT_DIR, "results", file_name)
+    with open(path, 'rb') as f:
         res = pickle.load(f)
         contracts = res[0]
         profiles = res[1]
