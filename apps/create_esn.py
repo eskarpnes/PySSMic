@@ -16,10 +16,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
-from backend.neighbourhood import Neighbourhood
-from backend.house import House
-from backend.device import Device, Event
-from backend.user import User
+from backend.neighbourhood import Neighbourhood, House, Device, Event, User
 from app import app
 from util.input_utils import prediction_profile_from_csv
 from definitions import ROOT_DIR
@@ -28,7 +25,6 @@ from definitions import ROOT_DIR
 main_neighbourhood = None
 active_house = None
 active_device = None
-addedLoads = []
 
 """--- START Functions to render a view for the Neighbourhood ---"""
 
@@ -352,18 +348,21 @@ def create_neighborhood_object(treeroot):
             nabolag.houses.append(h)
         return nabolag
 
-
 def create_loads_list(jobsroot):
     if jobsroot is not None:
-        global addedLoads
+        global main_neighbourhood
         for house in jobsroot:
-            for user in house:
-                for device in user:
-                    print('Hello')
-                    jobString = str(device.find('creation_time').text) + ';' + str(device.find('est').text) + ';' + str(
-                        device.find('lst').text) + ';[' + str(house.get('id')) + ']:[' + str(
-                        device.find('id').text) + '];' + str(device.find('profile').text) + '.csv'
-                    addedLoads.append(jobString)
+            h = main_neighbourhood.findHouseById(int(house.get('id')))
+            if h is not None:
+                for user in house:
+                    for device in user:
+                        d_id = device.find('id').text
+                        d = h.findDeviceById(int(d_id))
+                        if d is not None:
+                            timestamp =device.find('creation_time').text
+                            est=device.find('est').text
+                            lst=device.find('lst').text
+                            d.events.append(Event(d, int(timestamp), int(est), int(lst)))
 
 
 
@@ -811,23 +810,20 @@ def setActiveHouse(value):
         active_house = main_neighbourhood.findHouseById(int(value))
     return html.Div(str(type(active_house)))
 
+def set_active_device(value):
+    global active_house
+    global active_device
+    if value is not None:
+        active_device = active_house.findDeviceById(int(value))
+    return html.Div(str(type(active_device)))
 
 @app.callback(Output('active_device-info', 'children'), [Input('user-device-dropdown', 'value')])
 def setActiveDevice(value):
-    global active_house
-    global active_device
-    if value is not None:
-        active_device = active_house.findDeviceById(int(value))
-    return html.Div(str(type(active_device)))
-
+    return set_active_device(value)
 
 @app.callback(Output('deviceTwo', 'children'), [Input('jobs_device_dropdown', 'value')])
 def setADevice(value):
-    global active_house
-    global active_device
-    if value is not None:
-        active_device = active_house.findDeviceById(int(value))
-    return html.Div(str(type(active_device)))
+    return set_active_device(value)
 
 """--- END Functions to set the global variables when interacting with the GUI---"""
 
@@ -873,13 +869,15 @@ def create_pv_csv_files(filepath, prediction, house, device, n):
     prediction.to_csv(filepath + "/predictions/" + str(house.id) + "_" + str(device.id) + "_"+str(n)+".csv", sep=" ", index=False, header=False)
     return '{};pv_producer[{}]:[{}];{}_{}_{}.csv'.format(prediction['Time'].iloc[0], house.id, device.id, house.id, device.id, n)
 
+def create_consumer_csv_files(event, house):
+    return '{};{};{};[{}]:[{}]:[{}];{}.csv'.format(str(event.timestamp), str(event.est), str(event.lst), str(house.id), str(event.device.id), str(event.device.id), str(event.device.id)) #Maybe include templatenumber?
+
 #Function to create files for simulation.
 @app.callback(Output('save_hidden', 'children'),
               [Input('btnSaveNeighbourhood', 'n_clicks')],
               [State('neighbourhoodName', 'value')])
 def save_neighbourhood(n, value):
     global main_neighbourhood
-    global addedLoads
     if n and n > 0:
         if value is None:
             value = 'no_name'
@@ -887,34 +885,32 @@ def save_neighbourhood(n, value):
         os.makedirs(filepath)
         os.makedirs(filepath + "/loads")
         os.makedirs(filepath + "/predictions")
-        producerEvents = []
+        producer_events = []
+        consumer_events =[]
         # make dir loads, prediction, consumerevent.csv, produserevent.csv
         for house in main_neighbourhood.houses:
             for device in house.users[0].devices:  # only one user in each house
                 if device.type == "producer":
                     if device.weatherPredictions1 is not None and len(device.weatherPredictions1['Time'].iloc[0]) > 0:
-                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 1))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 1))
                     if device.weatherPredictions2 is not None and len(device.weatherPredictions2['Time'].iloc[0]) > 0:
-                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 2))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 2))
                     if device.weatherPredictions3 is not None and len(device.weatherPredictions3['Time'].iloc[0]) > 0:
-                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 3))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 3))
                     if device.weatherPredictions4 is not None and len(device.weatherPredictions4['Time'].iloc[0]) > 0:
-                        producerEvents.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 4))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 4))
                 elif device.type == "consumer":
                     if device.loadProfile is not None:
                         device.loadProfile.to_csv(filepath + "/loads/" + str(device.id) + ".csv", sep=" ", index=False,
                                                   header=False)
-                    if len(device.events) > 0:
-                        with open(filepath + '/consumer_event.csv', 'a+') as consumerJobscsv:
-                            wr = csv.writer(consumerJobscsv, delimiter='\n')
-                            wr.writerow(device.events)
-        with open(filepath + '/consumer_event.csv', 'a+') as jobscsv:
-            wr = csv.writer(jobscsv, delimiter='\n')
-            wr.writerow(addedLoads)
-
+                    for event in device.events:
+                        consumer_events.append(create_consumer_csv_files(event, house))
+        with open(filepath + '/consumer_event.csv', 'a+') as consumerJobscsv:
+            wr = csv.writer(consumerJobscsv, delimiter='\n')
+            wr.writerow(consumer_events)
         with open(filepath + '/producer_event.csv', 'a+') as producerJobscsv:
             wr = csv.writer(producerJobscsv, delimiter='\n')
-            wr.writerow(producerEvents)
+            wr.writerow(producer_events)
 
         # pickle neighbourhood object and save it locally?
 
