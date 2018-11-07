@@ -1,7 +1,7 @@
 from backend.consumer import Consumer
 from backend.job import Job
 from backend.manager import Manager
-from .mocks import MockManager
+from tests.mocks import MockManager
 
 
 def test_create_grid_contract():
