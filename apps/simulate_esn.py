@@ -113,12 +113,14 @@ def get_dropdown_options():
 layout = html.Div(children=[
     html.Div(html.H3("Simulation to display")),
     html.Span("Choose simulation "),
-    dcc.Dropdown(
-        id="simulation_choice",
-        options=get_dropdown_options(),
-        value=get_dropdown_options()[0]["value"]
-    ),
-    html.Button('Update results', className='btn', id='btn-update'),
+    html.Div(className="selectHorizontal", children=[
+        dcc.Dropdown(
+            id="simulation_choice",
+            options=get_dropdown_options(),
+            value=get_dropdown_options()[0]["value"]
+        ),
+        html.Button('Update results', className='btn', id='btn-update'),
+    ]),
     html.Div(id='sim_id', children=[
         html.Br(),
         html.Span("Choose run"),
@@ -205,8 +207,6 @@ layout = html.Div(children=[
         ])
     ], style={"display": "none"})
 ])
-
-
 
 """-------------------------DROPDOWNS-------------------------"""
 
@@ -405,7 +405,6 @@ def update_pie_chart_header(household_choice, simulation_choice, run_choice):
 
 
 """-----------------PRODUCTION, CONSUMPTION PROFILES-----------------"""
-
 
 # # All households
 # @app.callback(

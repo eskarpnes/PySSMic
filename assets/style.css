@@ -123,3 +123,8 @@ body {
     border-color: rgba(0, 0, 0, 0.1);
     cursor: auto;
 }
+
+#simulation_choice {
+    width: 100%;
+    padding-right: 10px;
+}
