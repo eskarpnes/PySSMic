@@ -241,6 +241,8 @@ def check_valid_run(run):
               [Input("run_choice", "value")],
               [State("simulation_choice", "value")])
 def update_houseid_dropdown(run_choice, simulation_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.get_contracts(str(simulation_choice))
     contracts = contracts[int(run_choice) - 1]
     house_options = []
@@ -263,6 +265,8 @@ def update_houseid_dropdown(run_choice, simulation_choice):
               [Input("run_choice", "value")],
               [State("simulation_choice", "value")])
 def update_contracts(run_choice, simulation_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = contracts[int(run_choice) - 1]
     rows = []
@@ -279,6 +283,8 @@ def update_contracts(run_choice, simulation_choice):
               [State("run_choice", "value"),
                State("simulation_choice", "value")])
 def update_contracts(household_choice, run_choice, simulation_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = contracts[int(run_choice) - 1]
     rows = []
@@ -299,6 +305,8 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     [Input("run_choice", "value")],
     [State("simulation_choice", "value")])
 def update_pie_chart(run_choice, simulation_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = contracts[int(run_choice) - 1]
     # print('Contracts used in pie chart: {}'.format(contracts))
@@ -327,6 +335,8 @@ def update_pie_chart(run_choice, simulation_choice):
     [State("simulation_choice", "value"),
      State("run_choice", "value")])
 def update_pie_chart_single_house(household_choice, simulation_choice, run_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = contracts[int(run_choice) - 1]
     # print('Contracts used in pie chart: {}'.format(contracts))
@@ -358,6 +368,8 @@ def update_pie_chart_single_house(household_choice, simulation_choice, run_choic
     [Input("run_choice", "value")],
     [State("simulation_choice", "value")])
 def self_consumption_all(run_choice, simulation_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = contracts[int(run_choice) - 1]
     grid = 0
@@ -377,6 +389,8 @@ def self_consumption_all(run_choice, simulation_choice):
     [State("simulation_choice", "value"),
      State("run_choice", "value")])
 def update_pie_chart_header(household_choice, simulation_choice, run_choice):
+    if run_choice is None:
+        return []
     contracts = dataprocess.open_file(simulation_choice)[0]
     contracts = contracts[int(run_choice) - 1]
     grid = 0
