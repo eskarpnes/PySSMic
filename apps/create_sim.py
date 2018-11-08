@@ -150,6 +150,8 @@ def check_button_disable(neighbourhood, days, algo, eps, tol, runs):
      State("runs", "value")]
 )
 def on_click(n_clicks, neighbourhood, days, algo, eps, tol, runs):
+    if None in [neighbourhood, days, algo, runs]:
+        return ""
     config = {
         "neighbourhood": neighbourhood,
         "length": int(days) * 86400,
@@ -162,7 +164,7 @@ def on_click(n_clicks, neighbourhood, days, algo, eps, tol, runs):
     print(config)
     now_string = time.strftime("%d%b%y_%H%M")
     print(now_string)
-    filename = now_string + "_" + neighbourhood + "_" + algo.replace("/", "") + "_" + str(runs)
+    filename = now_string + "_" + neighbourhood + "_" + algo + "_" + str(runs)
 
     sim = ThreadedSimulator(config)
 
@@ -174,4 +176,4 @@ def on_click(n_clicks, neighbourhood, days, algo, eps, tol, runs):
     pathname = os.path.join("results", filename)
     with open(pathname + ".pkl", "wb") as f:
         pickle.dump((contracts, profiles), f)
-    return 0
+    return ""
