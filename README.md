@@ -80,8 +80,9 @@ In order to test our system, we have used pytest - An alternative to Pythons sta
 ### Install pytest
 
 ```
-pip install pytest==version (TODO)
+pip install pytest
 ```
+_Version 3.8.2 is used in PySSMic_
 
 ### Run all tests
 
