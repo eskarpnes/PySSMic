@@ -4,6 +4,7 @@ import pickle
 import os.path
 from definitions import ROOT_DIR
 
+
 def open_file(file_name):
     path = os.path.join(ROOT_DIR, "results", file_name)
     print("opening " + path)
@@ -13,16 +14,16 @@ def open_file(file_name):
         profiles = res[1]
     return contracts, profiles
 
+
 def get_contracts(file_name):
     contracts, profiles = open_file(file_name)
-    print("CONTRACTS")
-    print(len(contracts))
-    print(len(contracts[0]))
     return contracts
+
 
 def get_profiles(file_name):
     contracts, profiles = open_file(file_name)
     return profiles
+
 
 def rename_columns(contract):
     old_keys = ["id", "time", "time_of_agreement", "load_profile", "job_id", "producer_id"]
@@ -32,22 +33,8 @@ def rename_columns(contract):
         contract[new_keys[i]] = contract.pop(old_keys[i])
     return contract
 
-######### profiles to list ########
-def rewrite_profiles(contracts, profiles):
-    profiles_list = []
-    for i in range(len(contracts)):
-        profiles_run = []
-        df = pd.DataFrame(contracts[i])
-        producers = df['producer_id'].tolist()
-        for producer in producers:
-            if producer != 'grid':
-                profiles_run.append(profiles[i][producer])
-        profiles_list.append(profiles_run)
-    return contracts, profiles_list
-###################################
 
-####### IDENTIFY HOUSEHOLD ########
-def neigbourhood_to_household(contracts_input, profiles_input, grid_id='grid'):
+def neighbourhood_to_household(contracts_input, profiles_input, grid_id='grid'):
     household_dict_list = []
     for contracts in contracts_input:
         df = pd.DataFrame(contracts)
@@ -70,12 +57,23 @@ def neigbourhood_to_household(contracts_input, profiles_input, grid_id='grid'):
 
     return household_dict_list
 
-household_dictionary = neigbourhood_to_household(contracts, profiles)
 
-###################################
+# household_dictionary = neigbourhood_to_household(contracts, profiles)
 
-######## HANDLING AVERAGES ########
-# Average values in a list with lists
+
+def rewrite_profiles(contracts, profiles):
+    profiles_list = []
+    for i in range(len(contracts)):
+        profiles_run = []
+        df = pd.DataFrame(contracts[i])
+        producers = df['producer_id'].tolist()
+        for producer in producers:
+            if producer != 'grid':
+                profiles_run.append(profiles[i][producer])
+        profiles_list.append(profiles_run)
+    return contracts, profiles_list
+
+
 def average_list_with_lists(list_of_listwithlists):
     list_of_lists = []
     transposed_list_of_listwithlists = map(list, zip(*list_of_listwithlists))
@@ -87,6 +85,7 @@ def average_list_with_lists(list_of_listwithlists):
             temp_list.append(np.mean(tll))
         list_of_lists.append(temp_list)
     return list_of_lists
+
 
 # Average value for the values in a dict
 def average_from_dict(list_of_dicts):
@@ -109,44 +108,8 @@ def average_from_dict(list_of_dicts):
 
     return final_dict
 
-###################################
 
-###### PREPROCESS INPUT DATA ######
-# Changes the time according to the starting time and interpolates
-def change_index_time(df_energy_list, start_times=[]):
-    i = 0
-    df_energy_output = pd.Series()
-    for df_energy_input in df_energy_list:
-        # Adjust the index based upon start time (only when start time is not zero)
-        if start_times != []:
-            index_list = df_energy_input.index.tolist()
-            index_start = [x + start_times[i] for x in index_list]
-            i += 1
-            df_energy_input.index = index_start
-
-        # Insert an index for every second
-        all_indices = list(range(int(df_energy_input.index[-1]) + 1))
-        df_energy_all = df_energy_input.reindex(all_indices)
-        # Fill al NaN values by interpolating
-        df_energy_all = df_energy_all.interpolate()
-        # Remaining ones are before the first start value fill those with 0
-        df_energy_all = df_energy_all.fillna(0)
-        # Remove the cumulative part
-        df_energy_all = df_energy_all.diff()
-        # Remaining ones are before the first start value fill those with 0
-        df_energy_all = df_energy_all.fillna(0)
-        # Save the results to one list
-        if df_energy_output.empty == True:
-            df_energy_output = df_energy_all
-        else:
-            df_energy_output = df_energy_output.combine(df_energy_all, lambda a1, a2: a1 + a2, fill_value=0)
-
-    x_energy = df_energy_output.index.tolist()
-    y_energy = df_energy_output.values.tolist()
-
-    return [x_energy, y_energy]
-
-# Pie chart: remote versus local
+# Pie chart
 def remote_versus_local(contracts, grid_id='grid'):
     # Load the contracts into a pandas dataframe
     df = pd.DataFrame.from_dict(contracts)
@@ -179,16 +142,57 @@ def remote_versus_local(contracts, grid_id='grid'):
 
     return output_dict
 
-# Line chart: energy over time
+
+# Divides time index by 60 (NOT NOW!) and gives opportunity to accumulate values
+def change_index_time(energy_list, start_times):
+    energy_series = pd.Series([0 for x in range(0, 86460, 60)], [x for x in range(0, 86460, 60)])
+
+    for i in range(len(energy_list)):
+        energy_values = energy_list[i]
+        start_time = start_times[i]
+        start_time = start_time // 60 * 60
+        energy_values = energy_values.rename(lambda x: x + start_time)
+        end_time = int(energy_values.index[-1])
+        new_indexes = range(start_time, end_time + 60, 60)
+        energy_values = energy_values.reindex(new_indexes)
+        energy_values = energy_values.interpolate(method="linear")
+        energy_values = energy_values.diff().fillna(0)
+        energy_series = (energy_series + energy_values).fillna(energy_series).fillna(energy_values)
+
+    x_energy = energy_series.index.tolist()
+    y_energy = energy_series.values.tolist()
+
+    return [x_energy, y_energy]
+
+
+# Line chart: energy produced over time
+def add_productions(producer_profiles):
+    produced_series = producer_profiles.pop(-1)
+
+    for profile in producer_profiles:
+        produced_series += profile
+
+    end_time = int(produced_series.index[-1])
+    new_indexes = range(0, end_time+60, 60)
+    produced_series = produced_series.reindex(new_indexes)
+    produced_series = produced_series.interpolate(method="linear")
+    produced_series = produced_series.diff()
+
+    x_production = produced_series.index.tolist()
+    y_production = produced_series.values.tolist()
+
+    return x_production, y_production
+
+
 def energy_over_time(contracts, producer_profiles):
     # Load the contracts into a dataframe
-    df = pd.DataFrame.from_dict(contracts)
-
     # CONSUMPTION
-    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), df['time_of_agreement'].tolist())
-
+    x_consumption, y_consumption = change_index_time(
+        [contract["load_profile"] for contract in contracts if contract["producer_id"] is not "grid"],
+        [contract["time"] for contract in contracts if contract["producer_id"] is not "grid"]
+    )
     # PRODUCTION
-    x_production, y_production = change_index_time(producer_profiles)
+    x_production, y_production = add_productions(producer_profiles)
 
     # If any of the lists is empty, give at least one point
     if x_consumption == [] and y_consumption == []:
@@ -200,8 +204,21 @@ def energy_over_time(contracts, producer_profiles):
 
     return [x_consumption, y_consumption, x_production, y_production]
 
-# Peak to average ratio
-def peak_to_average_ratio(x_consumption, y_consumption, interval=900):
+
+def peak_to_average_ratio(contracts, producer_profiles, interval=900):
+    # Load the contracts into a dataframe
+    df = pd.DataFrame.from_dict(contracts)
+
+    # Change the seconds into minutes (round downwards)
+    agreement_times = df['time_of_agreement'].tolist()
+    agreement_minutes = []
+    for at in agreement_times:
+        agreement_minutes.append(int(at / 60))
+    df['time_of_agreement_minutes'] = agreement_minutes
+
+    # Get consumptions per minute
+    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), agreement_minutes, False)
+
     # Determine the consumption per quarter (by summing up all consumptions per minute)
     consumption_per_quarter = []
     quarter_consumption = 0.0
@@ -217,12 +234,7 @@ def peak_to_average_ratio(x_consumption, y_consumption, interval=900):
 
     return max_consumption / average_consumption
 
-###################################
 
-
-############ OUTPUT ###############
-
-# Remote verus local
 def neighbourhood_execution_remote_versus_local(contracts_input, profiles_input):
     contracts_input, profiles_input = rewrite_profiles(contracts_input, profiles_input)
     output = []
@@ -231,78 +243,91 @@ def neighbourhood_execution_remote_versus_local(contracts_input, profiles_input)
     output_combined = average_from_dict(output)
     return [output, output_combined]
 
-def household_execution_remote_versus_local(output_neighbourhood, household_dictionary):
-    output_list = []
-    household_list = []
-    for run in range(len(output_neighbourhood)):
-        run_list = []
-        houses_run = []
-        for household in household_dictionary[run]:
-            houses_run.append(household)
-            household_devices = household_dictionary[run][household]
-            household_dict = dict()
-            for device in household_devices:
-                if device in output_neighbourhood[run]:
-                    household_dict[device] = output_neighbourhood[run][device]
-            run_list.append(household_dict)
-        output_list.append(run_list)
-        household_list.append(houses_run)
-    return [output_list, household_list]
 
-# output, output_combined = neighbourhood_execution_remote_versus_local(contracts,profiles)
-# household_execution_remote_versus_local(output, household_dictionary)
+def neighbourhood_execution_energy_over_time_average(contracts_input, profiles_input):
+    contracts_input, profiles_input = rewrite_profiles(contracts_input, profiles_input)
+    output = []
+    for i in range(len(contracts_input)):
+        output.append(energy_over_time(contracts_input[i], profiles_input[i]))
+        break
+    output_combined = average_list_with_lists(output)
+    return [output, output_combined]
 
-# Get output for energy_over_time and peak_to_average
-def household_execution(contracts_input, profiles_input, households):
-    output_energy_over_time = []
-    output_peak_average_ratio = []
+
+def neighbourhood_execution_energy_over_time(contracts_input, profiles_input):
+    return energy_over_time(contracts_input, list(profiles_input.values()))
+
+
+def neighbourhood_execution_peak_to_average(contracts_input, profiles_input):
+    contracts_input, profiles_input = rewrite_profiles(contracts_input, profiles_input)
+    output = []
+    for i in range(len(contracts_input)):
+        output.append(peak_to_average_ratio(contracts_input[i], profiles_input[i]))
+    output_combined = np.mean(output)
+    return [output, output_combined]
+
+
+def household_execution_local_versus_remote(contracts_input, households, profiles_input):
+    output = []
     households_list = []
-
-    for run in range(len(contracts_input)):
-        household_ids = households[run].keys()
+    for i in range(len(contracts_input)):
+        household_ids = households[i].keys()
         households_list.append(list(household_ids))
-        output_eot = []
-        output_par = []
+        output_household = []
         for household in household_ids:
             household_devices = households[i][household]
             contracts_household = []
-            for contract in range(len(contracts_input[run])):
-                if contracts_input[run][contract]['job_id'] in household_devices or contracts_input[run][contract][
-                    'producer_id'] in household_devices:
-                    contracts_household.append(contracts_input[run][contract])
-            profile_keys = profiles_input[run].keys()
+            for j in range(len(contracts_input[i])):
+                if contracts_input[i][j]['job_id'] in household_devices:
+                    contracts_household.append(contracts_input[i][j])
+            output_household.append(remote_versus_local(contracts_household))
+        output.append(output_household)
+    return output, households_list
+
+
+def household_execution_energy_over_time(contracts_input, profiles_input, households):
+    output = []
+    households_list = []
+    for i in range(len(contracts_input)):
+        household_ids = households[i].keys()
+        households_list.append(list(household_ids))
+        output_household = []
+        for household in household_ids:
+            household_devices = households[i][household]
+            contracts_household = []
+            for j in range(len(contracts_input[i])):
+                if contracts_input[i][j]['job_id'] in household_devices or contracts_input[i][j]['producer_id'] \
+                        in household_devices:
+                    contracts_household.append(contracts_input[i][j])
+            profile_keys = profiles_input[i].keys()
             profiles_household = []
             for key in profile_keys:
                 if key in household_devices:
-                    profiles_household.append(profiles_input[run][key])
+                    profiles_household.append(profiles_input[i][key])
+            output_household.append(energy_over_time(contracts_household, profiles_household))
+        output.append(output_household)
+    return output, households_list
 
-            energy_output = energy_over_time(contracts_household, profiles_household)
-            output_eot.append(energy_output)
-            output_par.append(peak_to_average_ratio(energy_output[0], energy_output[1]))
-        output_energy_over_time.append(output_eot)
-        output_peak_average_ratio.append(output_par)
-    return [households_list, output_energy_over_time, output_peak_average_ratio]
 
-household_list, output_energy_over_time, output_peak_average_ratio = household_execution(contracts, profiles,
-                                                                                         household_dictionary)
-
-# Energy over time
-def household_execution_energy_over_time(output_energy_over_time, household_list):
-    return [output_energy_over_time, household_list]
-
-def neighbourhood_execution_energy_over_time(output_energy_over_time):
-    for run in range(len(output_energy_over_time)):
-        run_results = output_energy_over_time[run]
-
-    return None
-
-# household_execution_energy_over_time(output_energy_over_time, household_list)
-# neighbourhood_execution_energy_over_time(output_energy_over_time)
-
-# Peak to average ratio
-def household_execution_peak_to_average(output_peak_average_ratio, household_list):
-    return [output_peak_average_ratio, household_list]
-
-def neighbourhood_execution_peak_to_average(output_peak_average_ratio):
-    return None #return [output, output_combined]
-
+def household_execution_peak_to_average_ratio(contracts_input, profiles_input, households):
+    output = []
+    households_list = []
+    for i in range(len(contracts_input)):
+        household_ids = households[i].keys()
+        households_list.append(list(household_ids))
+        output_household = []
+        for household in household_ids:
+            household_devices = households[i][household]
+            contracts_household = []
+            for j in range(len(contracts_input[i])):
+                if contracts_input[i][j]['job_id'] in household_devices or contracts_input[i][j]['producer_id'] \
+                        in household_devices:
+                    contracts_household.append(contracts_input[i][j])
+            profile_keys = profiles_input[i].keys()
+            profiles_household = []
+            for key in profile_keys:
+                if key in household_devices:
+                    profiles_household.append(profiles_input[i][key])
+            output_household.append(peak_to_average_ratio(contracts_household, profiles_household))
+        output.append(output_household)
+    return output, households_list

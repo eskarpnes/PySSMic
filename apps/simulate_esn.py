@@ -9,6 +9,8 @@ from app import app
 import re
 import data_processing as dataprocess
 
+import time
+
 """-------------------------ENERGY USE-------------------------"""
 
 
@@ -393,51 +395,55 @@ def update_pie_chart_header(household_choice, simulation_choice, run_choice):
 """-----------------PRODUCTION, CONSUMPTION PROFILES-----------------"""
 
 
-# # All households
-# @app.callback(
-#     Output("energy-consumption-graph", "figure"),
-#     [Input("run_choice", "value")],
-#     [State("simulation_choice", "value")])
-# def update_consumption(run_choice, simulation_choice):
-#     print('Run choice: {}'.format(run_choice))
-#     print('Simulation choice: {}'.format(simulation_choice))
-#     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     # households = dataprocess.neigbourhood_to_household(contracts, profiles)
-#     profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
-#     # TODO: Profiles_combined = average
-#     return go.Figure(
-#         data=[
-#             go.Scatter(
-#                 x=profiles[int(run_choice) - 1][0],
-#                 y=profiles[int(run_choice) - 1][1],
-#                 name="Energy consumed",
-#                 marker=dict(color='#00A6FC')
-#             ),
-#             go.Scatter(
-#                 x=profiles[int(run_choice) - 1][2],
-#                 y=profiles[int(run_choice) - 1][3],
-#                 name="Energy produced",
-#                 marker=dict(color='#008000')
-#             ),
-#         ],
-#         layout=go.Layout(
-#             xaxis={
-#                 'title': 'Time [Minutes]'
-#             },
-#             yaxis={
-#                 'title': 'Energy [Wh]'
-#             }
-#         )
-#     )
-#
-#
+# All households
+@app.callback(
+    Output("energy-consumption-graph", "figure"),
+    [Input("run_choice", "value")],
+    [State("simulation_choice", "value")])
+def update_consumption(run_choice, simulation_choice):
+    start_time = time.time()
+    print('Run choice: {}'.format(run_choice))
+    print('Simulation choice: {}'.format(simulation_choice))
+    contracts, profiles = dataprocess.open_file(simulation_choice)
+    contracts, profiles = contracts[int(run_choice) - 1], profiles[int(run_choice) - 1]
+    # households = dataprocess.neigbourhood_to_household(contracts, profiles)
+    profiles = dataprocess.neighbourhood_execution_energy_over_time(contracts, profiles)
+    # TODO: Profiles_combined = average
+    end_time = time.time()
+    print("Time elapsed: " + str(end_time - start_time))
+    return go.Figure(
+        data=[
+            go.Scatter(
+                x=profiles[0],
+                y=profiles[1],
+                name="Energy consumed",
+                marker=dict(color='#00A6FC')
+            ),
+            go.Scatter(
+                x=profiles[2],
+                y=profiles[3],
+                name="Energy produced",
+                marker=dict(color='#008000')
+            ),
+        ],
+        layout=go.Layout(
+            xaxis={
+                'title': 'Time [Minutes]'
+            },
+            yaxis={
+                'title': 'Energy [Wh]'
+            }
+        )
+    )
+
+
 # # All runs
 # @app.callback(
 #     Output("energy-consumption-graph-all-runs", "figure"),
 #     [Input("simulation_choice", "value")])
 # def update_consumption(simulation_choice):
 #     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     profiles, profiles_combined = dataprocess.neigbourhood_execution_energy_over_time(contracts, profiles)
+#     profiles, profiles_combined = dataprocess.neighbourhood_execution_energy_over_time(contracts, profiles)
 #     return go.Figure(
 #         data=[
 #             go.Scatter(
@@ -473,7 +479,7 @@ def update_pie_chart_header(household_choice, simulation_choice, run_choice):
 #     [State("simulation_choice", "value")])
 # def update_peak_av_ratio(run_choice, simulation_choice):
 #     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     out, out_comb = dataprocess.neigbourhood_execution_peak_to_average(contracts, profiles)
+#     out, out_comb = dataprocess.neighbourhood_execution_peak_to_average(contracts, profiles)
 #     return html.P('Peak to average ratio: {}'.format(round(out[int(run_choice)-1], 2)))
 #
 #
@@ -485,7 +491,7 @@ def update_pie_chart_header(household_choice, simulation_choice, run_choice):
 #      State("run_choice", "value")])
 # def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
 #     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     households = dataprocess.neigbourhood_to_household(contracts, profiles)
+#     households = dataprocess.neighbourhood_to_household(contracts, profiles)
 #     out_data, out_house = dataprocess.household_execution_peak_to_average_ratio(contracts, profiles, households)
 #     peak_av_ratio = 0
 #     print(out_data)
