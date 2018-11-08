@@ -8,7 +8,6 @@ import pandas as pd
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.manager import Manager
 from backend.producer import Producer
-from tests.mocks import MockClock
 
 
 def test_register_producer():

@@ -8,7 +8,7 @@ def test_simulator():
         "neighbourhood": "test",
         "timefactor": 0.000001,
         "length": 86400,
-        "algo": "50/50"
+        "algo": "fifty_fifty"
     }
 
     run_name = "test_simulator"
