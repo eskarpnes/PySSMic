@@ -108,7 +108,7 @@ def update_dropdown(n_clicks):
     [Input("algo", "value")]
 )
 def check_algo_display(algo):
-    if algo == "fifty_fifty":
+    if algo in ["fifty_fifty", None]:
         return {"display": "none"}
     return {"display": "block"}
 
