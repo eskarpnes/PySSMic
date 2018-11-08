@@ -86,8 +86,9 @@ pip install pytest==version (TODO)
 ### Run all tests
 
 ```
-python tests/test_*.py
+python -m pytest
 ```
+
 
 ## Built With
 
