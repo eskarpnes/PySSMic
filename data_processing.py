@@ -185,24 +185,41 @@ def add_productions(producer_profiles):
 
 
 def energy_over_time(contracts, producer_profiles):
-    # Load the contracts into a dataframe
-    # CONSUMPTION
-    x_consumption, y_consumption = change_index_time(
-        [contract["load_profile"] for contract in contracts if contract["producer_id"] is not "grid"],
-        [contract["time"] for contract in contracts if contract["producer_id"] is not "grid"]
+    # Split data between remote and local
+    local_contracts = []
+    remote_contracts = []
+
+    for contract in contracts:
+        if contract["producer_id"] == "grid":
+            remote_contracts.append(contract)
+        else:
+            local_contracts.append(contract)
+
+
+    # LOCAL CONSUMPTION
+    x_consumption_local, y_consumption_local = change_index_time(
+        [contract["load_profile"] for contract in local_contracts],
+        [contract["time"] for contract in local_contracts]
     )
+
+    # REMOTE CONSUMPTION
+    x_consumption_remote, y_consumption_remote = change_index_time(
+        [contract["load_profile"] for contract in remote_contracts],
+        [contract["time"] for contract in remote_contracts]
+    )
+
     # PRODUCTION
     x_production, y_production = add_productions(producer_profiles)
 
     # If any of the lists is empty, give at least one point
-    if x_consumption == [] and y_consumption == []:
+    if x_consumption_local == [] and y_consumption_local == []:
         x_consumption = [0]
         y_consumption = [0]
     if x_production == [] and y_production == []:
         x_production = [0]
         y_production = [0]
 
-    return [x_consumption, y_consumption, x_production, y_production]
+    return [x_consumption_local, y_consumption_local, x_consumption_remote, y_consumption_remote, x_production, y_production]
 
 
 def peak_to_average_ratio(contracts, producer_profiles, interval=900):

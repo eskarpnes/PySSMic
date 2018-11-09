@@ -416,12 +416,20 @@ def update_consumption(run_choice, simulation_choice):
             go.Scatter(
                 x=profiles[0],
                 y=profiles[1],
-                name="Energy consumed",
+                name="Energy consumed locally",
                 marker=dict(color='#00A6FC')
             ),
+
             go.Scatter(
                 x=profiles[2],
                 y=profiles[3],
+                name="Energy consumed remotely",
+                marker=dict(color='#FF0000')
+            ),
+
+            go.Scatter(
+                x=profiles[4],
+                y=profiles[5],
                 name="Energy produced",
                 marker=dict(color='#008000')
             ),
