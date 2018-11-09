@@ -159,6 +159,8 @@ def change_index_time(energy_list, start_times):
         energy_values = energy_values.diff().fillna(0)
         energy_series = (energy_series + energy_values).fillna(energy_series).fillna(energy_values)
 
+    energy_series = energy_series.rename(lambda x: x//60)
+
     x_energy = energy_series.index.tolist()
     y_energy = energy_series.values.tolist()
 
@@ -177,6 +179,8 @@ def add_productions(producer_profiles):
     produced_series = produced_series.reindex(new_indexes)
     produced_series = produced_series.interpolate(method="linear")
     produced_series = produced_series.diff()
+
+    produced_series = produced_series.rename(lambda x: x//60)
 
     x_production = produced_series.index.tolist()
     y_production = produced_series.values.tolist()
@@ -234,7 +238,7 @@ def peak_to_average_ratio(contracts, producer_profiles, interval=900):
     df['time_of_agreement_minutes'] = agreement_minutes
 
     # Get consumptions per minute
-    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), agreement_minutes, False)
+    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), agreement_minutes)
 
     # Determine the consumption per quarter (by summing up all consumptions per minute)
     consumption_per_quarter = []
@@ -274,10 +278,9 @@ def neighbourhood_execution_energy_over_time(contracts_input, profiles_input):
 
 
 def neighbourhood_execution_peak_to_average(contracts_input, profiles_input):
-    contracts_input, profiles_input = rewrite_profiles(contracts_input, profiles_input)
     output = []
     for i in range(len(contracts_input)):
-        output.append(peak_to_average_ratio(contracts_input[i], profiles_input[i]))
+        output.append(peak_to_average_ratio(contracts_input[i], list(profiles_input[i].values())))
     output_combined = np.mean(output)
     return [output, output_combined]
 

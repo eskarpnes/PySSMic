@@ -488,15 +488,15 @@ def update_consumption(simulation_choice):
 
 """-------------------------PEAK TO AV. RATIO-------------------------"""
 
-# # All households
-# @app.callback(
-#     Output('peak-average-ratio-all', 'children'),
-#     [Input("run_choice", "value")],
-#     [State("simulation_choice", "value")])
-# def update_peak_av_ratio(run_choice, simulation_choice):
-#     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     out, out_comb = dataprocess.neighbourhood_execution_peak_to_average(contracts, profiles)
-#     return html.P('Peak to average ratio: {}'.format(round(out[int(run_choice)-1], 2)))
+# All households
+@app.callback(
+    Output('peak-average-ratio-all', 'children'),
+    [Input("run_choice", "value")],
+    [State("simulation_choice", "value")])
+def update_peak_av_ratio(run_choice, simulation_choice):
+    contracts, profiles = dataprocess.open_file(simulation_choice)
+    out, out_comb = dataprocess.neighbourhood_execution_peak_to_average(contracts, profiles)
+    return html.P('Peak to average ratio: {}'.format(round(out[int(run_choice)-1], 2)))
 #
 #
 # # One household
