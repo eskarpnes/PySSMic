@@ -167,7 +167,7 @@ layout = html.Div(children=[
                     dcc.Input(id="par-interval-all", type="int", placeholder="Insert interval in minutes"),
                     html.Div(id='peak-average-ratio-all-consumer'),
                     html.Div(id='peak-average-ratio-all-producer')
-                ]),
+                ], className="selectVertical"),
                 html.Div([
                     html.H2("Production and consumption profiles", className="header"),
                     energy_consumption_one_run()
@@ -197,7 +197,7 @@ layout = html.Div(children=[
                     dcc.Input(id="par-interval-one", type="int", placeholder="Insert interval in minutes"),
                     html.Div(id='peak-average-ratio-one-consumer'),
                     html.Div(id='peak-average-ratio-one-producer')
-                ]),
+                ], className="selectVertical"),
                 html.Br(),
             ]),
             dcc.Tab(id='tab_all_runs', label='All runs', children=[
@@ -234,11 +234,24 @@ def update_simid_dropdown(value):
     return sim_options
 
 
+@app.callback(Output("run_choice", "value"),
+              [Input("simulation_choice", "value")]
+              )
+def set_result_to_none(value):
+    return None
+
+
 @app.callback(Output("graph-content", "style"),
-              [Input("run_choice", "value")])
-def check_valid_run(run):
+              [Input("run_choice", "value"),
+               Input("household_choice", "value"),
+               Input("tabs", "value")]
+              )
+def check_valid_run(run, house, tab):
     if run is None:
         return {"display": "none"}
+    if tab == "tab-2":
+        if house is None:
+            return {"display": "none"}
     return {"display": "block"}
 
 
@@ -535,6 +548,7 @@ def update_peak_av_ratio_single_house(household_choice, interval, simulation_cho
     par = dataprocess.peak_to_average_ratio(contracts_for_house, int(interval))
     return html.P('Consumed peak to average ratio: {}'.format(round(par, 2)))
 
+
 @app.callback(
     Output('peak-average-ratio-one-producer', 'children'),
     [Input("household_choice", "value"),
@@ -549,6 +563,7 @@ def update_peak_av_ratio_single_house_producer(household_choice, interval, simul
     profiles_for_house = dataprocess.get_profiles_for_house(household_choice, profiles)
     par = dataprocess.peak_to_average_ratio_production(profiles_for_house, int(interval))
     return html.P('Produced peak to average ratio: {}'.format(round(par, 2)))
+
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
 
