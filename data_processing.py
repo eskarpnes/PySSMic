@@ -213,19 +213,15 @@ def energy_over_time(contracts, producer_profiles):
             y_production]
 
 
-def peak_to_average_ratio(contracts, producer_profiles, interval=900):
+def peak_to_average_ratio(contracts, producer_profiles, interval=15):
     # Load the contracts into a dataframe
     df = pd.DataFrame.from_dict(contracts)
 
     # Change the seconds into minutes (round downwards)
-    agreement_times = df['time_of_agreement'].tolist()
-    agreement_minutes = []
-    for at in agreement_times:
-        agreement_minutes.append(int(at / 60))
-    df['time_of_agreement_minutes'] = agreement_minutes
+    agreement_times = df['time'].tolist()
 
     # Get consumptions per minute
-    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), agreement_minutes)
+    x_consumption, y_consumption = change_index_time(df['load_profile'].tolist(), agreement_times)
 
     # Determine the consumption per quarter (by summing up all consumptions per minute)
     consumption_per_quarter = []
