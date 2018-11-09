@@ -146,7 +146,7 @@ def change_index_time(energy_list, start_times):
         energy_values = energy_values.diff().fillna(0)
         energy_series = (energy_series + energy_values).fillna(energy_series).fillna(energy_values)
 
-    energy_series = energy_series.rename(lambda x: x//60)
+    energy_series = energy_series.rename(lambda x: x // 60)
 
     x_energy = energy_series.index.tolist()
     y_energy = energy_series.values.tolist()
@@ -162,12 +162,12 @@ def add_productions(producer_profiles):
         produced_series += profile
 
     end_time = int(produced_series.index[-1])
-    new_indexes = range(0, end_time+60, 60)
+    new_indexes = range(0, end_time + 60, 60)
     produced_series = produced_series.reindex(new_indexes)
     produced_series = produced_series.interpolate(method="linear")
     produced_series = produced_series.diff()
 
-    produced_series = produced_series.rename(lambda x: x//60)
+    produced_series = produced_series.rename(lambda x: x // 60)
 
     x_production = produced_series.index.tolist()
     y_production = produced_series.values.tolist()
@@ -185,7 +185,6 @@ def energy_over_time(contracts, producer_profiles):
             remote_contracts.append(contract)
         else:
             local_contracts.append(contract)
-
 
     # LOCAL CONSUMPTION
     x_consumption_local, y_consumption_local = change_index_time(
@@ -210,7 +209,8 @@ def energy_over_time(contracts, producer_profiles):
         x_production = [0]
         y_production = [0]
 
-    return [x_consumption_local, y_consumption_local, x_consumption_remote, y_consumption_remote, x_production, y_production]
+    return [x_consumption_local, y_consumption_local, x_consumption_remote, y_consumption_remote, x_production,
+            y_production]
 
 
 def peak_to_average_ratio(contracts, producer_profiles, interval=900):
