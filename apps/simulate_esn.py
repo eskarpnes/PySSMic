@@ -495,8 +495,8 @@ def update_consumption(simulation_choice):
 def update_peak_av_ratio(run_choice, simulation_choice):
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts = contracts[int(run_choice) - 1]
-    out = dataprocess.peak_to_average_ratio(contracts)
-    return html.P('Peak to average ratio: {}'.format(round(out, 2)))
+    par = dataprocess.peak_to_average_ratio(contracts)
+    return html.P('Peak to average ratio: {}'.format(round(par, 2)))
 
 
 # One household
