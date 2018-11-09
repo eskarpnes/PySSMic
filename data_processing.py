@@ -61,19 +61,6 @@ def neighbourhood_to_household(contracts_input, profiles_input, grid_id='grid'):
 # household_dictionary = neigbourhood_to_household(contracts, profiles)
 
 
-def rewrite_profiles(contracts, profiles):
-    profiles_list = []
-    for i in range(len(contracts)):
-        profiles_run = []
-        df = pd.DataFrame(contracts[i])
-        producers = df['producer_id'].tolist()
-        for producer in producers:
-            if producer != 'grid':
-                profiles_run.append(profiles[i][producer])
-        profiles_list.append(profiles_run)
-    return contracts, profiles_list
-
-
 def average_list_with_lists(list_of_listwithlists):
     list_of_lists = []
     transposed_list_of_listwithlists = map(list, zip(*list_of_listwithlists))
@@ -257,7 +244,6 @@ def peak_to_average_ratio(contracts, producer_profiles, interval=900):
 
 
 def neighbourhood_execution_remote_versus_local(contracts_input, profiles_input):
-    contracts_input, profiles_input = rewrite_profiles(contracts_input, profiles_input)
     output = []
     for i in range(len(contracts_input)):
         output.append(remote_versus_local(contracts_input[i]))
