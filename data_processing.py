@@ -213,7 +213,7 @@ def energy_over_time(contracts, producer_profiles):
             y_production]
 
 
-def peak_to_average_ratio(contracts, producer_profiles, interval=15):
+def peak_to_average_ratio(contracts, interval=15):
     # Load the contracts into a dataframe
     df = pd.DataFrame.from_dict(contracts)
 
@@ -259,13 +259,8 @@ def neighbourhood_execution_energy_over_time(contracts_input, profiles_input):
     return energy_over_time(contracts_input, list(profiles_input.values()))
 
 
-def neighbourhood_execution_peak_to_average(contracts_input, profiles_input):
-    output = []
-    for i in range(len(contracts_input)):
-        output.append(peak_to_average_ratio(contracts_input[i], list(profiles_input[i].values())))
-    output_combined = np.mean(output)
-    return [output, output_combined]
-
+def neighbourhood_execution_peak_to_average(contracts_input):
+    return peak_to_average_ratio(contracts_input)
 
 def household_execution_local_versus_remote(contracts_input, households, profiles_input):
     output = []
