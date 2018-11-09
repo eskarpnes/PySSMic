@@ -124,7 +124,7 @@ body {
     cursor: auto;
 }
 
-#par-interval-all {
+#par-interval-all, #par-interval-one{
     width: 200px;
 }
 
