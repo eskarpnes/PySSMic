@@ -445,37 +445,45 @@ def update_consumption(run_choice, simulation_choice):
     )
 
 
-# # All runs
-# @app.callback(
-#     Output("energy-consumption-graph-all-runs", "figure"),
-#     [Input("simulation_choice", "value")])
-# def update_consumption(simulation_choice):
-#     contracts, profiles = dataprocess.open_file(simulation_choice)
-#     profiles, profiles_combined = dataprocess.neighbourhood_execution_energy_over_time(contracts, profiles)
-#     return go.Figure(
-#         data=[
-#             go.Scatter(
-#                 x=profiles_combined[0],
-#                 y=profiles_combined[1],
-#                 name="Energy consumed",
-#                 marker=dict(color='#00A6FC')
-#             ),
-#             go.Scatter(
-#                 x=profiles_combined[2],
-#                 y=profiles_combined[3],
-#                 name="Energy produced",
-#                 marker=dict(color='#008000')
-#             ),
-#         ],
-#         layout=go.Layout(
-#             xaxis={
-#                 'title': 'Time [Minutes]'
-#             },
-#             yaxis={
-#                 'title': 'Energy [Wh]'
-#             }
-#         )
-#     )
+# All runs
+@app.callback(
+    Output("energy-consumption-graph-all-runs", "figure"),
+    [Input("simulation_choice", "value")])
+def update_consumption(simulation_choice):
+    contracts, profiles = dataprocess.open_file(simulation_choice)
+    profiles_combined = dataprocess.neighbourhood_execution_energy_over_time_average(contracts, profiles)
+    return go.Figure(
+        data=[
+            go.Scatter(
+                x=profiles_combined[0],
+                y=profiles_combined[1],
+                name="Energy consumed locally",
+                marker=dict(color='#00A6FC')
+            ),
+
+            go.Scatter(
+                x=profiles_combined[2],
+                y=profiles_combined[3],
+                name="Energy consumed remotely",
+                marker=dict(color='#FF0000')
+            ),
+
+            go.Scatter(
+                x=profiles_combined[4],
+                y=profiles_combined[5],
+                name="Energy produced",
+                marker=dict(color='#008000')
+            ),
+        ],
+        layout=go.Layout(
+            xaxis={
+                'title': 'Time [Minutes]'
+            },
+            yaxis={
+                'title': 'Energy [Wh]'
+            }
+        )
+    )
 
 
 """-------------------------PEAK TO AV. RATIO-------------------------"""

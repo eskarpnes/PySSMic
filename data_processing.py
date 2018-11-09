@@ -262,13 +262,11 @@ def neighbourhood_execution_remote_versus_local(contracts_input, profiles_input)
 
 
 def neighbourhood_execution_energy_over_time_average(contracts_input, profiles_input):
-    contracts_input, profiles_input = rewrite_profiles(contracts_input, profiles_input)
     output = []
     for i in range(len(contracts_input)):
-        output.append(energy_over_time(contracts_input[i], profiles_input[i]))
-        break
+        output.append(energy_over_time(contracts_input[i], list(profiles_input[i].values())))
     output_combined = average_list_with_lists(output)
-    return [output, output_combined]
+    return output_combined
 
 
 def neighbourhood_execution_energy_over_time(contracts_input, profiles_input):
