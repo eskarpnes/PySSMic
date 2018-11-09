@@ -162,9 +162,11 @@ layout = html.Div(children=[
                 ], className="contract-table-all"),
                 html.Br(),
 
-                html.Div(
-                    html.H2("Production and consumption profiles", className="header")
-                ),
+                html.Div(children=[
+                    html.H2("Production and consumption profiles", className="header"),
+                    html.Span("Interval in minutes"),
+                    dcc.Input(id="par-interval-all", type="int", value=15),
+                ]),
                 html.Div(id='peak-average-ratio-all', className="paragraph"),
                 html.Div([
                     energy_consumption_one_run()
@@ -189,9 +191,11 @@ layout = html.Div(children=[
                     contract_one_household()
                 ]),
                 html.Br(),
-                html.Div(
-                    html.H3("Peak to average ratio", className="header")
-                ),
+                html.Div(children=[
+                    html.H3("Peak to average ratio", className="header"),
+                    html.Span("Interval in minutes"),
+                    dcc.Input(id="par-interval-one", type="int", value=15),
+                ]),
                 html.Div(id='peak-average-ratio-one', className="paragraph"),
                 html.Br(),
             ]),
@@ -314,7 +318,7 @@ def update_pie_chart(run_choice, simulation_choice):
             go.Pie(
                 values=[grid, pv],
                 labels=["Grid", "PV"],
-                marker=dict(colors=['#FF0000', '#008000'])
+                marker=dict(colors=['#DF6461', '#2ecc71'])
             )
         ]
     )
@@ -343,7 +347,7 @@ def update_pie_chart_single_house(household_choice, simulation_choice, run_choic
             go.Pie(
                 values=[grid, pv],
                 labels=["Grid", "PV"],
-                marker=dict(colors=['#FF0000', '#008000'])
+                marker=dict(colors=['#DF6461', '#2ecc71'])
             )
         ]
     )
@@ -437,7 +441,7 @@ def update_consumption(run_choice, simulation_choice):
                 'title': 'Time [Minutes]'
             },
             yaxis={
-                'title': 'Energy [Wh]'
+                'title': 'Energy [W]'
             }
         )
     )
@@ -478,7 +482,7 @@ def update_consumption(simulation_choice):
                 'title': 'Time [Minutes]'
             },
             yaxis={
-                'title': 'Energy [Wh]'
+                'title': 'Energy [W]'
             }
         )
     )
@@ -490,26 +494,31 @@ def update_consumption(simulation_choice):
 # All households
 @app.callback(
     Output('peak-average-ratio-all', 'children'),
-    [Input("run_choice", "value")],
+    [Input("run_choice", "value"),
+     Input("par-interval-all", "value")],
     [State("simulation_choice", "value")])
-def update_peak_av_ratio(run_choice, simulation_choice):
+def update_peak_av_ratio(run_choice, interval, simulation_choice):
+    if interval in [None, ""]:
+        return html.P("Not a valid interval")
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts = contracts[int(run_choice) - 1]
-    par = dataprocess.peak_to_average_ratio(contracts)
+    print("Calculating PAR for interval " + str(interval))
+    par = dataprocess.peak_to_average_ratio(contracts, int(interval))
     return html.P('Peak to average ratio: {}'.format(round(par, 2)))
 
 
 # One household
 @app.callback(
     Output('peak-average-ratio-one', 'children'),
-    [Input("household_choice", "value")],
+    [Input("household_choice", "value"),
+     Input("par-interval-one", "value")],
     [State("simulation_choice", "value"),
      State("run_choice", "value")])
-def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
+def update_peak_av_ratio(household_choice, interval, simulation_choice, run_choice):
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts = contracts[int(run_choice) - 1]
     contracts_for_house = dataprocess.get_contracts_for_house(household_choice, contracts)
-    par = dataprocess.peak_to_average_ratio(contracts_for_house)
+    par = dataprocess.peak_to_average_ratio(contracts_for_house, int(interval))
     return html.P('Peak to average ratio: {}'.format(round(par, 2)))
 
 
