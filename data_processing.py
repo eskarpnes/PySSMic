@@ -262,6 +262,7 @@ def neighbourhood_execution_energy_over_time(contracts_input, profiles_input):
 def neighbourhood_execution_peak_to_average(contracts_input):
     return peak_to_average_ratio(contracts_input)
 
+
 def household_execution_local_versus_remote(contracts_input, households, profiles_input):
     output = []
     households_list = []
@@ -326,3 +327,11 @@ def household_execution_peak_to_average_ratio(contracts_input, profiles_input, h
             output_household.append(peak_to_average_ratio(contracts_household, profiles_household))
         output.append(output_household)
     return output, households_list
+
+def get_contracts_for_house(house, contracts):
+    output = []
+    for contract in contracts:
+        house_id = contract["job_id"].split(":")[0].replace("[", "").replace("]", "")
+        if house_id == house:
+            output.append(contract)
+    return output

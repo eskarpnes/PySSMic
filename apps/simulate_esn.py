@@ -495,7 +495,7 @@ def update_consumption(simulation_choice):
 def update_peak_av_ratio(run_choice, simulation_choice):
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts = contracts[int(run_choice) - 1]
-    out = dataprocess.neighbourhood_execution_peak_to_average(contracts)
+    out = dataprocess.peak_to_average_ratio(contracts)
     return html.P('Peak to average ratio: {}'.format(round(out, 2)))
 
 
@@ -507,13 +507,10 @@ def update_peak_av_ratio(run_choice, simulation_choice):
      State("run_choice", "value")])
 def update_peak_av_ratio(household_choice, simulation_choice, run_choice):
     contracts, profiles = dataprocess.open_file(simulation_choice)
-    households = dataprocess.neighbourhood_to_household(contracts, profiles)
-    out_data, out_house = dataprocess.household_execution_peak_to_average_ratio(contracts, profiles, households)
-    peak_av_ratio = 0
-    for i in range(0, len(out_house[int(run_choice) - 1])):
-        if out_house[int(run_choice) - 1][i] == household_choice:
-            peak_av_ratio += out_data[int(run_choice) - 1][i]
-    return html.P('Peak to average ratio: {}'.format(round(peak_av_ratio, 2)))
+    contracts = contracts[int(run_choice) - 1]
+    contracts_for_house = dataprocess.get_contracts_for_house(household_choice, contracts)
+    par = dataprocess.peak_to_average_ratio(contracts_for_house)
+    return html.P('Peak to average ratio: {}'.format(round(par, 2)))
 
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
