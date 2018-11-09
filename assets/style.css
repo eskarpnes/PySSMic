@@ -127,3 +127,8 @@ body {
 #par-interval-all {
     width: 200px;
 }
+
+#simulation_choice {
+    width: 100%;
+    padding-right: 10px;
+}
