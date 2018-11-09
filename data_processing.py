@@ -156,6 +156,9 @@ def change_index_time(energy_list, start_times):
 
 # Line chart: energy produced over time
 def add_productions(producer_profiles):
+    if producer_profiles == []:
+        return [], []
+
     produced_series = producer_profiles.pop(-1)
 
     for profile in producer_profiles:
@@ -165,7 +168,7 @@ def add_productions(producer_profiles):
     new_indexes = range(0, end_time + 60, 60)
     produced_series = produced_series.reindex(new_indexes)
     produced_series = produced_series.interpolate(method="linear")
-    produced_series = produced_series.diff()
+    produced_series = produced_series.diff().fillna(0)
 
     produced_series = produced_series.rename(lambda x: x // 60)
 
@@ -229,6 +232,28 @@ def peak_to_average_ratio(contracts, interval=15):
     for i in range(len(x_consumption)):
         quarter_consumption += y_consumption[i]
         if x_consumption[i] % interval == 0:
+            consumption_per_quarter.append(quarter_consumption)
+            quarter_consumption = 0
+
+    # Determine average and peak consumption
+    average_consumption = np.mean(consumption_per_quarter)
+    max_consumption = max(consumption_per_quarter)
+
+    return max_consumption / average_consumption
+
+
+def peak_to_average_ratio_production(profiles, interval=15):
+    x_production, y_production = add_productions(profiles)
+
+    if [] in [x_production, y_production]:
+        return 0
+
+    # Determine the consumption per quarter (by summing up all consumptions per minute)
+    consumption_per_quarter = []
+    quarter_consumption = 0.0
+    for i in range(len(x_production)):
+        quarter_consumption += y_production[i]
+        if x_production[i] % interval == 0:
             consumption_per_quarter.append(quarter_consumption)
             quarter_consumption = 0
 
@@ -305,33 +330,18 @@ def household_execution_energy_over_time(contracts_input, profiles_input, househ
     return output, households_list
 
 
-def household_execution_peak_to_average_ratio(contracts_input, profiles_input, households):
-    output = []
-    households_list = []
-    for i in range(len(contracts_input)):
-        household_ids = households[i].keys()
-        households_list.append(list(household_ids))
-        output_household = []
-        for household in household_ids:
-            household_devices = households[i][household]
-            contracts_household = []
-            for j in range(len(contracts_input[i])):
-                if contracts_input[i][j]['job_id'] in household_devices or contracts_input[i][j]['producer_id'] \
-                        in household_devices:
-                    contracts_household.append(contracts_input[i][j])
-            profile_keys = profiles_input[i].keys()
-            profiles_household = []
-            for key in profile_keys:
-                if key in household_devices:
-                    profiles_household.append(profiles_input[i][key])
-            output_household.append(peak_to_average_ratio(contracts_household, profiles_household))
-        output.append(output_household)
-    return output, households_list
-
 def get_contracts_for_house(house, contracts):
     output = []
     for contract in contracts:
         house_id = contract["job_id"].split(":")[0].replace("[", "").replace("]", "")
         if house_id == house:
             output.append(contract)
+    return output
+
+def get_profiles_for_house(house, profiles):
+    output = []
+    for profile in profiles:
+        house_id = profile.split(":")[0].replace("[", "").replace("]", "").replace("pv_producer", "")
+        if house_id == house:
+            output.append(profiles[profile])
     return output

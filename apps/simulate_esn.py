@@ -163,12 +163,13 @@ layout = html.Div(children=[
                 html.Br(),
 
                 html.Div(children=[
-                    html.H2("Production and consumption profiles", className="header"),
-                    html.Span("Interval in minutes"),
-                    dcc.Input(id="par-interval-all", type="int", value=15),
+                    html.H3("Peak to average value for all houses", className="header"),
+                    dcc.Input(id="par-interval-all", type="int", placeholder="Insert interval in minutes"),
+                    html.Div(id='peak-average-ratio-all-consumer'),
+                    html.Div(id='peak-average-ratio-all-producer')
                 ]),
-                html.Div(id='peak-average-ratio-all', className="paragraph"),
                 html.Div([
+                    html.H2("Production and consumption profiles", className="header"),
                     energy_consumption_one_run()
                 ], className="consumption-graph"),
                 html.Br(),
@@ -192,11 +193,11 @@ layout = html.Div(children=[
                 ]),
                 html.Br(),
                 html.Div(children=[
-                    html.H3("Peak to average ratio", className="header"),
-                    html.Span("Interval in minutes"),
-                    dcc.Input(id="par-interval-one", type="int", value=15),
+                    html.H3("Peak to average value for one house", className="header"),
+                    dcc.Input(id="par-interval-one", type="int", placeholder="Insert interval in minutes"),
+                    html.Div(id='peak-average-ratio-one-consumer'),
+                    html.Div(id='peak-average-ratio-one-producer')
                 ]),
-                html.Div(id='peak-average-ratio-one', className="paragraph"),
                 html.Br(),
             ]),
             dcc.Tab(id='tab_all_runs', label='All runs', children=[
@@ -491,9 +492,9 @@ def update_consumption(simulation_choice):
 """-------------------------PEAK TO AV. RATIO-------------------------"""
 
 
-# All households
+# All households consumed
 @app.callback(
-    Output('peak-average-ratio-all', 'children'),
+    Output('peak-average-ratio-all-consumer', 'children'),
     [Input("run_choice", "value"),
      Input("par-interval-all", "value")],
     [State("simulation_choice", "value")])
@@ -502,25 +503,52 @@ def update_peak_av_ratio(run_choice, interval, simulation_choice):
         return html.P("Not a valid interval")
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts = contracts[int(run_choice) - 1]
-    print("Calculating PAR for interval " + str(interval))
     par = dataprocess.peak_to_average_ratio(contracts, int(interval))
-    return html.P('Peak to average ratio: {}'.format(round(par, 2)))
+    return html.P('Consumed peak to average ratio: {}'.format(round(par, 2)))
 
 
-# One household
 @app.callback(
-    Output('peak-average-ratio-one', 'children'),
+    Output('peak-average-ratio-all-producer', 'children'),
+    [Input("run_choice", "value"),
+     Input("par-interval-all", "value")],
+    [State("simulation_choice", "value")])
+def update_peak_av_ratio(run_choice, interval, simulation_choice):
+    if interval in [None, ""]:
+        return html.P("")
+    profiles = dataprocess.get_profiles(simulation_choice)
+    profiles = profiles[int(run_choice) - 1]
+    par = dataprocess.peak_to_average_ratio_production(list(profiles.values()), int(interval))
+    return html.P('Produced peak to average ratio: {}'.format(round(par, 2)))
+
+
+# One household consumed
+@app.callback(
+    Output('peak-average-ratio-one-consumer', 'children'),
     [Input("household_choice", "value"),
      Input("par-interval-one", "value")],
     [State("simulation_choice", "value"),
      State("run_choice", "value")])
-def update_peak_av_ratio(household_choice, interval, simulation_choice, run_choice):
+def update_peak_av_ratio_single_house(household_choice, interval, simulation_choice, run_choice):
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts = contracts[int(run_choice) - 1]
     contracts_for_house = dataprocess.get_contracts_for_house(household_choice, contracts)
     par = dataprocess.peak_to_average_ratio(contracts_for_house, int(interval))
-    return html.P('Peak to average ratio: {}'.format(round(par, 2)))
+    return html.P('Consumed peak to average ratio: {}'.format(round(par, 2)))
 
+@app.callback(
+    Output('peak-average-ratio-one-producer', 'children'),
+    [Input("household_choice", "value"),
+     Input("par-interval-one", "value")],
+    [State("simulation_choice", "value"),
+     State("run_choice", "value")])
+def update_peak_av_ratio_single_house_producer(household_choice, interval, simulation_choice, run_choice):
+    if interval in [None, ""]:
+        return html.P("")
+    profiles = dataprocess.get_profiles(simulation_choice)
+    profiles = profiles[int(run_choice) - 1]
+    profiles_for_house = dataprocess.get_profiles_for_house(household_choice, profiles)
+    par = dataprocess.peak_to_average_ratio_production(profiles_for_house, int(interval))
+    return html.P('Produced peak to average ratio: {}'.format(round(par, 2)))
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
 
