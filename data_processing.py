@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import os.path
+from datetime import datetime
 from definitions import ROOT_DIR
 
 
@@ -338,6 +339,7 @@ def get_contracts_for_house(house, contracts):
             output.append(contract)
     return output
 
+
 def get_profiles_for_house(house, profiles):
     output = []
     for profile in profiles:
@@ -345,3 +347,10 @@ def get_profiles_for_house(house, profiles):
         if house_id == house:
             output.append(profiles[profile])
     return output
+
+
+# timestamp: int
+# return: Day X HH:MM:SS
+def convert(timestamp):
+    date = datetime.fromtimestamp(timestamp)
+    return 'Day {} {}'.format(date.day, date.strftime('%H:%M:%S'))
