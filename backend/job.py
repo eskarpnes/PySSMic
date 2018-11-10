@@ -2,15 +2,6 @@ import random
 from enum import Enum
 import pandas as pd
 
-
-class JobStatus(Enum):
-    running = 'RUNNING'
-    active = 'ACTIVE'
-    cancelled = 'CANCELLED'
-    created = 'CREATED'
-    future = 'FUTURE'
-
-
 class Job:
 
     def __init__(self, id, est, lst, load_profile):

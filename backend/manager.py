@@ -7,6 +7,7 @@ from util.message_utils import Action
 
 
 class Manager:
+
     def __init__(self, simulator, algo="SLSQP"):
         self.logger = logging.getLogger("src.Manager")
         self.simulator = simulator
@@ -18,17 +19,16 @@ class Manager:
         # simulator start
         self.clock = simulator.neighbourhood
 
-
-    # Send out a new weather prediction
     def send_new_prediction(self, prediction, producer):
+        """Send out a new weather prediction"""
         producer.tell({
             'sender': '',
             'action': Action.prediction,
             'prediction': prediction
         })
 
-    # Broadcasts new producers so existing consumers can use them
     def broadcast_new_producer(self, producer):
+        """Broadcasts new producers so existing consumers can use them"""
         for consumer in self.consumers:
             consumer.tell({
                 'sender': '',
@@ -36,14 +36,13 @@ class Manager:
                 'producer': producer
             })
 
-    # Register a new producer. Every consumer should be notified about this producer
     def register_producer(self, producer, id):
+        """Register a new producer. Every consumer should be notified about this producer"""
         self.producers[id] = producer
         if id not in self.producer_rankings.keys():
             self.producer_rankings[id] = 10
         self.broadcast_new_producer(producer)
 
-    # Register a new consumer
     def register_consumer(self, consumer):
         self.consumers.append(consumer)
         consumer._actor.request_producer()
@@ -52,22 +51,22 @@ class Manager:
         self.simulator.register_contract(contract)
 
     def terminate_producers(self):
+        """Stop all producer threads."""
         self.logger.info("Killing producers ...")
         for producer in self.producers.values():
             producer.stop()
         self.producers = {}
 
     def terminate_consumers(self):
+        """Stop all consumer threads."""
         self.logger.info("Killing consumers ...")
         for consumer in self.consumers:
             consumer.stop()
             self.consumers = []
 
     # Input API
-    # A job contains an earliest start time, latest start time and load profile
-    # (seconds elapsed and power used)
-    # TODO: Load profile should be a data set designed for the optimizer algorithm
     def new_job(self, job):
+        """A job contains an earliest start time, latest start time and load profile"""
         ranked_producers = queue.PriorityQueue()
         # To settle tie-breakers in the priority queue
         # Without this the priority queue tries to compare the dictionaries if the score is the same
@@ -85,6 +84,7 @@ class Manager:
 
     # Input API
     def new_prediction(self, prediction_event):
+        """Notifies the producer about the new power prediction."""
         producer_id = prediction_event["id"]
         if producer_id not in self.producers.keys():
             self.new_producer(producer_id)

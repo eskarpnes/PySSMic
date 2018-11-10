@@ -1,9 +1,8 @@
 from backend.consumer import Consumer
-from backend.job import Job, JobStatus
+from backend.job import Job
 from backend.manager import Manager
 from backend.producer import Producer
 import pandas as pd
-import numpy as np
 from simulator import Simulator
 
 
@@ -29,7 +28,7 @@ def test_cancel():
     producer = Producer("producer_id", manager)
     job = Job(est=0, lst=0, id="job_id", load_profile=pd.Series())
     consumer = Consumer.start(producers=[producer], job=job, manager=manager)
-    schedule_object = dict(consumer=consumer, job=job, status=JobStatus.created)
+    schedule_object = dict(consumer=consumer, job=job)
 
     producer.schedule.append(schedule_object)
     assert (schedule_object in producer.schedule)
@@ -63,7 +62,7 @@ def test_fulfill_contract():
 
     job = Job(est=0, lst=0, id="job_id", load_profile=pd.Series())
     consumer = Consumer.start(producers=[producer], job=job, manager=manager)
-    schedule_object = dict(consumer=consumer, job=job, status=JobStatus.created)
+    schedule_object = dict(consumer=consumer, job=job)
     producer.schedule.append(schedule_object)
     contract = producer.create_contract(job)
     consumer.stop()
