@@ -1,5 +1,5 @@
 from backend.manager import Manager
-from backend.optimizer import Optimizer, Algorithm
+from backend.optimizer import Optimizer
 
 import pandas as pd
 from backend.job import Job, JobStatus
