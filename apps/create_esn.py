@@ -86,20 +86,20 @@ def displayHouse(house):
     return html.Div([
                     html.Table(className="house_content_table", children=[
                         html.Tr([ #TableRow with tableheaders
-                            html.Th("DEVICE ID"),
-                            html.Th("NAME"),
-                            html.Th("TEMPLATE"),
-                            html.Th("TYPE")
+                            html.Th("Device ID"),
+                            html.Th("Name"),
+                            html.Th("Template"),
+                            html.Th("Type")
                         ])] +
                         create_house_view(house)
                     ),
                      html.H5(className="tabcontent_header", children=["Jobs in house:"]),
                      html.Table(className="house_content_table", children=[
                          html.Tr([ #TableRow with tableheaders
-                             html.Th("DEVICE"),
-                             html.Th("TIME"),
-                             html.Th("EST"),
-                             html.Th("LST")
+                             html.Th("Device"),
+                             html.Th("Time"),
+                             html.Th("Est"),
+                             html.Th("Lst")
                          ])] + 
                          create_jobs_list(house)
                      )
