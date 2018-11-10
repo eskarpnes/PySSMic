@@ -1,134 +1,271 @@
 .modal {
-    display: block;  /*Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  display: block; /*Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 .modal-content {
-    background-color: white;
-    margin: 5% auto; /* 15% from the top and centered */
-    padding: 20px;
-    width: 50%; /* Could be more or less, depending on screen size */
-    color:#506784;
+  background-color: white;
+  margin: 5% auto; /* 15% from the top and centered */
+  padding: 20px;
+  width: 50%; /* Could be more or less, depending on screen size */
+  color: #506784;
 }
 
 .pie-chart {
 }
 
-.contract-table{
+.contract-table {
 }
 
-.consumption-graph{
+.consumption-graph {
 }
 
 .test {
-    overflow: auto;
+  overflow: auto;
 }
 
 .header {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-.header h1, h2, h3 {
-    text-align: center;
+.header h1,
+h2,
+h3 {
+  text-align: center;
 }
 
 .paragraph p {
-    text-align: center;
+  text-align: center;
 }
 
 .links {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    font-size: 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  font-size: 2rem;
 }
 
 .links a {
-    padding: 20px;
-    text-decoration: none;
+  padding: 20px;
+  text-decoration: none;
 }
 
 .footer {
-    text-align: center;
+  text-align: center;
+  padding-top: 30px;
 }
 
 .simulatorSetup {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .selectHorizontal {
-    display: flex;
-    flex-direction: row;
-    align-content: space-between;
-    padding-bottom: 40px;
+  display: flex;
+  flex-direction: row;
+  align-content: space-between;
+  padding-bottom: 40px;
 }
 
 .selectHorizontal .inputText {
-    display: flex;
-    align-content: space-around;
+  display: flex;
+  align-content: space-around;
 }
 
 .selectHorizontal #neighbourhood {
-    width: 100%;
-    padding-right: 10px;
+  width: 100%;
+  padding-right: 10px;
 }
 
 .selectHorizontal .btnContainer .btnAddEsn {
-    height: 36px;
+  height: 36px;
 }
 
 .selectVertical {
-    display: flex;
-    flex-direction: column;
-    align-content: space-between;
-    padding-bottom: 40px;
-    padding-right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-content: space-between;
+  padding-bottom: 40px;
+  padding-right: 40px;
 }
 
 .no-padding {
-    padding-bottom: 0;
+  padding-bottom: 0;
 }
 
 #days {
-    max-width: 100px;
+  max-width: 100px;
 }
 
 #runs {
-    max-width: 100px;
+  max-width: 100px;
 }
 
 body {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 #react-entry-point {
-    min-width: 50%;
-    max-width: 90%;
+  min-width: 50%;
+  max-width: 90%;
 }
 
 #btn-simulate:disabled,
-#btn-simulate:disabled:hover{
-    color: rgba(0, 0, 0, 0.1);
-    border-color: rgba(0, 0, 0, 0.1);
-    cursor: auto;
+#btn-simulate:disabled:hover {
+  color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.1);
+  cursor: auto;
 }
 
-#par-interval-all, #par-interval-one{
-    width: 200px;
+#par-interval-all,
+#par-interval-one {
+  width: 200px;
 }
 
 #simulation_choice {
-    width: 100%;
-    padding-right: 10px;
+  width: 100%;
+  padding-right: 10px;
+}
+
+/* Create ESN app */
+.create_esn_div > h4 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#initChoices {
+  display: flex;
+  justify-content: center;
+}
+
+#initChoices > button {
+  margin: 20px;
+}
+
+#initChoices > div > button {
+  margin: 20px;
+}
+
+#newHouseInput {
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+#newHouseInput > button {
+  padding: 0 10px;
+  margin: 5px 5px;
+}
+
+#newHouseInput > div > button {
+  padding: 0 10px;
+  margin: 5px 5px;
+}
+
+.tabcontent_header {
+  text-align: center;
+}
+
+.house_content_table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#saveNeighbourhood {
+  margin-top: 30px;
+  justify-content: center;
+  display: flex;
+}
+
+#saveNeighbourhood > * {
+  margin: 0 10px;
+}
+
+.consumer_modal_form {
+  margin-top: 20px;
+  display: grid;
+  grid-template-areas:
+    "id name template type"
+    ". new new ."
+    ". dt dt .";
+}
+
+.producer_modal_form {
+  margin-top: 20px;
+  display: grid;
+  grid-template-areas:
+    "id name template type"
+    "pv1 pv1 pv2 pv2"
+    "pv3 pv3 pv4 pv4";
+}
+
+.devId {
+  grid-area: id;
+}
+
+.devName {
+  grid-area: name;
+}
+
+.devTemp {
+  grid-area: template;
+}
+
+.devType {
+  grid-area: type;
+}
+
+.devLoad {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  grid-area: new;
+}
+
+.loadTable {
+  grid-area: dt;
+  margin-bottom: 10px;
+}
+
+.pv1 {
+  margin: 10px 10px;
+  grid-area: pv1;
+}
+
+.pv2 {
+  margin: 10px 10px;
+  grid-area: pv2;
+}
+
+.pv3 {
+  margin: 10px 10px;
+  grid-area: pv3;
+}
+
+.pv4 {
+  margin: 10px 10px;
+  grid-area: pv4;
+}
+.modal_input_field {
+  width: 100px;
+}
+
+.house_content_empty {
+  margin-top: 30px;
+  text-align: center;
+}
+
+/*datatable*/
+.react-grid-Container,
+.react-grid-HeaderRow,
+.react-grid-HeaderCell {
+  width: 100%;
 }
