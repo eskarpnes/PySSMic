@@ -124,6 +124,10 @@ body {
     cursor: auto;
 }
 
+#par-interval-all, #par-interval-one{
+    width: 200px;
+}
+
 #simulation_choice {
     width: 100%;
     padding-right: 10px;
