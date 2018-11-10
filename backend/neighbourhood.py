@@ -87,7 +87,7 @@ class Event():
         self.lst = lst
 
     def __str__(self):
-        return self.unixToString(self.timestamp) + " event for " + self.device.name + " est " + self.unixToString(self.est) + " lst " + self.unixToString(self.lst)
+        return self.device.name + str(self.timestamp)
 
     def unixToString(self, time):
         return datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
