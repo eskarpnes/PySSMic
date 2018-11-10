@@ -286,6 +286,8 @@ def update_contracts(run_choice, simulation_choice):
     rows = []
     for contract in contracts:
         contract["load_profile"] = round(contract["load_profile"].values[-1], 2)
+        contract["time"] = dataprocess.convert(contract["time"])
+        contract["time_of_agreement"] = dataprocess.convert(contract["time_of_agreement"])
         contract = dataprocess.rename_columns(contract)
         rows.append(contract)
     return rows
@@ -302,6 +304,8 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     rows = []
     for contract in contracts:
         contract["load_profile"] = round(contract.get("load_profile").values[-1], 2)
+        contract["time"] = dataprocess.convert(contract["time"])
+        contract["time_of_agreement"] = dataprocess.convert(contract["time_of_agreement"])
         contract = dataprocess.rename_columns(contract)
         if contract.get("Consumer ID").startswith('[{}]'.format(household_choice)):
             rows.append(contract)
