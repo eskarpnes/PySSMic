@@ -52,21 +52,70 @@ Open your preferred browser and go to http://127.0.0.1:8050/
 To create a new simulation, go to http://127.0.0.1:8050/apps/create_sim.
 From the select ESN dropdown list, you can choose the ESN you want to use for the simulation. To add ESN to the list, click on 'Create ESN' or add files to your input folder, where the name of the folder equals the name of the ESN.
 
+#### Configuration
+
+##### Days to simulate
+
 The days to simulate field is to tell the simulation to quit after the given time, so that it doesn't run forever because of a typo in one of the input files, e.g. a timestamp in a job that doesn't corespond with the rest of the inputfiles.
 
-Choose your preferred optimization algorithm and how many times you want to run the simulation with the given inputs and press 'Start Simulation'.
+##### Select Optimization Algorithm(s)
+
+Choose your preferred optimization algorithm. For the algorithms "L-BFGS-B", "SLSQP" and "TNC" you will get the chance to set "Step size" and "Tolerance".
+"Step size" is ...
+"Tolerance" is ...
+
+##### Number of runs
+
+Sets how many times you will run the simulator with the configuration specified.
+
+##### Start simulation
+
+Press Start simulation to start the simulation. The simulation will now finish before you can do anything more. The result file will be saved in the format: date_time_esnName_algorithm_numOfRuns.pkl in the [result folder](/results).
 
 When the simulation is done, you can go to http://127.0.0.1:8050/apps/simulate_esn to see your results.
 
 ### Create an ESN
 
-You can create a new neighbourhood from scratch or from a XML file. Example of how to structure a neighbourhood XML file is [Here](input/example).
+You can import an ESN in three ways: from XML, create one from scratch or from .pkl files.
 
-When you have a neighbourhood, you can add and remove houses directly by pressing the buttons. For each house you can add, remove and configure the devices by pressing 'Add or Config Device'. Every consumer can have a loadprofile and every producer can have up to four PV prediction files.
-For every device you can add one or more jobs. From the 'Add jobs' button you can fill in the time to run the job. You must be sure that the timeinput you give corespond to the other timestamps you have in your configuration.
-A second way to add jobs is by a XML file. Example of how to structure a job XML file is [Here](input/example).
+#### Configuration
 
-When your configuration is done, type in the name of the neighbourhood and press 'Save Neighbourhood'.
+You can create a new neighbourhood from scratch or from a XML file. Example of how to structure a neighbourhood XML file is [here](input). (TODO: create an example folder)
+
+##### Add house to neighbourhood
+
+When you press the 'add house' a new house will be added to the neighbourhood. It will automatically get an ID and one user who will have all the devices.
+
+##### Remove house from neighbourhood
+
+To remove a house, press the tab for the house you want to delete and press delete house.
+
+##### Add device
+
+Press the "Add or config device" button. You can add consumer from the "Add new consumer" tab or a producer for the "Add new producer" tab.
+
+- All fields need to be filled to configure the house correctly.
+- The ID for every device need to be unique within the neighbourhood.
+- The templatenumber refers to which loadprofile or PV Prediction files you want to connect the device to. If you add a loadprofile or predictionfiles for this device, you should set the template number to the same as the ID.
+
+##### Delete device
+
+Press the "Add or config device" button and press the "Configure a device" tab and select the device you want to delete from the dropdownlist. When you have selected the device, you can press the delete device button.
+
+##### Configure a device
+
+You can change ID, Name, Template, Type and loadprofiles/Pv prediction files for every device.
+Press the "Add or config device" button and press the "Configure a device" tab. Do your changes and press save.
+
+##### Add jobs
+
+You can add jobs for every consumer in the neighbourhood. You can specify it by pressing "Add Job" button. From here you can specify your device, and specify the earliest- and latest start time. Press save to add the job and you should now see it in the jobslist.
+
+You can also add multiple jobs for the neighbourhood by pressing "Add jobs from XML". Example of how to structure the XML file is [here](/input/example/jobs.xml).
+
+#### Save
+
+When your configuration is done, type in the name of the neighbourhood and press 'Save Neighbourhood'. The neighbourhood will be a folder in the input folder and as a pickle object in the neighbourhood folder.
 
 ### See the results
 
@@ -79,9 +128,8 @@ In order to test our system, we have used pytest - An alternative to Pythons sta
 
 ### Install pytest
 
-```
-pip install pytest
-```
+pytest are installed through the installation from the requirement file. Make sure to be in the virtual environment to run the test.
+
 _Version 3.8.2 is used in PySSMic_
 
 ### Run all tests
@@ -89,7 +137,6 @@ _Version 3.8.2 is used in PySSMic_
 ```
 python -m pytest
 ```
-
 
 ## Built With
 
