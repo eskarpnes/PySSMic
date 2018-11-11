@@ -338,6 +338,7 @@ def get_contracts_for_house(house, contracts):
             output.append(contract)
     return output
 
+
 def get_profiles_for_house(house, profiles):
     output = []
     for profile in profiles:
@@ -345,3 +346,16 @@ def get_profiles_for_house(house, profiles):
         if house_id == house:
             output.append(profiles[profile])
     return output
+
+
+def get_energy_use(run, simulation):
+    contracts = open_file(simulation)[0]
+    run_contracts = contracts[run]
+    grid = 0
+    pv = 0
+    for contract in run_contracts:
+        if contract.get("producer_id") == 'grid':
+            grid += contract.get("load_profile").values[-1]
+        else:
+            pv += contract.get("load_profile").values[-1]
+    return [round(pv, 2), round(grid, 2), round(pv+grid, 2)]
