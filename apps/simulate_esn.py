@@ -263,15 +263,19 @@ def set_result_to_none(value):
 
 
 @app.callback(Output("graph-content", "style"),
-              [Input("run_choice", "value"),
+              [Input("simulation_choice", "value"),
+               Input("run_choice", "value"),
                Input("household_choice", "value"),
                Input("tabs", "value")]
               )
-def check_valid_run(run, house, tab):
-    if run is None:
+def check_valid_run(simulation, run, house, tab):
+    if run is None and tab != "tab-3":
         return {"display": "none"}
     if tab == "tab-2":
         if house is None:
+            return {"display": "none"}
+    if tab == "tab-3":
+        if simulation is None:
             return {"display": "none"}
     return {"display": "block"}
 
