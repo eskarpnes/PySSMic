@@ -426,9 +426,7 @@ def update_consumption(run_choice, simulation_choice):
     print('Simulation choice: {}'.format(simulation_choice))
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts, profiles = contracts[int(run_choice) - 1], profiles[int(run_choice) - 1]
-    # households = dataprocess.neigbourhood_to_household(contracts, profiles)
     profiles = dataprocess.neighbourhood_execution_energy_over_time(contracts, profiles)
-    # TODO: Profiles_combined = average
     end_time = time.time()
     print("Time elapsed: " + str(end_time - start_time))
     return go.Figure(
