@@ -597,14 +597,14 @@ def update_peak_av_ratio_single_house_producer(household_choice, interval, simul
     Output("energy-use-deviation", "rows"),
     [Input("simulation_choice", "value")]
 )
-def energy_use_deviation(value):
-    search = re.search(r'_(\d+?)\.', value)
-    num = search.group(0)[1:-1]
+def energy_use_deviation(simulation):
+    search = re.search(r'_(\d+?)\.', simulation)
+    runs = search.group(0)[1:-1]
     record_list = []
-    for i in range(num):
-        print('Run # {}'.format(i))
-    print('Number for runs: {}'.format(num))
-    return [{}]
+    for i in range(int(runs)):
+        energy_use = dataprocess.get_energy_use(i, simulation)
+        record_list.append({'Run ID': '{}'.format(i+1), 'PV consumption (Wh)': '{}'.format(energy_use[0]), 'Grid consumption (Wh)': '{}'.format(energy_use[1]), 'Total consumption (Wh)': '{}'.format(energy_use[2])})
+    return record_list
 
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
