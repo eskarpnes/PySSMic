@@ -40,6 +40,21 @@ def energy_use_one_household():
     )
 
 
+def energy_use_deviation():
+    return (
+        dt.DataTable(
+            rows=[{}],
+            columns=[
+                'Run ID', 'PV consumption (Wh)', 'Grid consumption (Wh)', 'Total consumption (Wh)'],
+            row_selectable=True,
+            filterable=True,
+            sortable=True,
+            selected_row_indices=[],
+            id="energy-use-deviation"
+        )
+    )
+
+
 """"-------------------------CONTRACT OVERVIEW-------------------------"""
 
 
@@ -202,7 +217,13 @@ layout = html.Div(children=[
             ]),
             dcc.Tab(id='tab_all_runs', label='All runs', children=[
                 html.Div(
-                    html.H2("Production and consumption profiles", className="header")
+                    html.H2("Deviation of energy use")
+                ),
+                html.Div(
+                    energy_use_deviation()
+                ),
+                html.Div(
+                    html.H2("Average production and consumption profiles", className="header")
                 ),
                 html.Div(id='peak-average-ratio-sum'),
                 html.Div(
@@ -218,14 +239,14 @@ layout = html.Div(children=[
 
 @app.callback(Output("simulation_choice", "options"),
               [Input("btn-update", "n_clicks")])
-def update_dropdown(n_clicks):
+def update_simid_dropdown(n_clicks):
     print("click")
     return get_dropdown_options()
 
 
 @app.callback(Output("run_choice", "options"),
               [Input("simulation_choice", "value")])
-def update_simid_dropdown(value):
+def update_runid_dropdown(value):
     search = re.search(r'_(\d+?)\.', value)
     num = search.group(0)[1:-1]
     sim_options = []
@@ -563,6 +584,23 @@ def update_peak_av_ratio_single_house_producer(household_choice, interval, simul
     profiles_for_house = dataprocess.get_profiles_for_house(household_choice, profiles)
     par = dataprocess.peak_to_average_ratio_production(profiles_for_house, int(interval))
     return html.P('Produced peak to average ratio: {}'.format(round(par, 2)))
+
+
+"""-------------------------DEVIATION-------------------------"""
+
+
+@app.callback(
+    Output("energy-use-deviation", "rows"),
+    [Input("simulation_choice", "value")]
+)
+def energy_use_deviation(value):
+    search = re.search(r'_(\d+?)\.', value)
+    num = search.group(0)[1:-1]
+    record_list = []
+    for i in range(num):
+        print('Run # {}'.format(i))
+    print('Number for runs: {}'.format(num))
+    return [{}]
 
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
