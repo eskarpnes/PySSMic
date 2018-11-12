@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import os.path
+from datetime import datetime
 from definitions import ROOT_DIR
 import statistics
 
@@ -349,6 +350,7 @@ def get_profiles_for_house(house, profiles):
     return output
 
 
+
 def get_energy_use(run, simulation):
     contracts = open_file(simulation)[0]
     run_contracts = contracts[run]
@@ -371,3 +373,9 @@ def get_standard_deviation(simulation):
                 local_consumption += contract["load_profile"].values[-1]
         total_local_consumption.append(local_consumption)
     return round(statistics.stdev(total_local_consumption), 2)
+
+# timestamp: int
+# return: Day X HH:MM:SS
+def convert(timestamp):
+    date = datetime.fromtimestamp(timestamp)
+    return 'Day {} {}'.format(date.day, date.strftime('%H:%M:%S'))

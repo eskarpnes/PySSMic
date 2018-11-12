@@ -1,13 +1,7 @@
-import sys
-
 from pykka import ThreadingActor
 import logging
-from backend.job import JobStatus
 from util.message_utils import Action
-import random
-import pandas as pd
 from backend.optimizer import Optimizer
-import time
 
 
 class Producer(ThreadingActor):
@@ -22,58 +16,48 @@ class Producer(ThreadingActor):
         self.optimizer = Optimizer(self, options)
         self.logger.info("New producer with made with id: " + str(self.id))
 
-    # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
+        """Send a message to another actor in a framework agnostic way"""
         receiver.tell(message)
 
-    # Receive a message in a framework agnostic way
     def receive(self, message, sender):
+        """Receive a message in a framework agnostic way"""
         action = message['action']
 
         if action == Action.prediction:
             self.update_power_profile(message["prediction"])
-            # self.optimize()
 
         elif action == Action.request:
             job = message['job']
-            # always accept in test
-            if 'pytest' in sys.modules:
-                self.schedule.append(dict(consumer=sender, job=job, status=JobStatus.created))
+            schedule_object = dict(consumer=sender, job=job)
+            self.schedule.append(schedule_object)
+            should_keep = self.optimize()
+            if should_keep:
+                contract = self.create_contract(job)
+                self.manager.register_contract(contract)
                 return dict(action=Action.accept)
             else:
-                schedule_object = dict(consumer=sender, job=job, status=JobStatus.created)
-                self.schedule.append(schedule_object)
-                should_keep = self.optimize()
-                if should_keep:
-                    contract = self.create_contract(job)
-                    self.manager.register_contract(contract)
-                    return dict(action=Action.accept)
-                else:
-                    self.schedule.remove(schedule_object)
-                    return dict(action=Action.decline)
+                self.schedule.remove(schedule_object)
+                return dict(action=Action.decline)
 
-    # Function for choosing the best schedule given old jobs and the newly received one
     def optimize(self):
+        """Function for choosing the best schedule given old jobs and the newly received one. Currently, it can only
+        drop the last job received. Returns True if the last object in self.schedule should be kept. Returns False if it
+        should be rejected."""
+
         self.logger.info("Running optimizer ... Time = " + str(self.manager.clock.now))
         scheduled_time, should_keep = self.optimizer.optimize()
-
-        for i, s in enumerate(self.schedule):
-            if not should_keep[i] and s['status'] != JobStatus.created:
-                self.cancel(s)
-
-            if should_keep and s['status'] != JobStatus.active:
-                self.schedule[i]['status'] = JobStatus.active
 
         return should_keep[-1]
 
     def cancel(self, schedule_object):
+        """Cancel a job."""
         message = dict(action=Action.decline)
         self.schedule.remove(schedule_object)
         self.send(message, schedule_object['consumer'])
 
-    # Function for updating the power profile of a producer when it has received
-    # a PREDICTION and been optimized based on this
     def update_power_profile(self, prediction):
+        """Function for updating the power profile of a producer when it has received a prediction."""
         if self.prediction is None:
             self.prediction = prediction
         else:
@@ -82,6 +66,7 @@ class Producer(ThreadingActor):
             self.prediction = new_prediction.combine_first(self.prediction)
 
     def create_contract(self, job):
+        """Create a contract between producer and the consumer requesting the job."""
         current_time = self.manager.clock.now
         id = self.id + ";" + job.id + ";" + str(current_time)
         time = job.scheduled_time
@@ -94,11 +79,12 @@ class Producer(ThreadingActor):
                     job_id=job_id, producer_id=producer_id)
 
     def fulfill_contract(self, contract):
+        """Remove a fulfilled job from the list of jobs."""
         new_schedule = [s for s in self.schedule if s['job'].id != contract['job_id']]
         self.schedule = new_schedule
 
     # FRAMEWORK SPECIFIC CODE
-    # Every message should have a sender field with the reference to the sender
     def on_receive(self, message):
+        """Every message should have a sender field with the reference to the sender"""
         sender = message['sender']
         return self.receive(message, sender)

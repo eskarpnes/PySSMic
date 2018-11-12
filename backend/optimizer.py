@@ -33,6 +33,7 @@ class Optimizer:
 
         # The estimated total produced energy is the last entry of the producer's prediction profile
         self.objection_value_offset = 0
+        self.cache = defaultdict(lambda: np.inf)
 
     def optimize(self):
         if self.algorithm in [Algorithm.L_BFGS_B, Algorithm.SLSQP, Algorithm.TNC]:
@@ -44,6 +45,8 @@ class Optimizer:
         else:
             should_keep = [True] * len(self.producer.schedule)
             schedule_times = [s['job'].scheduled_time for s in self.producer.schedule]
+
+        self._reset_cache()
 
         return schedule_times, should_keep
 
@@ -87,6 +90,10 @@ class Optimizer:
 
     def objective_function(self, schedule: List[float]):
         """The function we want to minimize. schedule is a List of start times for the jobs in the schedule."""
+        cache = self._get_cached_value(schedule)
+        if cache < np.inf:
+            return cache
+
         consumed = defaultdict(float)
         for i, load in enumerate(self.differentiated_loads):
             for t, p in load.items():
@@ -98,23 +105,22 @@ class Optimizer:
         # Differentiate and interpolate production profile on the indices found in consumer
         ts = list(consumed.keys())
         produced = utils.differentiate_and_interpolate(self.producer.prediction, ts)
-        ts.extend(list(produced.index.values))
         ts = sorted(list(set(ts)))
 
-        total_consumed = 0
+        diff = 0
         penalty = 0
         for i, t in enumerate(ts):
             if i == len(ts) - 1:
                 delta = 0
             else:
-                delta = abs(ts[i+1] - ts[i])
+                delta = abs(ts[i + 1] - ts[i])
 
             p = produced[t]
             c = consumed[t]
 
             # Multiply difference between produced and consumed in time 't' by the distance to the previous time index.
             # This way, differences are weighted based on their time span.
-            total_consumed += c * delta
+            diff += abs((p - c) * delta)
 
             # If consumed is greater than produced, we have negative amount of production power.
             if c > p:
@@ -124,7 +130,8 @@ class Optimizer:
         # Return the difference between produced and consumed energy, in addition to the penalty for having negative
         # power levels. Finally, subtract this from the objection_value_offset, i.e. the sum of the produced power. This
         # is so that the theoretically minimal value is equal to zero (if we consume all produced energy).
-        score = abs(self.objection_value_offset - total_consumed) + penalty * self.penalty_factor
+        score = diff + penalty * self.penalty_factor
+        self._cache_value(schedule, score)
         return score
 
     def strictly_positive(self):
@@ -162,3 +169,15 @@ class Optimizer:
         self.differentiated_loads = []
         for s in self.producer.schedule:
             self.differentiated_loads.append(utils.differentiate(s['job'].load_profile))
+
+    def _reset_cache(self):
+        self.cache = defaultdict(lambda: np.inf)
+
+    def _key(self, schedule):
+        return "".join([str(int(round(f))) + ";" for f in schedule])
+
+    def _get_cached_value(self, schedule):
+        return self.cache[self._key(schedule)]
+
+    def _cache_value(self, schedule, value):
+        self.cache[self._key(schedule)] = value

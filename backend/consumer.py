@@ -16,32 +16,33 @@ class Consumer(ThreadingActor):
         self.clock = manager.clock
         self.logger.info("New consumer made with id: " + str(self.id))
 
-    # Send a message to another actor in a framework agnostic way
     def send(self, message, receiver):
+        """Send a message to another actor in a framework agnostic way"""
+        
         # Sends a blocking message to producers
-        receiver_id = receiver["id"]
+        receiver_id = receiver['id']
         receiver = receiver["producer"]
         try:
             answer = receiver.ask(message, timeout=60)
             action = answer['action']
             if action == Action.decline:
-                self.logger.info('Job declined. Time = ' + str(self.clock.now))
+                self.logger.info("Job declined. Time = " + str(self.clock.now))
                 self.manager.punish_producer(receiver_id)
                 self.request_producer()
             else:
-                self.logger.info('Job accepted. Time = ' + str(self.clock.now))
+                self.logger.info("Job accepted. Time = " + str(self.clock.now))
                 self.manager.reward_producer(receiver_id)
         except Timeout:
             self.request_producer()
 
-    # Receive a message in a framework agnostic way
-    def receive(self, message, sender):
+    def receive(self, message):
+        """Receive a message in a framework agnostic way"""
         action = message['action']
         if action == Action.broadcast:
             self.producers.append(message['producer'])
 
-    # Function for selecting a producer for a job
     def request_producer(self):
+        """Function for selecting a producer for a job"""
         if self.producers.empty():
             self.logger.info("No producer remaining. Buying power from the grid.")
             self.manager.register_contract(self.create_grid_contract())
@@ -58,8 +59,8 @@ class Consumer(ThreadingActor):
         }
         self.send(message, producer)
 
-    # If the consumer buys power from the grid, they make a grid-contract
     def create_grid_contract(self):
+        """If the consumer buys power from the grid, they make a grid-contract."""
         current_time = self.clock.now
         id = "grid" + ";" + self.job.id + ";" + str(current_time)
         time = self.job.scheduled_time
@@ -71,7 +72,6 @@ class Consumer(ThreadingActor):
                     job_id=job_id, producer_id=producer_id)
 
     # FRAMEWORK SPECIFIC CODE
-    # Every message should have a sender field with the reference to the sender
     def on_receive(self, message):
-        sender = message['sender']
-        self.receive(message, sender)
+        """Every message should have a sender field with the reference to the sender"""
+        self.receive(message)
