@@ -344,6 +344,3 @@ def energy_over_time(contracts, producer_profiles):
 #             output_household.append(energy_over_time(contracts_household, profiles_household))
 #         output.append(output_household)
 #     return output, households_list
-
-
-
