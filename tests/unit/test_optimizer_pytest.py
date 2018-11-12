@@ -1,8 +1,8 @@
+from backend.job import Job
 from backend.manager import Manager
 from backend.optimizer import Optimizer
 
 import pandas as pd
-from backend.job import Job, JobStatus
 from backend.producer import Producer
 from simulator import Simulator
 
@@ -11,11 +11,11 @@ def test_optimize_basinhopping():
     sim = Simulator(dict(), None)
     man = Manager(sim)
     producer = Producer("id", man)
-    job0 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
-    job1 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
-    job2 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
-    job3 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
-    job4 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])), status=JobStatus.active)
+    job0 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
+    job1 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
+    job2 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
+    job3 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
+    job4 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
 
     schedules = []
     for i in range(50):
@@ -36,8 +36,7 @@ def test_optimize_fifty_fifty():
     producer.optimizer = Optimizer(producer, options=dict(algo="fifty_fifty"))
     producer.prediction = pd.Series(index=[0, 1], data=[0.0, 1.0])
     for i in range(250):
-        job = dict(consumer=None, job=Job("id" + str(i), 0, 0, pd.Series(index=[0, 1], data=[0.0, 0.0])),
-                   status=JobStatus.active)
+        job = dict(consumer=None, job=Job("id" + str(i), 0, 0, pd.Series(index=[0, 1], data=[0.0, 0.0])))
         producer.schedule.append(job)
         schedule_time, should_keep = producer.optimizer.optimize()
         if not should_keep[-1]:
@@ -54,8 +53,7 @@ def test_optimize_fifty_fifty_negative():
     producer.optimizer = Optimizer(producer, options=dict(algo="fifty_fifty"))
     producer.prediction = pd.Series(index=[0, 1], data=[0.0, 0.0])
     for i in range(10):
-        job = dict(consumer=None, job=Job("id" + str(i), 0, 0, pd.Series(index=[0, 1], data=[0.0, 1.0])),
-                   status=JobStatus.active)
+        job = dict(consumer=None, job=Job("id" + str(i), 0, 0, pd.Series(index=[0, 1], data=[0.0, 1.0])))
         producer.schedule.append(job)
         schedule_time, should_keep = producer.optimizer.optimize()
         if not should_keep[-1]:
