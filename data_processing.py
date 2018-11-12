@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import os.path
 from definitions import ROOT_DIR
+import statistics
 
 
 def open_file(file_name):
@@ -359,3 +360,14 @@ def get_energy_use(run, simulation):
         else:
             pv += contract.get("load_profile").values[-1]
     return [round(pv, 2), round(grid, 2), round(pv+grid, 2)]
+
+def get_standard_deviation(simulation):
+    runs = get_contracts(simulation)
+    total_local_consumption = []
+    for contracts in runs:
+        local_consumption = 0
+        for contract in contracts:
+            if contract["producer_id"] != "grid":
+                local_consumption += contract["load_profile"].values[-1]
+        total_local_consumption.append(local_consumption)
+    return round(statistics.stdev(total_local_consumption), 2)

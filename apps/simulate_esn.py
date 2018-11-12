@@ -216,9 +216,10 @@ layout = html.Div(children=[
                 html.Br(),
             ]),
             dcc.Tab(id='tab_all_runs', label='All runs', children=[
-                html.Div(
-                    html.H2("Deviation of energy use")
-                ),
+                html.Div(children=[
+                    html.H2("Deviation of energy use"),
+                    html.Div(id="standard-deviation")
+                ]),
                 html.Div(
                     energy_use_deviation()
                 ),
@@ -606,6 +607,13 @@ def energy_use_deviation(simulation):
         record_list.append({'Run ID': '{}'.format(i+1), 'PV consumption (Wh)': '{}'.format(energy_use[0]), 'Grid consumption (Wh)': '{}'.format(energy_use[1]), 'Total consumption (Wh)': '{}'.format(energy_use[2])})
     return record_list
 
+@app.callback(
+    Output("standard-deviation", "children"),
+    [Input("simulation_choice", "value")]
+)
+def standard_deviation(simulation):
+    out = dataprocess.get_standard_deviation(simulation)
+    return html.P('Standard deviation in local consumption: ' + str(out) + "Wh")
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
 
