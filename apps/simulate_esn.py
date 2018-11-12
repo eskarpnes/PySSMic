@@ -40,6 +40,21 @@ def energy_use_one_household():
     )
 
 
+def energy_use_deviation():
+    return (
+        dt.DataTable(
+            rows=[{}],
+            columns=[
+                'Run ID', 'PV consumption (Wh)', 'Grid consumption (Wh)', 'Total consumption (Wh)'],
+            row_selectable=True,
+            filterable=True,
+            sortable=True,
+            selected_row_indices=[],
+            id="energy-use-deviation"
+        )
+    )
+
+
 """"-------------------------CONTRACT OVERVIEW-------------------------"""
 
 
@@ -201,8 +216,15 @@ layout = html.Div(children=[
                 html.Br(),
             ]),
             dcc.Tab(id='tab_all_runs', label='All runs', children=[
+                html.Div(children=[
+                    html.H2("Deviation of energy use"),
+                    html.Div(id="standard-deviation")
+                ]),
                 html.Div(
-                    html.H2("Production and consumption profiles", className="header")
+                    energy_use_deviation()
+                ),
+                html.Div(
+                    html.H2("Average production and consumption profiles", className="header")
                 ),
                 html.Div(id='peak-average-ratio-sum'),
                 html.Div(
@@ -218,14 +240,14 @@ layout = html.Div(children=[
 
 @app.callback(Output("simulation_choice", "options"),
               [Input("btn-update", "n_clicks")])
-def update_dropdown(n_clicks):
+def update_simid_dropdown(n_clicks):
     print("click")
     return get_dropdown_options()
 
 
 @app.callback(Output("run_choice", "options"),
               [Input("simulation_choice", "value")])
-def update_simid_dropdown(value):
+def update_runid_dropdown(value):
     search = re.search(r'_(\d+?)\.', value)
     num = search.group(0)[1:-1]
     sim_options = []
@@ -242,15 +264,19 @@ def set_result_to_none(value):
 
 
 @app.callback(Output("graph-content", "style"),
-              [Input("run_choice", "value"),
+              [Input("simulation_choice", "value"),
+               Input("run_choice", "value"),
                Input("household_choice", "value"),
                Input("tabs", "value")]
               )
-def check_valid_run(run, house, tab):
-    if run is None:
+def check_valid_run(simulation, run, house, tab):
+    if run is None and tab != "tab-3":
         return {"display": "none"}
     if tab == "tab-2":
         if house is None:
+            return {"display": "none"}
+    if tab == "tab-3":
+        if simulation is None:
             return {"display": "none"}
     return {"display": "block"}
 
@@ -566,6 +592,30 @@ def update_peak_av_ratio_single_house_producer(household_choice, interval, simul
     par = dataprocess.peak_to_average_ratio_production(profiles_for_house, int(interval))
     return html.P('Produced peak to average ratio: {}'.format(round(par, 2)))
 
+
+"""-------------------------DEVIATION-------------------------"""
+
+
+@app.callback(
+    Output("energy-use-deviation", "rows"),
+    [Input("simulation_choice", "value")]
+)
+def energy_use_deviation(simulation):
+    search = re.search(r'_(\d+?)\.', simulation)
+    runs = search.group(0)[1:-1]
+    record_list = []
+    for i in range(int(runs)):
+        energy_use = dataprocess.get_energy_use(i, simulation)
+        record_list.append({'Run ID': '{}'.format(i+1), 'PV consumption (Wh)': '{}'.format(energy_use[0]), 'Grid consumption (Wh)': '{}'.format(energy_use[1]), 'Total consumption (Wh)': '{}'.format(energy_use[2])})
+    return record_list
+
+@app.callback(
+    Output("standard-deviation", "children"),
+    [Input("simulation_choice", "value")]
+)
+def standard_deviation(simulation):
+    out = dataprocess.get_standard_deviation(simulation)
+    return html.P('Standard deviation in local consumption: ' + str(out) + "Wh")
 
 """-------------------------DISPLAY'S IN TABS-------------------------"""
 
