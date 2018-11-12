@@ -350,7 +350,6 @@ def get_profiles_for_house(house, profiles):
     return output
 
 
-
 def get_energy_use(run, simulation):
     contracts = open_file(simulation)[0]
     run_contracts = contracts[run]
@@ -361,7 +360,8 @@ def get_energy_use(run, simulation):
             grid += contract.get("load_profile").values[-1]
         else:
             pv += contract.get("load_profile").values[-1]
-    return [round(pv, 2), round(grid, 2), round(pv+grid, 2)]
+    return [round(pv, 2), round(grid, 2), round(pv + grid, 2)]
+
 
 def get_standard_deviation(simulation):
     runs = get_contracts(simulation)
@@ -373,6 +373,7 @@ def get_standard_deviation(simulation):
                 local_consumption += contract["load_profile"].values[-1]
         total_local_consumption.append(local_consumption)
     return round(statistics.pstdev(total_local_consumption), 2)
+
 
 # timestamp: int
 # return: Day X HH:MM:SS
