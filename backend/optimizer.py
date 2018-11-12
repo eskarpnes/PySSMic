@@ -28,7 +28,7 @@ class Optimizer:
         self.logger = logging.getLogger("src.Optimizer")
         self.differentiated_loads = []
         self.min_objective_value = float('inf')
-        self.penalty_factor = options["penalty_factor"] if "penalty_factor" in self.options else 0.5
+        self.penalty_factor = options["penalty_factor"] if "penalty_factor" in self.options else 1.0
         self.algorithm = Algorithm[options["algo"]]
 
         # The estimated total produced energy is the last entry of the producer's prediction profile
@@ -65,15 +65,12 @@ class Optimizer:
         objective_value = result.fun
         schedule_times = list([int(round(e)) for e in result.x])
 
-        should_keep = [True for x in range(len(self.producer.schedule))]
+        should_keep = [True] * len(self.producer.schedule)
+        strictly_positive = self.strictly_positive()
 
-        if np.isinf(self.min_objective_value):
-            # If the solution we have found is bad, and no previous solution has been discovered.
-            if not self.strictly_positive():
-                should_keep[-1] = False
-            else:
-                self.min_objective_value = objective_value
-        elif objective_value < self.min_objective_value:
+        if np.isinf(self.min_objective_value) and not strictly_positive:
+            should_keep[-1] = False
+        elif objective_value < self.min_objective_value or strictly_positive:
             self.min_objective_value = objective_value
         else:
             should_keep[-1] = False
@@ -81,7 +78,7 @@ class Optimizer:
         return schedule_times, should_keep
 
     def fifty_fifty(self):
-        should_keep = [True for x in range(len(self.producer.schedule))]
+        should_keep = [True] * len(self.producer.schedule)
         need_grid_power = not self.strictly_positive()
         if random() < 0.5 or need_grid_power:
             should_keep[-1] = False
