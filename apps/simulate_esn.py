@@ -334,12 +334,11 @@ def update_contracts(household, run, simulation):
     contracts = contracts[int(run)-1]
     rows = []
     for contract in contracts:
-        contract["load_profile"] = round(contract.get("load_profile").values[-1], 2)
-        contract["time"] = dataprocess.convert(contract["time"])
-        contract["time_of_agreement"] = dataprocess.convert(contract["time_of_agreement"])
-        contract = dataprocess.rename_columns(contract)
-        if contract.get("Consumer ID").startswith('[{}]'.format(household)):
-        #TODO: Change order here, start with if
+        if contract.get("job_id").startswith('[{}]'.format(household)):
+            contract["load_profile"] = round(contract.get("load_profile").values[-1], 2)
+            contract["time"] = dataprocess.convert(contract["time"])
+            contract["time_of_agreement"] = dataprocess.convert(contract["time_of_agreement"])
+            contract = dataprocess.rename_columns(contract)
             rows.append(contract)
     return rows
 
