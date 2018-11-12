@@ -4,6 +4,7 @@ import pickle
 import os.path
 from datetime import datetime
 from definitions import ROOT_DIR
+import statistics
 
 
 def open_file(file_name):
@@ -348,6 +349,30 @@ def get_profiles_for_house(house, profiles):
             output.append(profiles[profile])
     return output
 
+
+
+def get_energy_use(run, simulation):
+    contracts = open_file(simulation)[0]
+    run_contracts = contracts[run]
+    grid = 0
+    pv = 0
+    for contract in run_contracts:
+        if contract.get("producer_id") == 'grid':
+            grid += contract.get("load_profile").values[-1]
+        else:
+            pv += contract.get("load_profile").values[-1]
+    return [round(pv, 2), round(grid, 2), round(pv+grid, 2)]
+
+def get_standard_deviation(simulation):
+    runs = get_contracts(simulation)
+    total_local_consumption = []
+    for contracts in runs:
+        local_consumption = 0
+        for contract in contracts:
+            if contract["producer_id"] != "grid":
+                local_consumption += contract["load_profile"].values[-1]
+        total_local_consumption.append(local_consumption)
+    return round(statistics.stdev(total_local_consumption), 2)
 
 # timestamp: int
 # return: Day X HH:MM:SS
