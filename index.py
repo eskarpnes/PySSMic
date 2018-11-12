@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import dash_table_experiments as dt
 
 from app import app
-from apps import create_sim, create_esn, main, simulate_esn, base
+from apps import create_sim, create_esn, simulate_esn, base
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
@@ -19,7 +19,7 @@ app.layout = html.Div([
               [Input("url", "pathname")])
 def display_page(pathname):
     if pathname == "/":
-        return base.header, main.layout, base.footer
+        return base.header, base.footer
     elif pathname == "/apps/create_sim":
         return base.header, create_sim.layout, base.footer
     elif pathname == "/apps/create_esn":
