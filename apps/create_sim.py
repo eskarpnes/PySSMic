@@ -7,6 +7,7 @@ from app import app
 from threaded_simulator import ThreadedSimulator
 import time
 
+
 def get_dropdown_options():
     options = next(os.walk("input"))[1]
     dropdown = []
