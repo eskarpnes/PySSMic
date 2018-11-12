@@ -286,6 +286,8 @@ def update_contracts(run_choice, simulation_choice):
     rows = []
     for contract in contracts:
         contract["load_profile"] = round(contract["load_profile"].values[-1], 2)
+        contract["time"] = dataprocess.convert(contract["time"])
+        contract["time_of_agreement"] = dataprocess.convert(contract["time_of_agreement"])
         contract = dataprocess.rename_columns(contract)
         rows.append(contract)
     return rows
@@ -302,6 +304,8 @@ def update_contracts(household_choice, run_choice, simulation_choice):
     rows = []
     for contract in contracts:
         contract["load_profile"] = round(contract.get("load_profile").values[-1], 2)
+        contract["time"] = dataprocess.convert(contract["time"])
+        contract["time_of_agreement"] = dataprocess.convert(contract["time_of_agreement"])
         contract = dataprocess.rename_columns(contract)
         if contract.get("Consumer ID").startswith('[{}]'.format(household_choice)):
             rows.append(contract)
@@ -422,9 +426,7 @@ def update_consumption(run_choice, simulation_choice):
     print('Simulation choice: {}'.format(simulation_choice))
     contracts, profiles = dataprocess.open_file(simulation_choice)
     contracts, profiles = contracts[int(run_choice) - 1], profiles[int(run_choice) - 1]
-    # households = dataprocess.neigbourhood_to_household(contracts, profiles)
     profiles = dataprocess.neighbourhood_execution_energy_over_time(contracts, profiles)
-    # TODO: Profiles_combined = average
     end_time = time.time()
     print("Time elapsed: " + str(end_time - start_time))
     return go.Figure(
