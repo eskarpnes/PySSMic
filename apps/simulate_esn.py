@@ -547,7 +547,7 @@ def update_peak_av_ratio(run, interval, simulation):
         return html.P("Not a valid interval")
     contracts, profiles = dataprocess.open_file(simulation)
     contracts = contracts[int(run)-1]
-    par = dataprocess.peak_to_average_ratio(contracts, int(interval))
+    par = dataprocess.peak_to_average_ratio_consumption(contracts, int(interval))
     return html.P("Consumed peak to average ratio: {}".format(round(par, 2)))
 
 
@@ -576,7 +576,7 @@ def update_peak_av_ratio_single_house(household, interval, simulation, run):
     contracts, profiles = dataprocess.open_file(simulation)
     contracts = contracts[int(run)-1]
     contracts_for_house = dataprocess.get_contracts_for_house(household, contracts)
-    par = dataprocess.peak_to_average_ratio(contracts_for_house, int(interval))
+    par = dataprocess.peak_to_average_ratio_consumption(contracts_for_house, int(interval))
     return html.P("Consumed peak to average ratio: {}".format(round(par, 2)))
 
 
