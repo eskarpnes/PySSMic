@@ -79,7 +79,7 @@ def contract_one_household():
 def energy_consumption_one_run():
     return (
         dcc.Graph(
-            id="energy-consumption-graph",
+            id="energy-consumption-graph-one-run",
             figure=go.Figure()
         )
     )
@@ -94,7 +94,7 @@ def energy_consumption_all_runs():
     )
 
 
-def get_dropdown_options():
+def get_simulation_options():
     print("Loading options")
     options = []
     for root, dirnames, filenames in os.walk("results"):
@@ -112,11 +112,11 @@ def get_dropdown_options():
 
 layout = html.Div(children=[
     html.Div(html.H3("Simulation to display")),
-    html.Span("Choose simulation "),
+    html.Span("Choose simulation"),
     dcc.Dropdown(
         id="simulation_choice",
-        options=get_dropdown_options(),
-        value=get_dropdown_options()[0]["value"]
+        options=get_simulation_options(),
+        value=get_simulation_options()[0]["value"]
     ),
     html.Button('Update results', className='btn', id='btn-update'),
     html.Div(id='sim_id', children=[
@@ -214,13 +214,15 @@ layout = html.Div(children=[
 """-------------------------DROPDOWNS-------------------------"""
 
 
+# Simulation dropdown
 @app.callback(Output("simulation_choice", "options"),
               [Input("btn-update", "n_clicks")])
-def update_dropdown(n_clicks):
+def update_simulation_dropdown(n_clicks):
     print("click")
-    return get_dropdown_options()
+    return get_simulation_options()
 
 
+# Run dropdown
 @app.callback(Output("run_choice", "options"),
               [Input("simulation_choice", "value")])
 def update_simid_dropdown(value):
@@ -239,6 +241,7 @@ def set_result_to_none(value):
     return None
 
 
+# Household dropdown
 @app.callback(Output("graph-content", "style"),
               [Input("run_choice", "value"),
                Input("household_choice", "value"),
@@ -415,7 +418,7 @@ def update_pie_chart_header(household_choice, simulation_choice, run_choice):
 
 # All households
 @app.callback(
-    Output("energy-consumption-graph", "figure"),
+    Output("energy-consumption-graph-one-run", "figure"),
     [Input("run_choice", "value")],
     [State("simulation_choice", "value")])
 def update_consumption(run_choice, simulation_choice):
