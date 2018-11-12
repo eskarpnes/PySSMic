@@ -4,11 +4,9 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_table_experiments as dt
 import plotly.graph_objs as go
-import pandas as pd
 from app import app
 import re
 import data_processing as dataprocess
-
 import time
 
 """-------------------------ENERGY USE-------------------------"""
