@@ -17,6 +17,6 @@ header = html.Div([
 ], className="header")
 
 
-footer = html.Div([
+footer = html.Div(id="footer", children=[
     "© Customer Driven Project for SINTEF Digital"
 ], className="footer")
