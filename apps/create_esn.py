@@ -907,8 +907,8 @@ def create_pv_csv_files(filepath, prediction, house, device, n):
     return "{};pv_producer[{}]:[{}];{}_{}_{}.csv".format(prediction["Time"].iloc[0], house.id, device.id, house.id, device.id, n)
 
 
-def create_consumer_csv_files(event, house):
-    return "{};{};{};[{}]:[{}]:[{}];{}.csv".format(str(event.timestamp), str(event.est), str(event.lst), str(house.id), str(event.device.id), str(event.device.id), str(event.device.id)) #Maybe include templatenumber?
+def create_consumer_csv_files(event, house, device):
+    return "{};{};{};[{}]:[{}]:[{}];{}.csv".format(str(event.timestamp), str(event.est), str(event.lst), str(house.id), str(device.id), str(device.id), str(device.id)) #Maybe include templatenumber?
 
 
 def unixToString(time):
@@ -947,7 +947,7 @@ def save_neighbourhood(n, value):
                         device.loadProfile.to_csv(filepath + "/loads/" + str(device.id) + ".csv", sep=" ", index=False,
                                                   header=False)
                     for event in device.events:
-                        consumer_events.append(create_consumer_csv_files(event, house))
+                        consumer_events.append(create_consumer_csv_files(event, house, device))
         with open(filepath + "/consumer_event.csv", "a+") as consumerJobscsv:
             wr = csv.writer(consumerJobscsv, delimiter="\n")
             wr.writerow(consumer_events)
