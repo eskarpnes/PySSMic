@@ -31,7 +31,13 @@ cd pyssmic && python3 -m venv venv
 3. Go activate the virtual environment and install requirements from requirements.txt
 
 ```
+# Mac/Linux
 source venv/bin/activate
+
+# Windows
+/venv/Scripts/activate.bat
+
+# All
 pip install -r requirements.txt
 ```
 
