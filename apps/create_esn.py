@@ -937,11 +937,11 @@ def save_neighbourhood(n, value):
                     if device.weatherPredictions1 is not None and len(device.weatherPredictions1["Time"].iloc[0]) > 0:
                         producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 1))
                     if device.weatherPredictions2 is not None and len(device.weatherPredictions2["Time"].iloc[0]) > 0:
-                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 2))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions2, house, device, 2))
                     if device.weatherPredictions3 is not None and len(device.weatherPredictions3["Time"].iloc[0]) > 0:
-                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 3))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions3, house, device, 3))
                     if device.weatherPredictions4 is not None and len(device.weatherPredictions4["Time"].iloc[0]) > 0:
-                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions1, house, device, 4))
+                        producer_events.append(create_pv_csv_files(filepath, device.weatherPredictions4, house, device, 4))
                 elif device.type == "consumer":
                     if device.loadProfile is not None and len(device.loadProfile["Time"].iloc[0]) > 0:
                         device.loadProfile.to_csv(filepath + "/loads/" + str(device.id) + ".csv", sep=" ", index=False,

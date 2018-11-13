@@ -51,11 +51,12 @@ h3 {
 }
 
 .footer {
-    position: fixed;
-    text-align: center;
-    bottom: 0;
-    padding-bottom: 20px;
-    width: 50%;
+  text-align: center;
+  bottom: 0;
+  padding-bottom: 20px;
+  width: 50%;
+  position: fixed;
+  bottom: -20;
 }
 
 .simulatorSetup {
