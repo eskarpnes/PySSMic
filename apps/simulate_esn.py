@@ -618,8 +618,10 @@ def energy_use_deviation(simulation):
     [Input("simulation_choice", "value")]
 )
 def standard_deviation(simulation):
-    out = dataprocess.get_standard_deviation(simulation)
-    return html.P("Standard deviation in local consumption: {} Wh".format(out))
+    results = dataprocess.get_standard_deviation(simulation)
+    std = results[0]
+    mean = results[1]
+    return html.P("Mean local consumption: {} Wh. Standard deviation: {}".format(mean, std))
 
 
 """-------------------------DISPLAY"S IN TABS-------------------------"""

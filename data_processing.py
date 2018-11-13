@@ -129,7 +129,8 @@ def get_standard_deviation(simulation):
             if contract["producer_id"] != "grid":
                 local_consumption += contract["load_profile"].values[-1]
         total_local_consumption.append(local_consumption)
-    return round(statistics.stdev(total_local_consumption), 2)
+    # Returns [std, mean]
+    return [round(statistics.stdev(total_local_consumption), 2), round(statistics.mean(total_local_consumption), 2)]
 
 
 # Converting timestamp to readable date
