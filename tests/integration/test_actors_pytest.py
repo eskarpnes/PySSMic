@@ -9,7 +9,7 @@ import pandas as pd
 
 def test_request_job_integration():
     simulator = MockSimulator()
-    manager = Manager(simulator, algo="fifty_fifty")
+    manager = Manager(simulator)
     Producer(id="p1", manager=manager)
     manager.new_producer("p1")
     prediction = pd.Series(index=[0, 3600, 7200], data=[0.0, 10.0, 20.0])
