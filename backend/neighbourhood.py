@@ -79,11 +79,10 @@ class Device():
 
 
 class Event():
-    def __init__(self, device, time, est, lst):
-        self.device = device
+    def __init__(self, time, est, lst):
         self.timestamp = time
         self.est = est
         self.lst = lst
 
     def __str__(self):
-        return self.device.name + str(self.timestamp)
+        return (self.timestamp)

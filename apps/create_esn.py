@@ -72,7 +72,7 @@ def create_jobs_list(house):
         for event in device.events:
             jobs.append(
                 html.Tr([
-                    html.Td(event.device.name),
+                    html.Td(device.name),
                     html.Td(unixToString(event.timestamp)),
                     html.Td(unixToString(event.est)),
                     html.Td(unixToString(event.lst))
@@ -395,7 +395,7 @@ def create_loads_list(jobsroot):
                             timestamp =device.find("creation_time").text
                             est=device.find("est").text
                             lst=device.find("lst").text
-                            d.events.append(Event(d, int(timestamp), int(est), int(lst)))
+                            d.events.append(Event(int(timestamp), int(est), int(lst)))
 
 
 def parse_csv(contents, filename):
@@ -889,7 +889,7 @@ def save_jobs(n, estDate, estTime, lstDate, lstTime):
             lst = createEpochTime(lstDate, lstTime)
             timeAdded = int(time.time())
         if active_device.type == "consumer":
-            active_device.events.append(Event(active_device, timeAdded, est, lst))
+            active_device.events.append(Event(timeAdded, est, lst))
             job = str(timeAdded) + ";" + str(est) + ";" + str(lst) + ";[" + str(active_house.id) + "]:[" + str(
                 active_device.id) + "];" + str(active_device.id) + ".csv"
             #active_device.events.append(job)
