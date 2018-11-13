@@ -678,19 +678,19 @@ def create_producer_modal_form(did, name, temp, devtype, w1, w2, w3, w4):
                          value=devtype)
             ]),
             html.Div(className="pv1", children=[
-                dcc.Upload(id="weather1", className="w1Pred", children=[html.Button("First Predition")]),
+                dcc.Upload(id="weather1", className="w1Pred", children=[html.Button("Add First Prediction")]),
                 dt.DataTable(id="w1dt", rows=w1)
             ]),
             html.Div(className="pv2", children=[
-                dcc.Upload(id="weather2", className="w2Pred", children=[html.Button("Second Predition")]),
+                dcc.Upload(id="weather2", className="w2Pred", children=[html.Button("Add Second Prediction")]),
                 dt.DataTable(id="w2dt", rows=w2),
             ]),
             html.Div(className="pv3", children=[
-                dcc.Upload(id="weather3", className="w3Pred", children=[html.Button("Third Prediction")]),
+                dcc.Upload(id="weather3", className="w3Pred", children=[html.Button("Add Third Prediction")]),
                 dt.DataTable(id="w3dt", rows=w3),
             ]),
             html.Div(className="pv4", children=[
-                dcc.Upload(id="weather4", className="w4Pred", children=[html.Button("Fourth Prediction")]),
+                dcc.Upload(id="weather4", className="w4Pred", children=[html.Button("Add Fourth Prediction")]),
                 dt.DataTable(id="w4dt", rows=w4)
             ])
         ])
