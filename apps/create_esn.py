@@ -887,12 +887,9 @@ def save_jobs(n, estDate, estTime, lstDate, lstTime):
         if (estDate, estTime, lstDate, lstTime) is not None:
             est = createEpochTime(estDate, estTime)
             lst = createEpochTime(lstDate, lstTime)
-            timeAdded = int(time.time())
+            timeAdded = est
         if active_device.type == "consumer":
             active_device.events.append(Event(timeAdded, est, lst))
-            job = str(timeAdded) + ";" + str(est) + ";" + str(lst) + ";[" + str(active_house.id) + "]:[" + str(
-                active_device.id) + "];" + str(active_device.id) + ".csv"
-            #active_device.events.append(job)
 
 
 def createEpochTime(date, time):
