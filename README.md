@@ -60,9 +60,9 @@ The days to simulate field is to tell the simulation to quit after the given tim
 
 ##### Select Optimization Algorithm(s)
 
-Choose your preferred optimization algorithm. For the algorithms "L-BFGS-B", "SLSQP" and "TNC" you will get the chance to set "Step size" and "Tolerance".
-"Step size" is ...
-"Tolerance" is ...
+Choose your preferred optimization algorithm. The algorithms `L-BFGS-B`, `SLSQP` and `TNC` are all part of `scipy.optimize.minimize`-package, and are used with the Basin-hopping algorithm for finding global minimums. Read more about them [here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html)
+
+When choosing either of the scipy-algorithms, "Step size" and "Tolerance" can be set. These are the parameters in `scipy.optimize.minimize()` called `eps` and `tol`. "Step size" is the step size used for numerical approximation of the jacobian. "Tolerance" sets the tolerance for termination. 
 
 ##### Number of runs
 
@@ -120,7 +120,9 @@ When your configuration is done, type in the name of the neighbourhood and press
 ### See the results
 
 To review the simualtion results, go to http://127.0.0.1:8050/apps/simulate_esn. You can see the total results for the whole neighbourhood in the "All households" tab. Here you can specify which run to review by the 'Choose run' dropdown menu. To get specific results for one household go to 'One houshold' tab and choose your house from the dropdown list. To see total results for all runs, go to the 'All runs' tab.
-You can send results to your colleagues by sending the pkl file in the resultfolder. In the same way you can see results other have created by adding result files to the result folder.
+You can send results to your colleagues by sending the pkl file in the resultfolder. In the same way you can see results other have created by adding result files to the result folder. 
+
+In addition, a log file, `log.txt`, is created when a run is executed. Here, details about what has happened during the run can be seen. Each class can write to the log by calling the logging functions on `self.logger`.
 
 ## Testing with pytest
 
@@ -141,10 +143,13 @@ python -m pytest
 ## Built With
 
 - [Python 3.x](https://www.python.org/downloads/) - Programming language
-- [SciPy](https://www.scipy.org/) -
+- [SciPy](https://www.scipy.org/) - Optimization algorithms
 - [pytest](https://docs.pytest.org/en/latest/) - Testing framework
 - [Dash](https://dash.plot.ly/) - The web framework used
+- [SimPy](https://simpy.readthedocs.io/en/latest/) - Discrete simulation framework
 - [PyCharm](https://www.jetbrains.com/pycharm/) - Python IDE
+- [pandas](https://pandas.pydata.org/) - Framework for handling data series
+- [pykka](https://www.pykka.org/en/latest/api/) - Actor framework used in communication between producers and consumers
 
 ## Contributing
 
