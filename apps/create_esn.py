@@ -9,14 +9,13 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table_experiments as dt
-from datetime import datetime
+import datetime
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.neighbourhood import Neighbourhood, House, Device, Event, User
 from app import app
 from definitions import ROOT_DIR
-
 
 # Global variables. This makes the app works in a localhost environment only
 main_neighbourhood = None
@@ -621,7 +620,7 @@ def render_add_job_content(style):
             html.H4("Earliest Start time"),
             dcc.DatePickerSingle(
                 id="estDatePicker",
-                initial_visible_month=datetime.now()
+                initial_visible_month=datetime.datetime.now()
 
             ),
             html.Br(),
@@ -633,7 +632,7 @@ def render_add_job_content(style):
             html.H4("Latest start time"),
             dcc.DatePickerSingle(
                 id="lstDatePicker",
-                initial_visible_month=datetime.now()
+                initial_visible_month=datetime.datetime.now()
             ),
             html.Br(),
             dcc.Input(
@@ -899,7 +898,7 @@ def save_jobs(n, estDate, estTime, lstDate, lstTime):
 def createEpochTime(date, time):
     d = date.split("-")
     t = time.split(":")
-    dateTime = datetime(int(d[0]), int(d[1]), int(d[2]), int(t[0]), int(t[1])).timestamp()
+    dateTime = datetime.datetime(int(d[0]), int(d[1]), int(d[2]), int(t[0]), int(t[1])).timestamp()
     return int(dateTime)
 
 
