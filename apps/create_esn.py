@@ -54,12 +54,25 @@ def create_house_view(house):
     content = []
     for user in house.users:
         for device in user.devices:
-            content.append(
+        
+
+            if device.weatherPredictions1 is not None and len(device.weatherPredictions1['Time'].iloc[0]) > 0:
+                content.append(
                 html.Tr([
                     html.Td(device.id),
                     html.Td(device.name),
                     html.Td(device.template),
-                    html.Td(device.type)
+                    html.Td(device.type),
+                    html.Td(unixToDate(int(device.weatherPredictions1['Time'].iloc[0])))
+            ])
+            )
+            else:
+                content.append(
+                html.Tr([
+                    html.Td(device.id),
+                    html.Td(device.name),
+                    html.Td(device.template),
+                    html.Td(device.type),
                 ])
             )
 
@@ -75,7 +88,7 @@ def create_jobs_list(house):
                     html.Td(device.name),
                     html.Td(unixToString(event.timestamp)),
                     html.Td(unixToString(event.est)),
-                    html.Td(unixToString(event.lst))
+                    html.Td(unixToString(event.lst)),
                 ])
             )
     return jobs
@@ -90,7 +103,8 @@ def displayHouse(house):
                             html.Th("Device ID"),
                             html.Th("Name"),
                             html.Th("Template"),
-                            html.Th("Type")
+                            html.Th("Type"),
+                            html.Th("PV Date")
                         ])] +
                         create_house_view(house)
                     ),
@@ -664,19 +678,19 @@ def create_producer_modal_form(did, name, temp, devtype, w1, w2, w3, w4):
                          value=devtype)
             ]),
             html.Div(className="pv1", children=[
-                dcc.Upload(id="weather1", className="w1Pred", children=[html.Button("First Predition")]),
+                dcc.Upload(id="weather1", className="w1Pred", children=[html.Button("Add First Prediction")]),
                 dt.DataTable(id="w1dt", rows=w1)
             ]),
             html.Div(className="pv2", children=[
-                dcc.Upload(id="weather2", className="w2Pred", children=[html.Button("Second Predition")]),
+                dcc.Upload(id="weather2", className="w2Pred", children=[html.Button("Add Second Prediction")]),
                 dt.DataTable(id="w2dt", rows=w2),
             ]),
             html.Div(className="pv3", children=[
-                dcc.Upload(id="weather3", className="w3Pred", children=[html.Button("Third Prediction")]),
+                dcc.Upload(id="weather3", className="w3Pred", children=[html.Button("Add Third Prediction")]),
                 dt.DataTable(id="w3dt", rows=w3),
             ]),
             html.Div(className="pv4", children=[
-                dcc.Upload(id="weather4", className="w4Pred", children=[html.Button("Fourth Prediction")]),
+                dcc.Upload(id="weather4", className="w4Pred", children=[html.Button("Add Fourth Prediction")]),
                 dt.DataTable(id="w4dt", rows=w4)
             ])
         ])
@@ -910,6 +924,9 @@ def create_consumer_csv_files(event, house, device):
 
 def unixToString(time):
     return datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
+
+def unixToDate(time):
+    return datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d')
 
 
 #Function to create files for simulation.
