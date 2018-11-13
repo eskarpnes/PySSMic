@@ -10,13 +10,7 @@ def differentiate_and_interpolate(series, indices):
 
 def differentiate(series):
     """Numerically differentiate series"""
-    x = series.index
-    y = series.values
-    dy = np.zeros(y.shape, np.float)
-    dy[0:-1] = np.diff(y) / np.diff(x)
-    dy[-1] = (y[-1] - y[-2]) / (x[-1] - x[-2])
-
-    return pd.Series(index=x, data=dy)
+    return series.diff().fillna(0.0)
 
 
 def interpolate(series, indices):
