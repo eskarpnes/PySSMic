@@ -20,7 +20,6 @@ class Neighbourhood():
 
     def nextHouseId(self):
         return self.houses[-1].id + 1
-    # delete
 
     def to_json(self):
         return json.dumps(self, default=lambda x: x.__dict__)
@@ -88,6 +87,3 @@ class Event():
 
     def __str__(self):
         return self.device.name + str(self.timestamp)
-
-    def unixToString(self, time):
-        return datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')

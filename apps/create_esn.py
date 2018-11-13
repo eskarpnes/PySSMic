@@ -73,9 +73,9 @@ def create_jobs_list(house):
             jobs.append(
                 html.Tr([
                     html.Td(event.device.name),
-                    html.Td(event.unixToString(event.timestamp)),
-                    html.Td(event.unixToString(event.est)),
-                    html.Td(event.unixToString(event.lst))
+                    html.Td(unixToString(event.timestamp)),
+                    html.Td(unixToString(event.est)),
+                    html.Td(unixToString(event.lst))
                 ])
             )
     return jobs
@@ -435,7 +435,8 @@ def addConsumer(n, dId, dName, dTemp, dType, rows):
     global active_device
     if (dId or dName or dTemp or dType) is not None:
         dev = Device(dId, dName, dTemp, dType)
-        dev.loadProfile = pd.DataFrame(rows) if rows is not None else None
+        if rows and len(rows[0]['Time']) > 0:
+            dev.loadProfile = pd.DataFrame(rows)
         if active_device is None:
             active_house.users[0].devices.append(dev)
         elif active_device is not None:
@@ -904,6 +905,10 @@ def create_pv_csv_files(filepath, prediction, house, device, n):
 
 def create_consumer_csv_files(event, house):
     return '{};{};{};[{}]:[{}]:[{}];{}.csv'.format(str(event.timestamp), str(event.est), str(event.lst), str(house.id), str(event.device.id), str(event.device.id), str(event.device.id)) #Maybe include templatenumber?
+
+def unixToString(time):
+    return datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
+
 
 #Function to create files for simulation.
 @app.callback(Output('save_hidden', 'children'),
