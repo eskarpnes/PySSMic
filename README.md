@@ -31,7 +31,13 @@ cd pyssmic && python3 -m venv venv
 3. Go activate the virtual environment and install requirements from requirements.txt
 
 ```
+# Mac/Linux
 source venv/bin/activate
+
+# Windows
+/venv/Scripts/activate.bat
+
+# All
 pip install -r requirements.txt
 ```
 
@@ -73,6 +79,15 @@ Sets how many times you will run the simulator with the configuration specified.
 Press Start simulation to start the simulation. The simulation will now finish before you can do anything more. The result file will be saved in the format: date_time_esnName_algorithm_numOfRuns.pkl in the [result folder](/results).
 
 When the simulation is done, you can go to http://127.0.0.1:8050/apps/simulate_esn to see your results.
+
+#### Producer scores
+
+As a part of the algorithm for choosing producers among consumers, the manager keeps a scoreboard of scores for every producer in the neighbourhood.
+The consumers use these scores in a priority queue when choosing producers, so the producer with the lowest score is chosen first.
+As it is implemented right now, the producers gets -1 to the score when accepting a job, and +1 when declining. This means that a lower score is better.
+
+The simulator saves the producer ranking scores after each simulation. These are saved under input/neighbourhood_name/producer_scores.pkl.
+If you want to reset the producer ranking for any reason, you can simply delete this file. The simulator will then create a new one in the next run with starting values. 
 
 ### Create an ESN
 
