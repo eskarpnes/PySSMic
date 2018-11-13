@@ -26,7 +26,7 @@ class Optimizer:
         self.logger = logging.getLogger("src.Optimizer")
         self.differentiated_loads = []
         self.min_objective_value = float('inf')
-        self.penalty_factor = options["penalty_factor"] if "penalty_factor" in self.options else 1.0
+        self.penalty_factor = self.options["pen"] if "pen" in self.options else 1.0
         self.algorithm = Algorithm[options["algo"]]
 
         # The estimated total produced energy is the last entry of the producer's prediction profile

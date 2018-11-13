@@ -52,6 +52,12 @@ layout = html.Div(children=[
                         ],
                     )
                 ]),
+                html.Div(className="selectVertical", children=[
+                    html.Div(className="inputText", children=[
+                        html.Span("Penalty")
+                    ]),
+                    dcc.Input(id="pen", type="float", value=1.0),
+                ]),
                 html.Div(id="algo-inputs", children=[
                     html.Div(className="selectVertical", children=[
                         html.Div(className="inputText", children=[
@@ -64,7 +70,7 @@ layout = html.Div(children=[
                         html.Div(className="inputText", children=[
                             html.Span("Tolerance")
                         ]),
-                        dcc.Input(id="tol", type="float", value=1000.0),
+                        dcc.Input(id="tol", type="float", value=100.0),
                     ])
                 ], style={"display": "none"})
             ]),
@@ -107,11 +113,12 @@ def check_algo_display(algo):
     [Input("neighbourhood", "value"),
      Input("days", "value"),
      Input("algo", "value"),
+     Input("pen", "value"),
      Input("eps", "value"),
      Input("tol", "value"),
      Input("runs", "value")]
 )
-def check_button_disable(neighbourhood, days, algo, eps, tol, runs):
+def check_button_disable(neighbourhood, days, algo, pen, eps, tol, runs):
     if days in ["", "0"]:
         days = None
     if runs in ["", "0"]:
@@ -120,10 +127,12 @@ def check_button_disable(neighbourhood, days, algo, eps, tol, runs):
         eps = None
     if tol in ["", "0"]:
         tol = None
+    if pen in ["", "0"]:
+        pen = None
     if algo in ["L_BFGS_B", "SLSQP", "TNC"]:
         if None in [eps, tol]:
             return True
-    if None in [neighbourhood, days, algo, runs]:
+    if None in [neighbourhood, days, algo, pen, runs]:
         return True
     else:
         return False
@@ -135,18 +144,20 @@ def check_button_disable(neighbourhood, days, algo, eps, tol, runs):
     [State("neighbourhood", "value"),
      State("days", "value"),
      State("algo", "value"),
+     State("pen", "value"),
      State("eps", "value"),
      State("tol", "value"),
      State("runs", "value")]
 )
-def on_click(n_clicks, neighbourhood, days, algo, eps, tol, runs):
-    if None in [neighbourhood, days, algo, runs]:
+def on_click(n_clicks, neighbourhood, days, algo, pen, eps, tol, runs):
+    if None in [neighbourhood, days, algo, pen, runs]:
         return ""
     config = {
         "neighbourhood": neighbourhood,
         "length": int(days) * 86400,
         "timefactor": 0.00001,
         "algo": algo,
+        "pen": pen,
         "eps": eps,
         "tol": tol,
         "runs": int(runs)
@@ -154,7 +165,7 @@ def on_click(n_clicks, neighbourhood, days, algo, eps, tol, runs):
     print(config)
     now_string = time.strftime("%d%b%y_%H%M")
     print(now_string)
-    if None in [neighbourhood, days, algo, runs]:
+    if None in [neighbourhood, days, algo, pen, runs]:
         return 0
     filename = "{}_{}_{}_{}".format(now_string, neighbourhood, algo, runs)
     sim = ThreadedSimulator(config)

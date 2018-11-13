@@ -9,16 +9,18 @@ from util.message_utils import Action
 
 class Manager:
 
-    def __init__(self, simulator, algo="SLSQP"):
+    def __init__(self, simulator, options=None):
+        if options is None:
+            options = dict(algo="fifty_fifty")
         self.logger = logging.getLogger("src.Manager")
         self.simulator = simulator
         self.consumers = []
         self.producers = {}
         self.producer_rankings = self.load_producer_scores()
-        self.algo = algo
         # The simulated neighbourhood. Calling neighbourhood.now() will get the current time in seconds since
         # simulator start
         self.clock = simulator.neighbourhood
+        self.options = options
 
     def send_new_prediction(self, prediction, producer):
         """Send out a new weather prediction"""
