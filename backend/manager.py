@@ -3,6 +3,7 @@ import queue
 from .consumer import Consumer
 from .producer import Producer
 import logging
+import os.path
 from util.message_utils import Action
 
 
@@ -98,12 +99,12 @@ class Manager:
         return production_profiles
 
     def save_producer_scores(self):
-        pathname = self.simulator.DATA_DIR + "producer_scores"
+        pathname = os.path.join(self.simulator.DATA_DIR, "producer_scores")
         with open(pathname + '.pkl', 'wb') as f:
             pickle.dump(self.producer_rankings, f, pickle.HIGHEST_PROTOCOL)
 
     def load_producer_scores(self):
-        pathname = self.simulator.DATA_DIR + "producer_scores"
+        pathname = os.path.join(self.simulator.DATA_DIR, "producer_scores")
         try:
             with open(pathname + '.pkl', 'rb') as f:
                 self.logger.info("Loading producer scores from file.")

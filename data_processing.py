@@ -225,7 +225,4 @@ def energy_over_time(contracts, producer_profiles):
         y_production = [0]
     return [x_consumption_local, y_consumption_local, x_consumption_remote, y_consumption_remote, x_production,
             y_production]
-
-
-
-
+  
