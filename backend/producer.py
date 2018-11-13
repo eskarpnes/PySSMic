@@ -12,7 +12,7 @@ class Producer(ThreadingActor):
         self.prediction = None
         self.logger = logging.getLogger("src.Producer")
         self.manager = manager
-        options = dict(algo=manager.algo)
+        options = self.manager.options
         self.optimizer = Optimizer(self, options)
         self.logger.info("New producer with made with id: " + str(self.id))
 
