@@ -1,6 +1,5 @@
 import random
-from enum import Enum
-import pandas as pd
+
 
 class Job:
 
@@ -17,6 +16,6 @@ class Job:
                self.load_profile.equals(other.load_profile)
 
     def normalize_time(self, offset):
-        self.est = self.est-offset
-        self.lst = self.lst-offset
-        self.scheduled_time = self.scheduled_time-offset
+        self.est = self.est - offset
+        self.lst = self.lst - offset
+        self.scheduled_time = self.scheduled_time - offset

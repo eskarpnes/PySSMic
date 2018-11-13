@@ -1,4 +1,3 @@
-import itertools
 import logging
 import math
 from collections import defaultdict
@@ -8,7 +7,6 @@ from random import randint, random
 from typing import List
 
 import numpy as np
-import pandas as pd
 from scipy import optimize
 import util.optimizer_utils as utils
 
