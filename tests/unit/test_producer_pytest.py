@@ -1,5 +1,5 @@
 from backend.consumer import Consumer
-from backend.job import Job
+from backend.models.job import Job
 from backend.manager import Manager
 from backend.producer import Producer
 import pandas as pd

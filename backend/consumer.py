@@ -1,7 +1,6 @@
 from pykka import ThreadingActor, Timeout
 import logging
 from util.message_utils import Action
-import util.conf_logger
 
 
 class Consumer(ThreadingActor):

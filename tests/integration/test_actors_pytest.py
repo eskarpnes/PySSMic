@@ -1,9 +1,7 @@
-from backend.consumer import Consumer
-from backend.job import Job
+from backend.models.job import Job
 from backend.manager import Manager
 from backend.producer import Producer
-from simulator import Simulator
-from tests.mocks import MockClock, MockManager, MockSimulator
+from tests.mocks import MockSimulator
 import pandas as pd
 
 

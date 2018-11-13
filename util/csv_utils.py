@@ -1,9 +1,9 @@
 import csv
 
-from backend.consumer_event import ConsumerEvent
-from backend.producer_event import ProducerEvent
-from backend.load import Load
-from backend.prediction import Prediction
+from backend.models.consumer_event import ConsumerEvent
+from backend.models.producer_event import ProducerEvent
+from backend.models.load import Load
+from backend.models.prediction import Prediction
 
 
 # Functions to convert a csv file into a list of objects of their respective type.
