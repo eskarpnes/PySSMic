@@ -1,6 +1,6 @@
 import os
 import math
-from backend.job import Job
+from backend.models.job import Job
 import pandas as pd
 from definitions import ROOT_DIR
 

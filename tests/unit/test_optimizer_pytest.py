@@ -1,4 +1,4 @@
-from backend.job import Job
+from backend.models.job import Job
 from backend.manager import Manager
 from backend.optimizer import Optimizer
 

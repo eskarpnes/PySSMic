@@ -163,7 +163,7 @@ if __name__ == "__main__":
         "neighbourhood": "test",
         "timefactor": 0.0000001,
         "length": 86400,
-        "algo": "basinhopping"
+        "algo": "SLSQP"
     }
 
     sim = Simulator(config, callback)

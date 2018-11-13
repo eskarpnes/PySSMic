@@ -1,6 +1,5 @@
 from backend.consumer import Consumer
-from backend.job import Job
-from backend.manager import Manager
+from backend.models.job import Job
 from tests.mocks import MockManager
 
 

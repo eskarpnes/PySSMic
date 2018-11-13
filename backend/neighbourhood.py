@@ -4,7 +4,7 @@ import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 
-class Neighbourhood():
+class Neighbourhood:
     def __init__(self, n_id):
         self.id = n_id
         self.houses = []
@@ -25,7 +25,7 @@ class Neighbourhood():
         return json.dumps(self, default=lambda x: x.__dict__)
 
 
-class House():
+class House:
     def __init__(self, house_id):
         self.id = house_id
         self.users = []
@@ -40,7 +40,7 @@ class House():
         return str(self.id)
 
 
-class User():
+class User:
     def __init__(self, userId):
         self.id = userId
         self.devices = []
@@ -58,10 +58,7 @@ class User():
         return str(self.id)
 
 
-import datetime
-
-
-class Device():
+class Device:
     def __init__(self, devId, name, template, devType):
         self.id = devId
         self.name = name
@@ -78,7 +75,7 @@ class Device():
         return str(self.name)
 
 
-class Event():
+class Event:
     def __init__(self, time, est, lst):
         self.timestamp = time
         self.est = est
