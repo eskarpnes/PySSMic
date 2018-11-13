@@ -11,18 +11,18 @@ def test_optimize_basinhopping():
     sim = Simulator(dict(), None)
     man = Manager(sim)
     producer = Producer("id", man)
-    job0 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
-    job1 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
-    job2 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
-    job3 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
-    job4 = dict(consumer=None, job=Job("id", 0, 8, pd.Series(index=[0, 1], data=[0.0, 10.0])))
+    job0 = dict(consumer=None, job=Job("id", 0, 10, pd.Series(index=[0, 1, 2], data=[0.0, 5.0, 10.0])))
+    job1 = dict(consumer=None, job=Job("id", 0, 10, pd.Series(index=[0, 1, 2], data=[0.0, 5.0, 10.0])))
+    job2 = dict(consumer=None, job=Job("id", 0, 10, pd.Series(index=[0, 1, 2], data=[0.0, 5.0, 10.0])))
+    job3 = dict(consumer=None, job=Job("id", 0, 10, pd.Series(index=[0, 1, 2], data=[0.0, 5.0, 10.0])))
+    job4 = dict(consumer=None, job=Job("id", 0, 10, pd.Series(index=[0, 1, 2], data=[0.0, 5.0, 10.0])))
 
     schedules = []
-    for i in range(50):
+    for i in range(5):
         if {0, 2, 4, 6, 8} not in schedules:
-            producer.optimizer = Optimizer(producer, options=dict(algo="L_BFGS_B", tol=50.0, eps=0.01))
+            producer.optimizer = Optimizer(producer, options=dict(algo="L_BFGS_B", pen=0.5, tol=0.1, eps=0.5))
             producer.schedule = [job0, job1, job2, job3, job4]
-            producer.prediction = pd.Series(index=[0, 10], data=[0.0, 100.0])
+            producer.prediction = pd.Series(index=[0, 5, 10], data=[0.0, 25.0, 50.0])
             schedule_time, should_keep = producer.optimizer.optimize()
             schedules.append(set([int(round(x)) for x in schedule_time]))
 
