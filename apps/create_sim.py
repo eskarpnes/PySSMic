@@ -154,6 +154,8 @@ def on_click(n_clicks, neighbourhood, days, algo, eps, tol, runs):
     print(config)
     now_string = time.strftime("%d%b%y_%H%M")
     print(now_string)
+    if None in [neighbourhood, days, algo, runs]:
+        return 0
     filename = "{}_{}_{}_{}".format(now_string, neighbourhood, algo, runs)
     sim = ThreadedSimulator(config)
     contracts, profiles = sim.start()
