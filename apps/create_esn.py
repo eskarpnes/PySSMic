@@ -12,6 +12,7 @@ import dash_table_experiments as dt
 import datetime
 import sys
 import os
+import pickle
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from backend.neighbourhood import Neighbourhood, House, Device, Event, User
 from app import app
@@ -314,14 +315,7 @@ layout = html.Div([
     html.Div(id="initChoices", children=[
         html.Button("Create new from scratch", id="btnNewNeighbourhood", n_clicks_timestamp="0"),
         dcc.Upload(id="upload-data", children=[html.Button("Create new from XML")]),
-        html.Div(id="newNeighbourhoodInput", children=[
-            dcc.Input(id="newNeighbourhoodId", value=0, type="number", style={
-                "width": "50px"
-            }),
-            html.Button("Create Neighbourhood",
-                        id="btnCreateNewNeighbourhood", n_clicks_timestamp="0")
-        ],
-                 style={"display": "none"}),
+        dcc.Upload(id="load_neighbourhood_pickle", children=[html.Button("Load Pickle")])
     ]),
     html.Div(id="newHouseInput", children=[
         html.Button("Add house", id="btnAddHouse", n_clicks_timestamp="0"),
@@ -488,11 +482,16 @@ def config_producer(n, dId, dName, dTemp, dType, w1, w2, w3, w4):
 This function does most of the logic when adding and removing houses,devices, jobs to the neighbourhood
 Updates the main_neighbourhood
 """
-
+def nei_from_pickle(filename):
+    filepath = ROOT_DIR+"/neighbourhoods/"+filename
+    with open(filepath, "rb") as f:
+        nei = pickle.load(f)
+    return nei
 
 @app.callback(Output("neighbourhood_div", "children"),
               [
                   Input("upload-data", "contents"),
+                  Input("load_neighbourhood_pickle", "filename"),
                   Input("btnNewNeighbourhood", "n_clicks_timestamp"),
                   Input("btnAddHouse", "n_clicks_timestamp"),
                   Input("btnDeleteHouse", "n_clicks_timestamp"),
@@ -500,7 +499,7 @@ Updates the main_neighbourhood
                   Input("save_producer", "n_clicks_timestamp"),
                   Input("btnDeleteDevice", "n_clicks_timestamp")
               ])
-def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, btnSaveCons, btnSaveProd,
+def configure_neighbourhood(contents, pickle, btnNewNei, btnAddHouse, btnRemoveHouse, btnSaveCons, btnSaveProd,
                             btnDeleteDevice):
     global main_neighbourhood
     global active_house
@@ -527,6 +526,8 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
         pass  # needed to take this functionality and move it to addDevice function. See line 336.
     elif btnDeleteDevice != "0" and btnDeleteDevice == btnclicks[-1]:
         active_house.users[0].devices.remove(active_device)
+    elif main_neighbourhood is None and pickle is not None:
+        main_neighbourhood = nei_from_pickle(pickle)
     elif main_neighbourhood is None and contents is not None: #This will only fire the first time xml contens are loaded
         root = parse_contents(contents)
         main_neighbourhood = create_neighborhood_object(root)
@@ -541,22 +542,22 @@ def configure_neighbourhood(contents, btnNewNei, btnAddHouse, btnRemoveHouse, bt
 """ --- Start functions to show change the style to different divs and modals ---"""
 
 
-def show(n, contents):
-    if (n and n > 0) or contents:
+def show(n, contents, filename):
+    if (n and n > 0) or contents or filename:
         return {"display": "flex"}
     return {"display":"none"}
 
 
 @app.callback(Output("newHouseInput", "style"),
-              [Input("btnNewNeighbourhood", "n_clicks"), Input("upload-data", "contents")])
-def show_menu(n, contents):
-    return show(n, contents)
+              [Input("btnNewNeighbourhood", "n_clicks"), Input("upload-data", "contents"), Input("load_neighbourhood_pickle", "contents")])
+def show_menu(n, contents, filename):
+    return show(n, contents, filename)
 
 
 @app.callback(Output("saveNeighbourhood", "style"),
-              [Input("btnNewNeighbourhood", "n_clicks"), Input("upload-data", "contents")])
-def show_save_button(n, contents):
-    return show(n, contents)
+              [Input("btnNewNeighbourhood", "n_clicks"), Input("upload-data", "contents"), Input("load_neighbourhood_pickle", "contents")])
+def show_save_button(n, contents, filename):
+    return show(n, contents, filename)
 
 
 @app.callback(Output("initChoices", "style"), [Input("tabs", "children")])
@@ -911,6 +912,15 @@ def create_consumer_csv_files(event, house, device):
 def unixToString(time):
     return datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
 
+def makeDirs(n, value):
+    filepath = ROOT_DIR + "/input/" + value
+    if os.path.isdir(filepath):
+        value+="_1"
+        makeDirs(n, value)
+    os.makedirs(filepath)
+    os.makedirs(filepath + "/loads")
+    os.makedirs(filepath + "/predictions")
+    return filepath
 
 #Function to create files for simulation.
 @app.callback(Output("save_hidden", "children"),
@@ -921,10 +931,7 @@ def save_neighbourhood(n, value):
     if n and n > 0:
         if value is None:
             value = "no_name"
-        filepath = ROOT_DIR + "/input/" + value
-        os.makedirs(filepath)
-        os.makedirs(filepath + "/loads")
-        os.makedirs(filepath + "/predictions")
+        filepath = makeDirs(n, value)
         producer_events = []
         consumer_events =[]
         # make dir loads, prediction, consumerevent.csv, produserevent.csv
@@ -951,6 +958,10 @@ def save_neighbourhood(n, value):
         with open(filepath + "/producer_event.csv", "a+") as producerJobscsv:
             wr = csv.writer(producerJobscsv, delimiter="\n")
             wr.writerow(producer_events)
+
+        fpath = ROOT_DIR+"/neighbourhoods/"+value+".pkl"
+        with open(fpath, "wb") as f:
+            pickle.dump(main_neighbourhood, f)
 
 
 @app.callback(Output("saveNeighbourhoodFeedback", "style"), [Input("btnSaveNeighbourhood", "n_clicks")])
