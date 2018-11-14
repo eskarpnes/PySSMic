@@ -23,6 +23,14 @@
   overflow: auto;
 }
 
+#logo-img {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
 .header {
   display: flex;
   flex-direction: column;
