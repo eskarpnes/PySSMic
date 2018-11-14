@@ -11,7 +11,7 @@
   background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
-.modal_content {
+.modal-content {
   background-color: white;
   margin: 5% auto; /* 15% from the top and centered */
   padding: 20px;
@@ -25,6 +25,7 @@
 
 .header {
   display: flex;
+  flex-direction: column;
 }
 
 .header h1,
@@ -108,11 +109,6 @@ h3 {
   max-width: 100px;
 }
 
-body {
-  display: flex;
-  justify-content: center;
-}
-
 #react-entry-point {
   min-width: 50%;
   max-width: 90%;
@@ -141,30 +137,30 @@ body {
   margin-bottom: 20px;
 }
 
-#init_choices {
+#initChoices {
   display: flex;
   justify-content: center;
 }
 
-#init_choices > button {
+#initChoices > button {
   margin: 20px;
 }
 
-#init_choices > div > button {
+#initChoices > div > button {
   margin: 20px;
 }
 
-#new_house_input {
+#newHouseInput {
   margin-bottom: 20px;
   justify-content: center;
 }
 
-#new_house_input > button {
+#newHouseInput > button {
   padding: 0 10px;
   margin: 5px 5px;
 }
 
-#new_house_input > div > button {
+#newHouseInput > div > button {
   padding: 0 10px;
   margin: 5px 5px;
 }
@@ -178,13 +174,13 @@ body {
   margin-right: auto;
 }
 
-#save_neighbourhood {
+#saveNeighbourhood {
   margin-top: 30px;
   justify-content: center;
   display: flex;
 }
 
-#save_neighbourhood > * {
+#saveNeighbourhood > * {
   margin: 0 10px;
 }
 
@@ -206,29 +202,29 @@ body {
     "pv3 pv3 pv4 pv4";
 }
 
-.dev_id {
+.devId {
   grid-area: id;
 }
 
-.dev_name {
+.devName {
   grid-area: name;
 }
 
-.dev_temp {
+.devTemp {
   grid-area: template;
 }
 
-.dev_type {
+.devType {
   grid-area: type;
 }
 
-.dev_load {
+.devLoad {
   margin-top: 20px;
   margin-bottom: 10px;
   grid-area: new;
 }
 
-.load_table {
+.loadTable {
   grid-area: dt;
   margin-bottom: 10px;
 }
