@@ -11,7 +11,7 @@
   background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
-.modal-content {
+.modal_content {
   background-color: white;
   margin: 5% auto; /* 15% from the top and centered */
   padding: 20px;
@@ -139,30 +139,30 @@ body {
   margin-bottom: 20px;
 }
 
-#initChoices {
+#init_choices {
   display: flex;
   justify-content: center;
 }
 
-#initChoices > button {
+#init_choices > button {
   margin: 20px;
 }
 
-#initChoices > div > button {
+#init_choices > div > button {
   margin: 20px;
 }
 
-#newHouseInput {
+#new_house_input {
   margin-bottom: 20px;
   justify-content: center;
 }
 
-#newHouseInput > button {
+#new_house_input > button {
   padding: 0 10px;
   margin: 5px 5px;
 }
 
-#newHouseInput > div > button {
+#new_house_input > div > button {
   padding: 0 10px;
   margin: 5px 5px;
 }
@@ -176,13 +176,13 @@ body {
   margin-right: auto;
 }
 
-#saveNeighbourhood {
+#save_neighbourhood {
   margin-top: 30px;
   justify-content: center;
   display: flex;
 }
 
-#saveNeighbourhood > * {
+#save_neighbourhood > * {
   margin: 0 10px;
 }
 
@@ -204,29 +204,29 @@ body {
     "pv3 pv3 pv4 pv4";
 }
 
-.devId {
+.dev_id {
   grid-area: id;
 }
 
-.devName {
+.dev_name {
   grid-area: name;
 }
 
-.devTemp {
+.dev_temp {
   grid-area: template;
 }
 
-.devType {
+.dev_type {
   grid-area: type;
 }
 
-.devLoad {
+.dev_load {
   margin-top: 20px;
   margin-bottom: 10px;
   grid-area: new;
 }
 
-.loadTable {
+.load_table {
   grid-area: dt;
   margin-bottom: 10px;
 }
