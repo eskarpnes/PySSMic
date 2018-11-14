@@ -25,7 +25,6 @@
 
 .header {
   display: flex;
-  flex-direction: column;
 }
 
 .header h1,
@@ -51,15 +50,15 @@ h3 {
 }
 
 .footer {
-    text-align: center;
-    bottom: 0;
-    padding-bottom: 20px;
-    width: 100%;
-    position: fixed;
-    left: 0;
-    height: 2em;
-    font-size: small;
-    color: #707070;
+  text-align: center;
+  bottom: 0;
+  padding-bottom: 20px;
+  width: 100%;
+  position: fixed;
+  left: 0;
+  height: 2em;
+  font-size: small;
+  color: #707070;
 }
 
 .simulatorSetup {
@@ -110,9 +109,9 @@ h3 {
 }
 
 body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 #react-entry-point {

@@ -301,7 +301,7 @@ layout = html.Div([
         html.Div("device:", id="deviceTwo")], style={"display": "none"}),
     html.H4("Create a new neighbourhood"),
     html.Div(id="init_choices", children=[
-        html.Button("Create new from scratch", id="btnNewNeighbourhood", n_clicks_timestamp="0"),
+        html.Button("Create new from scratch", id="btn_new_neighbourhood", n_clicks_timestamp="0"),
         dcc.Upload(id="upload_data", children=[html.Button("Create new from XML")]),
         dcc.Upload(id="load_neighbourhood_pickle", children=[html.Button("Load Pickle")])
     ]),
@@ -472,11 +472,11 @@ def nei_from_pickle(filename):
 
 @app.callback(Output("neighbourhood_div", "children"),
               [
-                  Input("upload-data", "contents"),
+                  Input("upload_data", "contents"),
                   Input("load_neighbourhood_pickle", "filename"),
-                  Input("btnNewNeighbourhood", "n_clicks_timestamp"),
-                  Input("btnAddHouse", "n_clicks_timestamp"),
-                  Input("btnDeleteHouse", "n_clicks_timestamp"),
+                  Input("btn_new_neighbourhood", "n_clicks_timestamp"),
+                  Input("btn_add_house", "n_clicks_timestamp"),
+                  Input("btn_delete_house", "n_clicks_timestamp"),
                   Input("save_consumer", "n_clicks_timestamp"),
                   Input("save_producer", "n_clicks_timestamp"),
                   Input("btn_delete_device", "n_clicks_timestamp")
