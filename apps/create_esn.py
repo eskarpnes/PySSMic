@@ -50,18 +50,14 @@ def create_house_view(house):
     content = []
     for user in house.users:
         for device in user.devices:
-        
-
-            if device.weatherPredictions1 is not None and len(device.weatherPredictions1['Time'].iloc[0]) > 0:
+            if device.weather_prediction1 is not None and len(device.weather_prediction1['Time'].iloc[0]) > 0:
                 content.append(
                 html.Tr([
                     html.Td(device.id),
                     html.Td(device.name),
                     html.Td(device.template),
                     html.Td(device.type),
-                    html.Td(unixToDate(int(device.weatherPredictions1['Time'].iloc[0])))
-            ])
-            )
+                    html.Td(unixToDate(int(device.weather_prediction1['Time'].iloc[0])))]))
             else:
                 content.append(
                 html.Tr([
