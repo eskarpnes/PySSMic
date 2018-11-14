@@ -10,7 +10,7 @@ This represents a base file which follows every layout
 
 header = html.Div([
     html.Div(id="logo-img", children=[
-        html.Img(src=os.path.join("assets", "logo_pyssmic.png"), style={"transform": "scale(0.5, 0.5)"})
+        html.Img(src=os.path.join("assets", "logo_pyssmic.png"))
     ]),
     html.Div([
         dcc.Link("Home", href="/", style=URL_STYLE),
