@@ -12,9 +12,9 @@ class Neighbourhood:
     def __str__(self):
         return str(self.id)
 
-    def findHouseById(self, houseId):
+    def find_house_by_id(self, house_id):
         for house in self.houses:
-            if house.id == houseId:
+            if house.id == house_id:
                 return house
         return None
 
@@ -30,9 +30,9 @@ class House:
         self.id = house_id
         self.users = []
 
-    def findDeviceById(self, deviceId):
+    def find_device_by_id(self, device_id):
         for device in self.users[0].devices:
-            if device.id == deviceId:
+            if device.id == device_id:
                 return device
         return None
 
@@ -41,8 +41,8 @@ class House:
 
 
 class User:
-    def __init__(self, userId):
-        self.id = userId
+    def __init__(self, user_id):
+        self.id = user_id
         self.devices = []
 
     def get_id(self):
@@ -59,17 +59,17 @@ class User:
 
 
 class Device:
-    def __init__(self, devId, name, template, devType):
-        self.id = devId
+    def __init__(self, dev_id, name, template, dev_type):
+        self.id = dev_id
         self.name = name
         self.template = template
-        self.type = devType
-        self.loadProfile = None
+        self.type = dev_type
+        self.load_profile = None
         self.events = []
-        self.weatherPredictions1 = None
-        self.weatherPredictions2 = None
-        self.weatherPredictions3 = None
-        self.weatherPredictions4 = None
+        self.weather_prediction1 = None
+        self.weather_prediction2 = None
+        self.weather_prediction3 = None
+        self.weather_prediction4 = None
 
     def __str__(self):
         return str(self.name)
