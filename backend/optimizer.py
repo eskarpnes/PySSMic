@@ -26,7 +26,7 @@ class Optimizer:
         self.logger = logging.getLogger("src.Optimizer")
         self.differentiated_loads = []
         self.min_objective_value = float('inf')
-        self.penalty_factor = options["penalty_factor"] if "penalty_factor" in self.options else 1.0
+        self.penalty_factor = float(self.options["pen"]) if "pen" in self.options else 1.0
         self.algorithm = Algorithm[options["algo"]]
 
         # The estimated total produced energy is the last entry of the producer's prediction profile
@@ -83,8 +83,9 @@ class Optimizer:
         schedule_times = [s['job'].scheduled_time for s in self.producer.schedule]
         return schedule_times, should_keep
 
-    def objective_function(self, schedule: List[float]):
+    def objective_function(self, s: List[float]):
         """The function we want to minimize. schedule is a List of start times for the jobs in the schedule."""
+        schedule = [utils.round_to_nearest_60(x) for x in s]
         cache = self._get_cached_value(schedule)
         if cache < np.inf:
             return cache

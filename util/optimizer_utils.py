@@ -16,7 +16,7 @@ def differentiate(series):
 def interpolate(series, indices):
     """Linearly interpolate series on indices."""
     not_included = [t for t in indices if t not in series.index.values]
-    new_indices_series = pd.Series(index=not_included, data=[np.nan]*len(not_included))
+    new_indices_series = pd.Series(index=not_included, data=[np.nan] * len(not_included))
     with_new_indices = series.append(new_indices_series).sort_index()
     interpolated = with_new_indices.interpolate(method="linear")
 
@@ -39,3 +39,8 @@ def interpolate(series, indices):
     new_series = pd.Series(data=new_values, index=interpolated.index)
 
     return new_series
+
+
+def round_to_nearest_60(x):
+    """Rounds of a number to the nearest multiple of 60."""
+    return int(60 * round(float(x) / 60))

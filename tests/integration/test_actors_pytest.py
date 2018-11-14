@@ -7,12 +7,12 @@ import pandas as pd
 
 def test_request_job_integration():
     simulator = MockSimulator()
-    manager = Manager(simulator, algo="fifty_fifty")
+    manager = Manager(simulator, options=dict(algo="SLSQP"))
     Producer(id="p1", manager=manager)
     manager.new_producer("p1")
     prediction = pd.Series(index=[0, 3600, 7200], data=[0.0, 10.0, 20.0])
     manager.send_new_prediction(prediction, manager.producers["p1"])
-    job = Job("j1", 0, 0, pd.Series(index=[0, 3600], data=[0.0, 5.0]))
+    job = Job("j1", 0, 0, pd.Series(index=[0, 1800, 3600], data=[0.0, 2.5, 5.0]))
 
     manager.new_job(job)
 
