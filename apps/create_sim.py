@@ -22,7 +22,7 @@ def get_dropdown_options():
 layout = html.Div(children=[
     html.Div(className="content", children=[
         html.Div(className="simulatorSetup", children=[
-            html.Span("Select ESN:"),
+            html.Span("Select ESN"),
             html.Div(className="selectHorizontal", children=[
                 dcc.Dropdown(
                     id="neighbourhood",
@@ -35,13 +35,13 @@ layout = html.Div(children=[
             ]),
             html.Div(className="selectVertical", children=[
                 html.Div(className="inputText", children=[
-                    html.Span("Days to simulate: ")
+                    html.Span("Days to simulate")
                 ]),
                 dcc.Input(id="days", type="int", value=1),
             ]),
             html.Div(className="selectHorizontal", children=[
                 html.Div(className="selectVertical no-padding", children=[
-                    html.Span("Select Optimization Algorithm(s): "),
+                    html.Span("Select optimisation algorithm"),
                     dcc.Dropdown(
                         id="algo",
                         options=[
@@ -76,7 +76,7 @@ layout = html.Div(children=[
             ]),
             html.Div(className="selectVertical", children=[
                 html.Div(className="inputText", children=[
-                    html.Span("Number of runs: ")
+                    html.Span("Number of runs")
                 ]),
                 dcc.Input(id="runs", type="int", value="1")
             ]),
