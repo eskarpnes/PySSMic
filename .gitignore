@@ -112,6 +112,7 @@ venv.bak/
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/
 
 # Generated files
 .idea/**/contentModel.xml
@@ -166,3 +167,16 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+# VS Code specific
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Log files
+log.txt
+
+# Pickled files
+*.pkl

@@ -1,0 +1,266 @@
+.modal {
+  display: block; /*Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal_content {
+  background-color: white;
+  margin: 5% auto; /* 15% from the top and centered */
+  padding: 20px;
+  width: 50%; /* Could be more or less, depending on screen size */
+  color: #506784;
+}
+
+.test {
+  overflow: auto;
+}
+
+#logo-img {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 20px;
+  padding-top: 20px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+}
+
+.header h1,
+h2,
+h3 {
+  text-align: center;
+}
+
+.paragraph p {
+  text-align: center;
+}
+
+.links {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  font-size: 2rem;
+}
+
+.links a {
+  padding: 20px;
+  text-decoration: none;
+}
+
+.simulatorSetup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.selectHorizontal {
+  display: flex;
+  flex-direction: row;
+  align-content: space-between;
+  padding-bottom: 40px;
+}
+
+.selectHorizontal .inputText {
+  display: flex;
+  align-content: space-around;
+}
+
+.selectHorizontal #neighbourhood {
+  width: 100%;
+  padding-right: 10px;
+}
+
+.selectHorizontal .btnContainer .btnAddEsn {
+  height: 36px;
+}
+
+.selectVertical {
+  display: flex;
+  flex-direction: column;
+  align-content: space-between;
+  padding-bottom: 40px;
+  padding-right: 40px;
+}
+
+.no-padding {
+  padding-bottom: 0;
+}
+
+#days {
+  max-width: 100px;
+}
+
+#runs {
+  max-width: 100px;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+#react-entry-point {
+  min-width: 50%;
+  max-width: 90%;
+}
+
+#btn-simulate:disabled,
+#btn-simulate:disabled:hover {
+  color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.1);
+  cursor: auto;
+}
+
+#par-interval-all,
+#par-interval-one {
+  width: 200px;
+}
+
+#simulation_choice {
+  width: 100%;
+  padding-right: 10px;
+}
+
+/* Create ESN app */
+.create_esn_div > h4 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#init_choices {
+  display: flex;
+  justify-content: center;
+}
+
+#init_choices > button {
+  margin: 20px;
+}
+
+#init_choices > div > button {
+  margin: 20px;
+}
+
+#new_house_input {
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+#new_house_input > button {
+  padding: 0 10px;
+  margin: 5px 5px;
+}
+
+#new_house_input > div > button {
+  padding: 0 10px;
+  margin: 5px 5px;
+}
+
+.tabcontent_header {
+  text-align: center;
+}
+
+.house_content_table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#save_neighbourhood {
+  margin-top: 30px;
+  justify-content: center;
+  display: flex;
+}
+
+#save_neighbourhood > * {
+  margin: 0 10px;
+}
+
+.consumer_modal_form {
+  margin-top: 20px;
+  display: grid;
+  grid-template-areas:
+    "id name template type"
+    ". new new ."
+    ". dt dt .";
+}
+
+.producer_modal_form {
+  margin-top: 20px;
+  display: grid;
+  grid-template-areas:
+    "id name template type"
+    "pv1 pv1 pv2 pv2"
+    "pv3 pv3 pv4 pv4";
+}
+
+.dev_id {
+  grid-area: id;
+}
+
+.dev_name {
+  grid-area: name;
+}
+
+.dev_temp {
+  grid-area: template;
+}
+
+.dev_type {
+  grid-area: type;
+}
+
+.dev_load {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  grid-area: new;
+}
+
+.load_table {
+  grid-area: dt;
+  margin-bottom: 10px;
+}
+
+.pv1 {
+  margin: 10px 10px;
+  grid-area: pv1;
+}
+
+.pv2 {
+  margin: 10px 10px;
+  grid-area: pv2;
+}
+
+.pv3 {
+  margin: 10px 10px;
+  grid-area: pv3;
+}
+
+.pv4 {
+  margin: 10px 10px;
+  grid-area: pv4;
+}
+.modal_input_field {
+  width: 100px;
+}
+
+.house_content_empty {
+  margin-top: 30px;
+  text-align: center;
+}
+
+/*datatable*/
+.react-grid-Container,
+.react-grid-HeaderRow,
+.react-grid-HeaderCell {
+  width: 100%;
+}
