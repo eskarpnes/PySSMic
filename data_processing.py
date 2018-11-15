@@ -127,6 +127,8 @@ def get_standard_deviation(simulation):
                 local_consumption += contract["load_profile"].values[-1]
         total_local_consumption.append(local_consumption)
     # Returns [std, mean]
+    if (len(total_local_consumption)) == 1:
+        return [0, total_local_consumption[0]]
     return [round(statistics.stdev(total_local_consumption), 2), round(statistics.mean(total_local_consumption), 2)]
 
 
