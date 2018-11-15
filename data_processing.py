@@ -7,9 +7,6 @@ from definitions import ROOT_DIR
 import statistics
 
 
-"""----------------------USED IN SIMULATE_ESN.PY----------------------"""
-
-
 def open_file(file_name):
     path = os.path.join(ROOT_DIR, "results", file_name)
     print("opening " + path)
@@ -59,7 +56,7 @@ def get_profiles_for_house(house, profiles):
 
 
 # Peak to average ratio methods
-# TODO: Rename to peak_to_average_ratio_consumption and change in simulate_esn.py
+# TODO: Rename to peak_to_average_ratio_consumption and change in results.py
 def peak_to_average_ratio_consumption(contracts, interval=15):
     df = pd.DataFrame.from_dict(contracts)
     agreement_times = df["time"].tolist()

@@ -76,7 +76,7 @@ Sets how many times you will run the simulator with the configuration specified.
 
 Press Start simulation to start the simulation. The simulation will now finish before you can do anything more. The result file will be saved in the format: date_time_esnName_algorithm_numOfRuns.pkl in the [result folder](/results).
 
-When the simulation is done, you can go to http://127.0.0.1:8050/apps/simulate_esn to see your results.
+When the simulation is done, you can go to http://127.0.0.1:8050/apps/results to see your results.
 
 #### Producer scores
 
@@ -132,7 +132,7 @@ When your configuration is done, type in the name of the neighbourhood and press
 
 ### See the results
 
-To review the simualtion results, go to http://127.0.0.1:8050/apps/simulate_esn. You can see the total results for the whole neighbourhood in the "All households" tab. Here you can specify which run to review by the 'Choose run' dropdown menu. To get specific results for one household go to 'One houshold' tab and choose your house from the dropdown list. To see total results for all runs, go to the 'All runs' tab.
+To review the simualtion results, go to http://127.0.0.1:8050/apps/results. You can see the total results for the whole neighbourhood in the "All households" tab. Here you can specify which run to review by the 'Choose run' dropdown menu. To get specific results for one household go to 'One houshold' tab and choose your house from the dropdown list. To see total results for all runs, go to the 'All runs' tab.
 You can send results to your colleagues by sending the pkl file in the resultfolder. In the same way you can see results other have created by adding result files to the result folder. 
 
 In addition, a log file, `log.txt`, is created when a run is executed. Here, details about what has happened during the run can be seen. Each class can write to the log by calling the logging functions on `self.logger`.

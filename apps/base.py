@@ -16,7 +16,7 @@ header = html.Div([
         dcc.Link("Home", href="/", style=URL_STYLE),
         dcc.Link("Create Simulation", href="/apps/create_sim", style=URL_STYLE),
         dcc.Link("Create neighbourhood", href="/apps/create_esn", style=URL_STYLE),
-        dcc.Link("Results", href="/apps/simulate_esn", style=URL_STYLE)
+        dcc.Link("Results", href="/apps/results", style=URL_STYLE)
     ], className="links")
 ], className="header")
 
