@@ -24,8 +24,8 @@ def interpolate(series, indices):
     # we want the values after the (originally) last index to be equal to the last value.
     min_index = min(series.index.values)
     max_index = max(series.index.values)
-    start_value = series.data[0]
-    end_value = series.data[-1]
+    start_value = series.values[0]
+    end_value = series.values[-1]
 
     new_values = []
     for t, p in interpolated.items():

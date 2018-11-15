@@ -19,4 +19,4 @@ def test_interpolate():
     series = pd.Series(index=[2, 4, 6], data=[4.0, 8.0, 12.0])
     actual = u.interpolate(series, [i for i in range(9)]).round(4)
     expected = pd.Series(index=[i for i in range(9)], data=[4.0, 4.0, 4.0, 6.0, 8.0, 10.0, 12.0, 12.0, 12.0])
-    assert all(list(actual.data == expected))
+    assert all(list(actual.values == expected))
