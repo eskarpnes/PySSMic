@@ -3,16 +3,17 @@ from backend.manager import Manager
 import simpy.rt
 import simpy
 from util.input_utils import *
+from util import conf_logger
 from definitions import ROOT_DIR
 import os.path
 import pickle
 
 
 class Simulator:
-    def __init__(self, config, save_name):
-        self.logger = logging.getLogger("src.Simulator")
+    def __init__(self, config, number):
+        self.logger = logging.getLogger("src.Simulator#" + str(number))
 
-        self.save_name = save_name
+        self.save_name = os.path.join("tmp", "run" + str(number))
 
         # Default 1000 simulated seconds per second. 1 day = 86 seconds to run.
         factor = config["timefactor"] if "timefactor" in config else 0.001
@@ -149,7 +150,7 @@ class Simulator:
 
 if __name__ == "__main__":
     import time
-
+    from backend.optimizer import Algorithm
 
     # Hardcoded example
 
@@ -160,13 +161,13 @@ if __name__ == "__main__":
 
     config = {
         "neighbourhood": "test",
-        "timefactor": 0.0000001,
+        "timefactor": 0.0000000000001,
         "length": 86400,
-        "algo": "SLSQP"
+        "algo": Algorithm.SLSQP.value,
+        "runs": 16
     }
 
-    sim = Simulator(config, callback)
+    sim = Simulator(config, 1)
     sim.start()
-    time.sleep(config["length"] * config["timefactor"])
     print(sim.manager.producer_rankings)
     sim.stop()

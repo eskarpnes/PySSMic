@@ -1,6 +1,4 @@
 from multiprocessing import Process, cpu_count, Value
-
-from backend.optimizer import Algorithm
 from simulator import Simulator
 import pickle
 import os
@@ -19,8 +17,7 @@ class ThreadedSimulator:
         if not os.path.isdir("tmp"):
             os.makedirs("tmp")
         for i in range(self.runs):
-            save_name = os.path.join("tmp", "run" + str(i))
-            process = Process(target=self.start_simulation, args=(save_name,))
+            process = Process(target=self.start_simulation, args=(i,))
             process.start()
             processes.append(process)
         for process in processes:
@@ -45,6 +42,7 @@ class ThreadedSimulator:
 
 if __name__ == "__main__":
     import time
+    from backend.optimizer import Algorithm
 
     start_time = time.time()
     # Hardcoded example
