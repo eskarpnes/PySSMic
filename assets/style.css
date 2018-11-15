@@ -58,18 +58,6 @@ h3 {
   text-decoration: none;
 }
 
-.footer {
-  text-align: center;
-  bottom: 0;
-  padding-bottom: 20px;
-  width: 100%;
-  position: fixed;
-  left: 0;
-  height: 2em;
-  font-size: small;
-  color: #707070;
-}
-
 .simulatorSetup {
   display: flex;
   flex-direction: column;

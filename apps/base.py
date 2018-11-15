@@ -19,8 +19,3 @@ header = html.Div([
         dcc.Link("Results", href="/apps/results", style=URL_STYLE)
     ], className="links")
 ], className="header")
-
-
-footer = html.Div(id="footer", children=[
-    "© Customer Driven Project for SINTEF Digital"
-], className="footer")

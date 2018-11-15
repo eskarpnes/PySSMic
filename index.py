@@ -19,13 +19,13 @@ app.layout = html.Div([
               [Input("url", "pathname")])
 def display_page(pathname):
     if pathname == "/":
-        return base.header, base.footer
+        return base.header
     elif pathname == "/apps/create_sim":
-        return base.header, create_sim.layout, base.footer
+        return base.header, create_sim.layout
     elif pathname == "/apps/create_esn":
-        return base.header, create_esn.layout, base.footer
+        return base.header, create_esn.layout
     elif pathname == "/apps/results":
-        return base.header, results.layout, base.footer
+        return base.header, results.layout
     else:
         return "404"
 
