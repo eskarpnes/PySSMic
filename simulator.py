@@ -7,13 +7,14 @@ from util import conf_logger
 from definitions import ROOT_DIR
 import os.path
 import pickle
+from definitions import ROOT_DIR
 
 
 class Simulator:
     def __init__(self, config, number):
         self.logger = logging.getLogger("src.Simulator#" + str(number))
 
-        self.save_name = os.path.join("tmp", "run" + str(number))
+        self.save_name = os.path.join(ROOT_DIR, "tmp", "run" + str(number))
 
         # Default 1000 simulated seconds per second. 1 day = 86 seconds to run.
         factor = config["timefactor"] if "timefactor" in config else 0.001
