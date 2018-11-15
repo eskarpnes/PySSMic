@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 What things you need to install the software and how to install them
 
-- [Python 3.x](https://www.python.org/downloads/) Follow the instructions
+- [Python 3.6](https://www.python.org/downloads/) or higher. Follow the instructions in the link.
 
 ### Installing
 
@@ -48,10 +48,8 @@ You should now have a working project locally
 You can run the simulator from the rootfolder with
 
 ```
-python index.py
+python start.py
 ```
-
-Open your preferred browser and go to http://127.0.0.1:8050/
 
 ### Create a simulation
 
@@ -166,9 +164,7 @@ python -m pytest
 - [pandas](https://pandas.pydata.org/) - Framework for handling data series
 - [pykka](https://www.pykka.org/en/latest/api/) - Actor framework used in communication between producers and consumers
 
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+## Contributers
 
 See [Contributers](https://github.com/eskarpnes/PySSMic/graphs/contributors)
 
@@ -179,9 +175,3 @@ We use [GIT](https://git-scm.com/) for versioning.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
-## Acknowledgments
-
-- SINTEF Digital for the project
-- CoSSMiC
-- Supervisor
