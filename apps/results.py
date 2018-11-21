@@ -486,7 +486,7 @@ def update_consumption(run, simulation):
                 "title": "Time [Minutes]"
             },
             yaxis={
-                "title": "Energy [W]"
+                "title": "Energy [Wh per minute]"
             }
         )
     )
@@ -527,7 +527,7 @@ def update_consumption(simulation):
                 "title": "Time [Minutes]"
             },
             yaxis={
-                "title": "Energy [W]"
+                "title": "Energy [Wh per minute]"
             }
         )
     )
