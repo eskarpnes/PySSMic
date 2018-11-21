@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 What things you need to install the software and how to install them
 
-- [Python 3.6](https://www.python.org/downloads/) or higher. Follow the instructions in the link.
+- [Python 3.6](https://www.python.org/downloads/) or 3.7. Follow the instructions in the link. If you want to use 3.8 or higher, you must update the packages as Scipy use a method that will depreciate in Python 3.8.
 
 ### Installing
 
