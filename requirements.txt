@@ -24,7 +24,7 @@ numpy==1.15.4
 pandas==0.23.4
 plotly==3.4.1
 pluggy==0.8.0
-py==1.7.0
+py==1.10.0
 Pykka==1.2.1
 pytest==4.0.0
 python-dateutil==2.7.5
